@@ -12837,12 +12837,9 @@
    "abstract": false,
    "layout": [
     {
-     "name": "target",
+     "name": "unknown0",
      "type": {
-      "kind": "ptr",
-      "to": [
-       "NiNode"
-      ]
+      "kind": "u32"
      },
      "declaredBy": "bhkCompressedMeshShape"
     },
@@ -12855,7 +12852,7 @@
      "doc": "The remaining Havok fields, raw."
     }
    ],
-   "doc": "The first field is a pointer back to the scene node (CollisionExtract reads it as the shape's target), not a child shape. Across the SSE corpus it is always 0, the root node, so the data alone can't distinguish it from a constant 0; it is modeled as a ptr to keep the ref graph acyclic."
+   "doc": "The first u32 is always 0 across the SSE corpus. Treated as an owning ref it made the block graph cyclic (block 0 is the root node), so it isn't one; whether it is a back pointer or a plain integer isn't established from the data alone."
   },
   {
    "name": "bhkCompressedMeshShapeData",

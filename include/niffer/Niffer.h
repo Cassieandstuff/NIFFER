@@ -811,16 +811,14 @@ DecodedMesh DecodeMesh(const NiSkinPartition& part);
 // that want a PBR roughness from a legacy shader.
 float GlossinessToRoughness(float glossiness);
 
-// ── Havok collision extraction (M7 consumer layer) ────────────────────────────
-// Walk the bhk* collision graph (bhkCollisionObject -> bhkRigidBody[T] -> shape
-// tree) and return world-collision geometry in the NIF's own ROOT space, already
+// ── Havok collision extraction ────────────────────────────────────────────────
+// World-collision geometry for a NIF, in the NIF's own ROOT space and already
 // scaled from Havok units to Skyrim/NIF units (kHavokToSkyrim). Concave triangle
-// meshes (bhkCompressedMeshShapeData big-triangles + chunks, bhkBoxShape) go in
-// triVerts/triIndices; convex leaves (bhkConvexVerticesShape) go in `hulls` (one
-// point set each) so a physics backend can pick btBvhTriangleMeshShape vs
-// btConvexHullShape. Empty when the NIF has no collision. Decode is GATED — chunk
-// verts must land inside the shape's own stored AABB, else the shape is skipped
-// and counted in shapesSkipped (garbage collision is worse than none).
+// geometry goes in triVerts/triIndices; convex leaves go in `hulls` (one point
+// set each), so a physics backend can choose a triangle-mesh or convex-hull
+// shape. Empty when the NIF has no collision. Shapes that can't be decoded with
+// confidence are skipped and counted in shapesSkipped (garbage collision is
+// worse than none).
 struct CollisionGeometry {
     std::vector<float>              triVerts;     // 3 * N, root space (Skyrim units)
     std::vector<uint32_t>           triIndices;   // 3 per triangle

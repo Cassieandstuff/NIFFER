@@ -3138,9 +3138,9 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return bhkCompressedMeshShape(b);
         return std::nullopt;
     }
-    // target
-    ::niffer::NiRef<::niffer::view::NiNode> Target() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
-    bool SetTarget(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0), v); }
+    // unknown0
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // data — The remaining Havok fields, raw.
     std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
     bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }

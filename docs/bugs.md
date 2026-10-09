@@ -5,6 +5,21 @@ Keep in sync in the SAME change as the code.
 
 ## Open
 
+### CollisionExtract.cpp is not clean-room — OPEN
+- **Symptom:** `cpp/blocks/CollisionExtract.cpp` (`ExtractCollision`, used by SCT's
+  ViewportPanel for cell collision) documents its Havok wire layouts as taken from nifly
+  (GPL-3.0), and its compressed-mesh vertex decompression from the Havok SDK headers. It came
+  into NIFFER with the extraction from SCT (SCT commit 8658f1474).
+- **Why it matters:** NIFFER is dual-licensed, which needs the copyright holder to own every
+  line. Layouts derived from nifly break the clean-room rule (CLAUDE.md, CONTRIBUTING.md).
+- **Plan:** rewrite clean-room with the same API (`CollisionGeometry`, `ExtractCollision`), with
+  Havok layouts reverse-engineered from the SSE corpus (the Havok SDK headers may be used as a
+  reference; nifly, `nif.xml` and the old file may not). It's done by a session that has never
+  read the old file. The schema's bhk descriptors come from the same work. Until then the old
+  file stays so SCT keeps working, and nothing else may take layouts from it.
+- **Related:** step 1 named `bhkCompressedMeshShape`'s first field `target` partly from this
+  file. It's now `unknown0` (data alone: always 0).
+
 ### Typed path: BSLightingShaderProperty's leading fields are mislabeled — OPEN (typed path only)
 - **Symptom:** the typed struct calls the first u32 `name` (a string ref) and the next three
   `headerA/B/C` ("observed -1/0/-1"). As a string index, `name` is out of range in 4,310 SSE

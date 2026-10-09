@@ -1033,7 +1033,7 @@ namespace bhkCollisionObject {
 
 // bhkCompressedMeshShape : NiObject
 namespace bhkCompressedMeshShape {
-    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> target{ 133, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 133, { { 0 }, 1 } };
     inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 133, { { 1 }, 1 } };
 }
 

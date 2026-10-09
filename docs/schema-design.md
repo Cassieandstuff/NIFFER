@@ -169,6 +169,12 @@ until step 6.
    (`bhkCompressedMeshShapeData`, the `bhkShapeWrapper` and `bhkPrimitiveShape` payloads),
    legacy `NiTriShapeData`, `NiControllerSequence`, `BSEffectShaderProperty`, then particles,
    each as far as real data verifies.
+
+   Havok done (2026-10-09): every bhk class is decoded field by field except the MOPP byte
+   code, measured on the corpus with no outside layout source
+   ([collision-provenance.md](collision-provenance.md)). `roundtrip --schema` stays GREEN at
+   **98.16%** decoded (opaque `bytes` 1.84%). `ExtractCollision` (step 4's collision part)
+   now reads through the schema.
 4. **Decode helpers on views:** `DecodeMesh`, `ExtractCollision` and the morph helpers read
    through the schema.
 5. **Port SCT** (sct-assets, sct-pipeline, Scene Editor v2) to `niffer::Nif` and the views, and

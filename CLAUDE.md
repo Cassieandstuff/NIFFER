@@ -86,9 +86,14 @@ owner writes. Design and migration plan: [docs/schema-design.md](docs/schema-des
   - `niffer-tool roundtrip --schema <dir>`: the schema path. It loads materialized, so forced
     re-encode proves every element, and it checks that the default packed load saves
     identically. Verbatim and forced re-encode are byte-exact; 786,940 blocks, all modeled;
-    95.94% of block bytes decoded field by field; 884,440 refs checked against `to:`; an acyclic
+    98.16% of block bytes decoded field by field; 892,009 refs checked against `to:`; an acyclic
     `ref` graph; 400,426 string refs in range. `--refs` also lists the remaining opaque `bytes`
     fields, largest first.
+  - `niffer-tool collision-validate [--sweep] <dir>`: `ExtractCollision` over the corpus. 17,139
+    leaf shapes decoded, 93 skipped; 0 of 3,174,859 compressed-mesh vertices outside their
+    stored bounds; the collision AABB is within 10% of the render AABB's diagonal in 87.4% of
+    the 11,094 files with both. `--sweep` re-measures each extraction convention
+    (docs/collision-provenance.md).
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
 
 ## Bug log — sync is mandatory

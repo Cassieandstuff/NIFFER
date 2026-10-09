@@ -77,6 +77,7 @@ niffer-tool histogram     <dir>         # block-type census
 niffer-tool dump          <file.nif> [blockIdx]
 niffer-tool decode        <file.nif>
 niffer-tool collision     <file.nif>
+niffer-tool collision-validate [--sweep] <dir>  # ExtractCollision against bounds and render geometry
 ```
 
 A change to any block layout must keep `roundtrip`, `roundtrip --schema` and `tri-roundtrip`
@@ -127,8 +128,9 @@ can.
 NIFFER is moving from hand-written typed structs (`NifFile` and the block structs in `Niffer.h`)
 to the schema-driven engine. Both ship side by side until the migration completes. Today the
 schema models every SSE block class the typed path does, including vertices, triangles, skin
-partitions, animation keys and material values: 95.94% of the vanilla corpus's block data
-decodes field by field. What remains opaque is mostly Havok collision data. The schema also
+partitions, animation keys, material values and Havok collision: 98.16% of the vanilla corpus's
+block data decodes field by field. What remains opaque is mostly Havok MOPP byte code and legacy
+NiTriShapeData. The schema also
 corrects a few typed-path labels the new checks found ([docs/bugs.md](docs/bugs.md)). The public
 API will change while the rest lands.
 

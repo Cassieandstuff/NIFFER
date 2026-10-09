@@ -1,4 +1,7 @@
 block: bhkStiffSpringConstraint
-inherits: NiObject
+inherits: bhkConstraint
+doc: 52 bytes in all 5 SSE blocks.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: pointA, type: Vec4 }
+  - { name: pointB, type: Vec4 }
+  - { name: unknown48, type: f32 }

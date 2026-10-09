@@ -1,2 +1,9 @@
 block: bhkCapsuleShape
 inherits: bhkPrimitiveShape
+doc: 48 bytes in all 2,342 SSE blocks.
+fields:
+  - { name: unknown8, type: "u32[2]", doc: "Unstructured (uninitialized-looking)." }
+  - { name: point1, type: Vec3 }
+  - { name: radius1, type: f32, doc: Always equal to radius. }
+  - { name: point2, type: Vec3, doc: "A body's centerOfMass is the midpoint of point1 and point2 (1,465 of 1,468)." }
+  - { name: radius2, type: f32, doc: Always equal to radius. }

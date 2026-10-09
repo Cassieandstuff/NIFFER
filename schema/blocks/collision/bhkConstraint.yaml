@@ -1,0 +1,10 @@
+block: bhkConstraint
+inherits: NiObject
+abstract: true
+doc: >-
+  A structural grouping, not a game class: the constraints that start with their entity list.
+  Every constraint in the SSE corpus is referenced from exactly one rigid body's constraints, so
+  the entities are non-owning links.
+fields:
+  - { name: entities, type: "ptr[count: u32]", to: [bhkRigidBody], doc: "Always 2 entries." }
+  - { name: unknown, type: u32, doc: Always 1. }

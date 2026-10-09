@@ -10,6 +10,7 @@ void run_header_tests();
 void run_tri_tests();
 void run_decode_tests();
 void run_schema_tests();
+void run_collision_tests();
 
 int main() {
     std::setvbuf(stdout, nullptr, _IONBF, 0);   // a crash still shows how far we got
@@ -26,6 +27,7 @@ int main() {
     run_tri_tests();
     run_decode_tests();
     run_schema_tests();
+    run_collision_tests();
     std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;
 }

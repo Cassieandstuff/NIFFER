@@ -1,2 +1,11 @@
 block: bhkCylinderShape
 inherits: bhkPrimitiveShape
+doc: 64 bytes in all 70 SSE blocks.
+fields:
+  - { name: unknown8, type: "u32[2]", doc: "Unstructured (uninitialized-looking)." }
+  - { name: point1, type: Vec3 }
+  - { name: unknown28, type: f32, doc: "Always equal to unknown44; unknown48 + radius." }
+  - { name: point2, type: Vec3 }
+  - { name: unknown44, type: f32 }
+  - { name: unknown48, type: f32, doc: "Always unknown28 - radius." }
+  - { name: unknown52, type: "u32[3]", doc: "Unstructured (uninitialized-looking)." }

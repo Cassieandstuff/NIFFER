@@ -1,0 +1,9 @@
+struct: CompressedMeshTransform
+size: 32
+doc: >-
+  An entry of bhkCompressedMeshShapeData's transform table: a Vec4 whose w is always 1.0, then a
+  unit quaternion (x, y, z, w). All 12,115 entries in the SSE corpus are the identity
+  (0, 0, 0, 1) + (0, 0, 0, ~1).
+fields:
+  - { name: translation, type: Vec4 }
+  - { name: rotation, type: Vec4, doc: "Unit quaternion, x, y, z, w (|q| = 1 within 1e-4 in every entry)." }

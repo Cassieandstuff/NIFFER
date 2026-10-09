@@ -1,2 +1,46 @@
 block: bhkRigidBody
 inherits: bhkShapeWrapper
+doc: >-
+  250 bytes plus 4 per constraint in all 14,880 SSE bhkRigidBody/bhkRigidBodyT blocks (sizes 250,
+  254, 262, 266). Evidence per field is in docs/collision-provenance.md.
+verified: ["clutter/barrel01.nif#5"]
+fields:
+  - { name: unknown4, type: u32, doc: "Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36." }
+  - { name: unknown8, type: u32, doc: "Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40." }
+  - { name: unknown12, type: u8, doc: Always 1 (2 in bhkSimpleShapePhantom). }
+  - { name: unknown13, type: "u8[3]", doc: "Unstructured (uninitialized-looking)." }
+  - { name: unknown16, type: "u32[3]", doc: "Always 0, 0, 0x80000000." }
+  - { name: unknown28, type: u32, doc: "Byte 0 is always 1 and bytes 2-3 always 0xFFFF." }
+  - { name: unknown32, type: u32 }
+  - { name: unknown36, type: u32 }
+  - { name: unknown40, type: u32 }
+  - { name: unknown44, type: u32, doc: Always 0. }
+  - { name: unknown48, type: u32, doc: "Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks." }
+  - { name: translation, type: Vec4, doc: "w = 0 in 14,871 of 14,880." }
+  - { name: rotation, type: Vec4, doc: "Unit quaternion x, y, z, w (|q| = 1 in every block)." }
+  - { name: unknown84, type: Vec4, doc: Always zero. }
+  - { name: unknown100, type: Vec4, doc: Always zero. }
+  - { name: inertia, type: "Vec4[3]", doc: "A symmetric 3x3 matrix (w = 0). For bodies with a bhkSphereShape it is diag(0.4 m r^2) in most of them." }
+  - { name: centerOfMass, type: Vec4 }
+  - { name: mass, type: f32, doc: "0 exactly when inertia is all zero (14,868 of 14,880)." }
+  - { name: unknown184, type: f32 }
+  - { name: unknown188, type: f32 }
+  - { name: unknown192, type: f32, doc: Always 1.0. }
+  - { name: unknown196, type: f32, doc: Always 1.0. }
+  - { name: unknown200, type: f32 }
+  - { name: unknown204, type: f32, doc: Always 0. }
+  - { name: unknown208, type: f32 }
+  - { name: unknown212, type: f32 }
+  - { name: unknown216, type: f32 }
+  - { name: unknown220, type: f32 }
+  - { name: unknown224, type: u8, doc: "2-5." }
+  - { name: unknown225, type: u8, doc: Always 1. }
+  - { name: unknown226, type: u8, doc: "1 or 2." }
+  - { name: unknown227, type: u8, doc: "0, 1, 2 or 4." }
+  - { name: unknown228, type: u8, doc: Always 0. }
+  - { name: unknown229, type: u8, doc: Always 0. }
+  - { name: unknown230, type: u8, doc: Always 3. }
+  - { name: unknown231, type: u8, doc: Always 0. }
+  - { name: unknown232, type: "u32[3]", doc: "Unstructured (uninitialized-looking)." }
+  - { name: constraints, type: "ref[count: u32]", to: [bhkConstraint, bhkBallSocketConstraintChain], doc: "Every constraint block in the corpus is referenced from exactly one rigid body's list." }
+  - { name: unknownTail, type: u16, doc: "0 except in one block (1)." }

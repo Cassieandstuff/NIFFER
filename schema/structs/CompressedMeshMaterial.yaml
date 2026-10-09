@@ -1,0 +1,8 @@
+struct: CompressedMeshMaterial
+size: 8
+doc: >-
+  One entry of bhkCompressedMeshShapeData's material table. Chunk and big-triangle material
+  indices are always below the table's length (SSE corpus: 24,457 chunks, 67,450 big triangles).
+fields:
+  - { name: material, type: u32, doc: "A hash-like ID; 24 of its 34 distinct values also occur as the material of a primitive shape." }
+  - { name: unknown, type: u32, doc: "1 in 11,425 entries; also 2, 13, 3, 0." }

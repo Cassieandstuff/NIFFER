@@ -345,6 +345,256 @@
    ]
   },
   {
+   "name": "CompressedMeshBigTriangle",
+   "fields": [
+    {
+     "name": "triangle",
+     "type": {
+      "kind": "struct",
+      "name": "Triangle",
+      "fields": [
+       {
+        "name": "a",
+        "type": {
+         "kind": "u16"
+        }
+       },
+       {
+        "name": "b",
+        "type": {
+         "kind": "u16"
+        }
+       },
+       {
+        "name": "c",
+        "type": {
+         "kind": "u16"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "name": "material",
+     "type": {
+      "kind": "u16"
+     },
+     "doc": "Index into the block's materials."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u16"
+     },
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknownB",
+     "type": {
+      "kind": "u16"
+     }
+    }
+   ]
+  },
+  {
+   "name": "CompressedMeshChunk",
+   "fields": [
+    {
+     "name": "offset",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "doc": "Added to each dequantized vertex; w = 0."
+    },
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "doc": "Index into the block's materials."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u16"
+     },
+     "doc": "Always 0xFFFF."
+    },
+    {
+     "name": "transformIndex",
+     "type": {
+      "kind": "u16"
+     },
+     "doc": "Always below the transform-table length; every referenced transform is the identity in the corpus."
+    },
+    {
+     "name": "vertices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "doc": "x, y, z per vertex; the count is the number of u16s (3 per vertex)."
+    },
+    {
+     "name": "indices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "doc": "Strip indices first, then a triangle list."
+    },
+    {
+     "name": "stripLengths",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true
+    },
+    {
+     "name": "unknownIndexData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "doc": "One u16 per index (the count always equals the index count)."
+    }
+   ]
+  },
+  {
+   "name": "CompressedMeshMaterial",
+   "fields": [
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "doc": "A hash-like ID; 24 of its 34 distinct values also occur as the material of a primitive shape."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "doc": "1 in 11,425 entries; also 2, 13, 3, 0."
+    }
+   ]
+  },
+  {
+   "name": "CompressedMeshTransform",
+   "fields": [
+    {
+     "name": "translation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "name": "rotation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "doc": "Unit quaternion, x, y, z, w (|q| = 1 within 1e-4 in every entry)."
+    }
+   ]
+  },
+  {
    "name": "FloatKey",
    "fields": [
     {
@@ -619,6 +869,157 @@
       "countField": "numKeys"
      },
      "packed": true
+    }
+   ]
+  },
+  {
+   "name": "HavokFrame",
+   "fields": [
+    {
+     "name": "axes",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "count": 3
+     }
+    },
+    {
+     "name": "point",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "HavokTransform",
+   "fields": [
+    {
+     "name": "rotation",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "count": 3
+     },
+     "doc": "Orthonormal basis vectors (xyz), w = 0."
+    },
+    {
+     "name": "translation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     }
     }
    ]
   },
@@ -12675,18 +13076,102 @@
   },
   {
    "name": "bhkBallAndSocketConstraint",
-   "parent": "NiObject",
+   "parent": "bhkConstraint",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "entities",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
      },
-     "declaredBy": "bhkBallAndSocketConstraint",
-     "doc": "Not yet decoded."
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 2 entries."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 1."
+    },
+    {
+     "name": "pointA",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkBallAndSocketConstraint"
+    },
+    {
+     "name": "pointB",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkBallAndSocketConstraint"
     }
-   ]
+   ],
+   "doc": "48 bytes in all 30 SSE blocks."
   },
   {
    "name": "bhkBallSocketConstraintChain",
@@ -12694,29 +13179,148 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "points",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "declaredBy": "bhkBallSocketConstraintChain"
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "count": 4
      },
      "declaredBy": "bhkBallSocketConstraintChain",
-     "doc": "Not yet decoded."
+     "doc": "1.0, 0.6, 1.19e-8, 0.1 in every block."
+    },
+    {
+     "name": "chainEntities",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkBallSocketConstraintChain"
+    },
+    {
+     "name": "entities",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkBallSocketConstraintChain",
+     "doc": "Always 2 entries: the first two chainEntities."
+    },
+    {
+     "name": "unknownTail",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkBallSocketConstraintChain",
+     "doc": "Always 1."
     }
-   ]
+   ],
+   "doc": "The 6 SSE blocks all decode with this layout. The point count is always 2 * (chain entity count - 1): two points per link."
   },
   {
    "name": "bhkBlendCollisionObject",
-   "parent": "NiObject",
+   "parent": "bhkCollisionObject",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "target",
      "type": {
-      "kind": "bytes"
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "bhkCollisionObject"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "bhkCollisionObject"
+    },
+    {
+     "name": "body",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkRigidBody",
+       "bhkRigidBodyT",
+       "bhkSimpleShapePhantom"
+      ]
+     },
+     "declaredBy": "bhkCollisionObject"
+    },
+    {
+     "name": "unknown10",
+     "type": {
+      "kind": "f32"
      },
      "declaredBy": "bhkBlendCollisionObject",
-     "doc": "Not yet decoded."
+     "doc": "Always 1.0."
+    },
+    {
+     "name": "unknown14",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkBlendCollisionObject",
+     "doc": "Always 1.0."
     }
-   ]
+   ],
+   "doc": "bhkCollisionObject's 10 bytes plus two f32 (18 bytes in all 1,193 SSE blocks)."
   },
   {
    "name": "bhkBoxShape",
@@ -12728,39 +13332,316 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "A hash-like ID (68 distinct values over the corpus's primitive shapes)."
     },
     {
      "name": "radius",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value."
     },
     {
-     "name": "data",
+     "name": "unknown8",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 2
      },
-     "declaredBy": "bhkPrimitiveShape",
-     "doc": "Dimensions, vertices or parameters, raw."
+     "declaredBy": "bhkBoxShape",
+     "doc": "Unstructured (uninitialized-looking)."
+    },
+    {
+     "name": "halfExtents",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkBoxShape",
+     "doc": "Positive. The box spans -halfExtents..+halfExtents; see docs/collision-provenance.md for the render-bounds check."
+    },
+    {
+     "name": "unknownW",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkBoxShape",
+     "doc": "Always equal to one of the three halfExtents (to radius in 2,308)."
     }
-   ]
+   ],
+   "doc": "32 bytes in all 3,038 SSE blocks."
   },
   {
    "name": "bhkBreakableConstraint",
-   "parent": "NiObject",
+   "parent": "bhkConstraint",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "entities",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 2 entries."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 1."
+    },
+    {
+     "name": "wrappedType",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkBreakableConstraint"
+    },
+    {
+     "name": "wrappedEntities",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr"
+      },
+      "countPrefix": "u32"
      },
      "declaredBy": "bhkBreakableConstraint",
-     "doc": "Not yet decoded."
+     "doc": "Always 2 null entries."
+    },
+    {
+     "name": "wrappedUnknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkBreakableConstraint",
+     "doc": "Always 1."
+    },
+    {
+     "name": "wrapped",
+     "type": {
+      "kind": "union",
+      "cases": [
+       {
+        "name": "ballAndSocket",
+        "when": [
+         0
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "bhkBreakableConstraintWrappedBallAndSocket",
+         "fields": [
+          {
+           "name": "pointA",
+           "type": {
+            "kind": "struct",
+            "name": "Vec4",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "w",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "name": "pointB",
+           "type": {
+            "kind": "struct",
+            "name": "Vec4",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "w",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "stiffSpring",
+        "when": [
+         8
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "bhkBreakableConstraintWrappedStiffSpring",
+         "fields": [
+          {
+           "name": "pointA",
+           "type": {
+            "kind": "struct",
+            "name": "Vec4",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "w",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "name": "pointB",
+           "type": {
+            "kind": "struct",
+            "name": "Vec4",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "w",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "name": "unknown",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "by": {
+       "field": "wrappedType"
+      }
+     },
+     "declaredBy": "bhkBreakableConstraint"
+    },
+    {
+     "name": "unknownFloat",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkBreakableConstraint",
+     "doc": "10, 20, 30 or 10000."
+    },
+    {
+     "name": "unknownTail",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkBreakableConstraint",
+     "doc": "Always 0."
     }
-   ]
+   ],
+   "doc": "A constraint wrapping another one's data (73 or 77 bytes in the 8 SSE blocks). The wrapped data has exactly the layout of bhkBallAndSocketConstraint's own fields when wrappedType is 0, and of bhkStiffSpringConstraint's when it is 8."
   },
   {
    "name": "bhkCapsuleShape",
@@ -12772,24 +13653,104 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "A hash-like ID (68 distinct values over the corpus's primitive shapes)."
     },
     {
      "name": "radius",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value."
     },
     {
-     "name": "data",
+     "name": "unknown8",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 2
      },
-     "declaredBy": "bhkPrimitiveShape",
-     "doc": "Dimensions, vertices or parameters, raw."
+     "declaredBy": "bhkCapsuleShape",
+     "doc": "Unstructured (uninitialized-looking)."
+    },
+    {
+     "name": "point1",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCapsuleShape"
+    },
+    {
+     "name": "radius1",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCapsuleShape",
+     "doc": "Always equal to radius."
+    },
+    {
+     "name": "point2",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCapsuleShape",
+     "doc": "A body's centerOfMass is the midpoint of point1 and point2 (1,465 of 1,468)."
+    },
+    {
+     "name": "radius2",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCapsuleShape",
+     "doc": "Always equal to radius."
     }
-   ]
+   ],
+   "doc": "48 bytes in all 2,342 SSE blocks."
   },
   {
    "name": "bhkCollisionObject",
@@ -12844,15 +13805,122 @@
      "declaredBy": "bhkCompressedMeshShape"
     },
     {
-     "name": "data",
+     "name": "unknown4",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
      "declaredBy": "bhkCompressedMeshShape",
-     "doc": "The remaining Havok fields, raw."
+     "doc": "Varies per block like a 32-bit address (low nibble 0)."
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCompressedMeshShape",
+     "doc": "Always 0.005. A parent bhkMoppBvTreeShape's origin is the data's boundsMin minus this value (8,066 of 8,214)."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCompressedMeshShape"
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCompressedMeshShape",
+     "doc": "Always (1, 1, 1, 0)."
+    },
+    {
+     "name": "unknown32",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCompressedMeshShape",
+     "doc": "Always 0.005."
+    },
+    {
+     "name": "unknown36",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCompressedMeshShape",
+     "doc": "Always (1, 1, 1, 0)."
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkCompressedMeshShapeData"
+      ]
+     },
+     "declaredBy": "bhkCompressedMeshShape",
+     "doc": "The geometry block."
     }
    ],
-   "doc": "The first u32 is always 0 across the SSE corpus. Treated as an owning ref it made the block graph cyclic (block 0 is the root node), so it isn't one; whether it is a back pointer or a plain integer isn't established from the data alone."
+   "verified": [
+    "clutter/barrel01.nif#3"
+   ],
+   "doc": "56 bytes in all 8,214 SSE blocks. The first u32 is always 0; treated as an owning ref it made the block graph cyclic (block 0 is the root node), so it isn't one, and whether it is a back pointer or a plain integer isn't established from the data alone."
   },
   {
    "name": "bhkCompressedMeshShapeData",
@@ -12860,14 +13928,536 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
      "declaredBy": "bhkCompressedMeshShapeData",
-     "doc": "Not yet decoded."
+     "doc": "Always 17."
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 18."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0x3FFFF."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0x1FFFF."
+    },
+    {
+     "name": "quantization",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0.001: the step of the chunk vertices (vertex = chunk offset + q * quantization), which then lie inside boundsMin..boundsMax."
+    },
+    {
+     "name": "boundsMin",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "w is 0 except in 10 blocks."
+    },
+    {
+     "name": "boundsMax",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "w is 1.0 exactly when bigVertices is non-empty (309 blocks), else 0."
+    },
+    {
+     "name": "unknown52",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown53",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 1."
+    },
+    {
+     "name": "unknown54",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown58",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown62",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0."
+    },
+    {
+     "name": "materials",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "CompressedMeshMaterial",
+       "fields": [
+        {
+         "name": "material",
+         "type": {
+          "kind": "u32"
+         },
+         "doc": "A hash-like ID; 24 of its 34 distinct values also occur as the material of a primitive shape."
+        },
+        {
+         "name": "unknown",
+         "type": {
+          "kind": "u32"
+         },
+         "doc": "1 in 11,425 entries; also 2, 13, 3, 0."
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData"
+    },
+    {
+     "name": "unknownCount",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0; the layout of whatever it would count is unknown."
+    },
+    {
+     "name": "transforms",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "CompressedMeshTransform",
+       "fields": [
+        {
+         "name": "translation",
+         "type": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         }
+        },
+        {
+         "name": "rotation",
+         "type": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "doc": "Unit quaternion, x, y, z, w (|q| = 1 within 1e-4 in every entry)."
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData"
+    },
+    {
+     "name": "bigVertices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Unquantized vertices (w = 999.99994 where seen); all inside the bounds."
+    },
+    {
+     "name": "bigTriangles",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "CompressedMeshBigTriangle",
+       "fields": [
+        {
+         "name": "triangle",
+         "type": {
+          "kind": "struct",
+          "name": "Triangle",
+          "fields": [
+           {
+            "name": "a",
+            "type": {
+             "kind": "u16"
+            }
+           },
+           {
+            "name": "b",
+            "type": {
+             "kind": "u16"
+            }
+           },
+           {
+            "name": "c",
+            "type": {
+             "kind": "u16"
+            }
+           }
+          ]
+         }
+        },
+        {
+         "name": "material",
+         "type": {
+          "kind": "u16"
+         },
+         "doc": "Index into the block's materials."
+        },
+        {
+         "name": "unknown",
+         "type": {
+          "kind": "u16"
+         },
+         "doc": "Always 0."
+        },
+        {
+         "name": "unknownB",
+         "type": {
+          "kind": "u16"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "declaredBy": "bhkCompressedMeshShapeData"
+    },
+    {
+     "name": "chunks",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "CompressedMeshChunk",
+       "fields": [
+        {
+         "name": "offset",
+         "type": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "doc": "Added to each dequantized vertex; w = 0."
+        },
+        {
+         "name": "material",
+         "type": {
+          "kind": "u32"
+         },
+         "doc": "Index into the block's materials."
+        },
+        {
+         "name": "unknown",
+         "type": {
+          "kind": "u16"
+         },
+         "doc": "Always 0xFFFF."
+        },
+        {
+         "name": "transformIndex",
+         "type": {
+          "kind": "u16"
+         },
+         "doc": "Always below the transform-table length; every referenced transform is the identity in the corpus."
+        },
+        {
+         "name": "vertices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countPrefix": "u32"
+         },
+         "packed": true,
+         "doc": "x, y, z per vertex; the count is the number of u16s (3 per vertex)."
+        },
+        {
+         "name": "indices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countPrefix": "u32"
+         },
+         "packed": true,
+         "doc": "Strip indices first, then a triangle list."
+        },
+        {
+         "name": "stripLengths",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countPrefix": "u32"
+         },
+         "packed": true
+        },
+        {
+         "name": "unknownIndexData",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countPrefix": "u32"
+         },
+         "packed": true,
+         "doc": "One u16 per index (the count always equals the index count)."
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData"
+    },
+    {
+     "name": "unknownTail",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Always 0."
     }
-   ]
+   ],
+   "verified": [
+    "clutter/barrel01.nif#2",
+    "architecture/highhrothgar/hhdoor01.nif#18",
+    "dlc01/dungeons/castle/exterior/casexttowerwall01.nif#2"
+   ],
+   "doc": "Quantized triangle geometry (the data of a bhkCompressedMeshShape). Every one of the 8,214 blocks in the SSE corpus decodes to exactly its size with this layout. Evidence per field is in docs/collision-provenance.md."
+  },
+  {
+   "name": "bhkConstraint",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "entities",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 2 entries."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 1."
+    }
+   ],
+   "doc": "A structural grouping, not a game class: the constraints that start with their entity list. Every constraint in the SSE corpus is referenced from exactly one rigid body's constraints, so the entities are non-owning links."
   },
   {
    "name": "bhkConvexTransformShape",
@@ -12896,14 +14486,120 @@
      "declaredBy": "bhkShapeWrapper"
     },
     {
-     "name": "data",
+     "name": "material",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
-     "declaredBy": "bhkShapeWrapper",
-     "doc": "The remaining Havok fields, raw."
+     "declaredBy": "bhkConvexTransformShape",
+     "doc": "Always equal to the child shape's material."
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkConvexTransformShape",
+     "doc": "Always equal to the child shape's radius."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConvexTransformShape",
+     "doc": "Varies per block like a 32-bit address."
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConvexTransformShape",
+     "doc": "Unstructured."
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "HavokTransform",
+      "fields": [
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        },
+        "doc": "Orthonormal basis vectors (xyz), w = 0."
+       },
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkConvexTransformShape"
     }
-   ]
+   ],
+   "doc": "84 bytes in all 1,681 SSE blocks."
   },
   {
    "name": "bhkConvexVerticesShape",
@@ -12915,24 +14611,111 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "A hash-like ID (68 distinct values over the corpus's primitive shapes)."
     },
     {
      "name": "radius",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value."
     },
     {
-     "name": "data",
+     "name": "unknown8",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 6
      },
-     "declaredBy": "bhkPrimitiveShape",
-     "doc": "Dimensions, vertices or parameters, raw."
+     "declaredBy": "bhkConvexVerticesShape",
+     "doc": "Always 0, 0, 0x80000000, 0, 0, 0x80000000."
+    },
+    {
+     "name": "vertices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "declaredBy": "bhkConvexVerticesShape",
+     "doc": "w is always 0."
+    },
+    {
+     "name": "planes",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "packed": true,
+     "declaredBy": "bhkConvexVerticesShape",
+     "doc": "xyz is a unit normal (|n| - 1 < 3e-7), w an offset: for 89% of the 106,180 planes every vertex has n.v + w <= 0, and the gap is the radius in 59%."
     }
-   ]
+   ],
+   "doc": "The size is 40 + 16 * (vertex count + plane count) in all 3,628 SSE blocks."
   },
   {
    "name": "bhkCylinderShape",
@@ -12944,54 +14727,536 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "A hash-like ID (68 distinct values over the corpus's primitive shapes)."
     },
     {
      "name": "radius",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value."
     },
     {
-     "name": "data",
+     "name": "unknown8",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 2
      },
-     "declaredBy": "bhkPrimitiveShape",
-     "doc": "Dimensions, vertices or parameters, raw."
+     "declaredBy": "bhkCylinderShape",
+     "doc": "Unstructured (uninitialized-looking)."
+    },
+    {
+     "name": "point1",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCylinderShape"
+    },
+    {
+     "name": "unknown28",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCylinderShape",
+     "doc": "Always equal to unknown44; unknown48 + radius."
+    },
+    {
+     "name": "point2",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkCylinderShape"
+    },
+    {
+     "name": "unknown44",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCylinderShape"
+    },
+    {
+     "name": "unknown48",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkCylinderShape",
+     "doc": "Always unknown28 - radius."
+    },
+    {
+     "name": "unknown52",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkCylinderShape",
+     "doc": "Unstructured (uninitialized-looking)."
     }
-   ]
+   ],
+   "doc": "64 bytes in all 70 SSE blocks."
   },
   {
    "name": "bhkHingeConstraint",
-   "parent": "NiObject",
+   "parent": "bhkConstraint",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "entities",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
      },
-     "declaredBy": "bhkHingeConstraint",
-     "doc": "Not yet decoded."
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 2 entries."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 1."
+    },
+    {
+     "name": "frameA",
+     "type": {
+      "kind": "struct",
+      "name": "HavokFrame",
+      "fields": [
+       {
+        "name": "axes",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "point",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkHingeConstraint"
+    },
+    {
+     "name": "frameB",
+     "type": {
+      "kind": "struct",
+      "name": "HavokFrame",
+      "fields": [
+       {
+        "name": "axes",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "point",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkHingeConstraint"
     }
-   ]
+   ],
+   "doc": "144 bytes in all 8 SSE blocks."
   },
   {
    "name": "bhkLimitedHingeConstraint",
-   "parent": "NiObject",
+   "parent": "bhkConstraint",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "entities",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 2 entries."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 1."
+    },
+    {
+     "name": "frameA",
+     "type": {
+      "kind": "struct",
+      "name": "HavokFrame",
+      "fields": [
+       {
+        "name": "axes",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "point",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkLimitedHingeConstraint"
+    },
+    {
+     "name": "frameB",
+     "type": {
+      "kind": "struct",
+      "name": "HavokFrame",
+      "fields": [
+       {
+        "name": "axes",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "point",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkLimitedHingeConstraint"
+    },
+    {
+     "name": "unknown144",
+     "type": {
+      "kind": "f32"
      },
      "declaredBy": "bhkLimitedHingeConstraint",
-     "doc": "Not yet decoded."
+     "doc": "Not positive in 819 of 823."
+    },
+    {
+     "name": "unknown148",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkLimitedHingeConstraint",
+     "doc": "Not negative in 819 of 823."
+    },
+    {
+     "name": "unknown152",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkLimitedHingeConstraint",
+     "doc": "0.01 in 814 blocks."
+    },
+    {
+     "name": "unknown156",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkLimitedHingeConstraint",
+     "doc": "Always 0."
     }
-   ]
+   ],
+   "doc": "157 bytes in all 823 SSE blocks."
   },
   {
    "name": "bhkListShape",
@@ -13024,14 +15289,39 @@
      "declaredBy": "bhkListShape"
     },
     {
-     "name": "data",
+     "name": "material",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
      "declaredBy": "bhkListShape",
-     "doc": "The material and filter tail, raw."
+     "doc": "Always a value that also occurs as a primitive shape's material."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 6
+     },
+     "declaredBy": "bhkListShape",
+     "doc": "Always 0, 0, 0x80000000, 0, 0, 0x80000000."
+    },
+    {
+     "name": "unknownList",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkListShape",
+     "doc": "Always as long as subShapes; 0 in all but one entry (1)."
     }
-   ]
+   ],
+   "doc": "The size is 36 + 8 * subShape count in all 592 SSE blocks."
   },
   {
    "name": "bhkMoppBvTreeShape",
@@ -13060,14 +15350,99 @@
      "declaredBy": "bhkShapeWrapper"
     },
     {
-     "name": "data",
+     "name": "material",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
-     "declaredBy": "bhkShapeWrapper",
-     "doc": "The remaining Havok fields, raw."
+     "declaredBy": "bhkMoppBvTreeShape",
+     "doc": "0 in 8,336 blocks; otherwise a value that also occurs as a primitive shape's material."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkMoppBvTreeShape"
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkMoppBvTreeShape"
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkMoppBvTreeShape",
+     "doc": "Always 1.0."
+    },
+    {
+     "name": "dataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkMoppBvTreeShape"
+    },
+    {
+     "name": "origin",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkMoppBvTreeShape"
+    },
+    {
+     "name": "scale",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkMoppBvTreeShape"
+    },
+    {
+     "name": "unknown40",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkMoppBvTreeShape",
+     "doc": "1 in 8,279 blocks; 0xCD (an uninitialized-memory fill) in 78."
+    },
+    {
+     "name": "moppData",
+     "type": {
+      "kind": "bytes",
+      "sizeField": "dataSize"
+     },
+     "declaredBy": "bhkMoppBvTreeShape",
+     "doc": "The tree's byte code, not decoded."
     }
-   ]
+   ],
+   "verified": [
+    "clutter/barrel01.nif#4"
+   ],
+   "doc": "The block size is 41 + dataSize in all 8,362 SSE blocks. For the 8,214 whose shape is a bhkCompressedMeshShape, origin = data.boundsMin - shape.radius (8,066) and scale * (largest extent of the data bounds + 2 * radius) = 254 * 65536 (8,076): origin and scale map the child's bounds onto a 24-bit-like integer grid."
   },
   {
    "name": "bhkNiTriStripsShape",
@@ -13082,15 +15457,104 @@
      "declaredBy": "bhkNiTriStripsShape"
     },
     {
-     "name": "data",
+     "name": "unknown4",
      "type": {
-      "kind": "bytes"
+      "kind": "f32"
      },
      "declaredBy": "bhkNiTriStripsShape",
-     "doc": "The remaining Havok fields, raw."
+     "doc": "Always 0.005."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkNiTriStripsShape",
+     "doc": "Always 0x1036084C."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 4
+     },
+     "declaredBy": "bhkNiTriStripsShape",
+     "doc": "Always zero."
+    },
+    {
+     "name": "unknown28",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkNiTriStripsShape",
+     "doc": "Always 1."
+    },
+    {
+     "name": "unknown32",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkNiTriStripsShape",
+     "doc": "Always (1, 1, 1, 0)."
+    },
+    {
+     "name": "strips",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiTriStripsData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkNiTriStripsShape"
+    },
+    {
+     "name": "unknownList",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkNiTriStripsShape",
+     "doc": "Always as long as strips."
     }
    ],
-   "doc": "The first u32 is not a block reference: across the SSE corpus it is 0 in 26 blocks and an unrelated value in one."
+   "doc": "The size is 56 + 8 * strips count in all 27 SSE blocks. The first u32 is not a block reference: it is 0 in 26 blocks and an unrelated value in one."
   },
   {
    "name": "bhkPlaneShape",
@@ -13098,14 +15562,128 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "material",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
+     },
+     "declaredBy": "bhkPlaneShape"
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkPlaneShape"
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
      },
      "declaredBy": "bhkPlaneShape",
-     "doc": "Not yet decoded."
+     "doc": "(0, 0, 1, 0.0084) in the only block: a unit vector and an offset."
+    },
+    {
+     "name": "unknown32",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkPlaneShape"
+    },
+    {
+     "name": "unknown48",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkPlaneShape"
     }
-   ]
+   ],
+   "doc": "One block in the SSE corpus (64 bytes), so nothing beyond word shapes is established: a material like the primitive shapes', then float words."
   },
   {
    "name": "bhkPrimitiveShape",
@@ -13117,40 +15695,238 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "A hash-like ID (68 distinct values over the corpus's primitive shapes)."
     },
     {
      "name": "radius",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkPrimitiveShape"
-    },
-    {
-     "name": "data",
-     "type": {
-      "kind": "bytes"
-     },
      "declaredBy": "bhkPrimitiveShape",
-     "doc": "Dimensions, vertices or parameters, raw."
+     "doc": "For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value."
     }
    ],
-   "doc": "A structural grouping, not a game class: convex leaf shapes (Havok material and radius). Typed structurally: the links that keep the block graph walkable are decoded and the Havok payload is kept raw."
+   "doc": "A structural grouping, not a game class: convex leaf shapes that start with a material and a radius."
   },
   {
    "name": "bhkRagdollConstraint",
-   "parent": "NiObject",
+   "parent": "bhkConstraint",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "entities",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 2 entries."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 1."
+    },
+    {
+     "name": "frameA",
+     "type": {
+      "kind": "struct",
+      "name": "HavokFrame",
+      "fields": [
+       {
+        "name": "axes",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "point",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRagdollConstraint"
+    },
+    {
+     "name": "frameB",
+     "type": {
+      "kind": "struct",
+      "name": "HavokFrame",
+      "fields": [
+       {
+        "name": "axes",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "point",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRagdollConstraint"
+    },
+    {
+     "name": "unknown144",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "count": 5
      },
      "declaredBy": "bhkRagdollConstraint",
-     "doc": "Not yet decoded."
+     "doc": "All five are whole or half degrees in radians in 418 of 752 blocks (e.g. 0.0873, 0.5236, 1.5708)."
+    },
+    {
+     "name": "unknown164",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRagdollConstraint",
+     "doc": "10.0 in 748 blocks."
+    },
+    {
+     "name": "unknown168",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRagdollConstraint",
+     "doc": "Always 0."
     }
-   ]
+   ],
+   "doc": "169 bytes in all 752 SSE blocks."
   },
   {
    "name": "bhkRigidBody",
@@ -13179,18 +15955,501 @@
      "declaredBy": "bhkShapeWrapper"
     },
     {
-     "name": "data",
+     "name": "unknown4",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
-     "declaredBy": "bhkShapeWrapper",
-     "doc": "The remaining Havok fields, raw."
+     "declaredBy": "bhkRigidBody",
+     "doc": "Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1 (2 in bhkSimpleShapePhantom)."
+    },
+    {
+     "name": "unknown13",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Unstructured (uninitialized-looking)."
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0, 0, 0x80000000."
+    },
+    {
+     "name": "unknown28",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Byte 0 is always 1 and bytes 2-3 always 0xFFFF."
+    },
+    {
+     "name": "unknown32",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown36",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown40",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown44",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown48",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks."
+    },
+    {
+     "name": "translation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "w = 0 in 14,871 of 14,880."
+    },
+    {
+     "name": "rotation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Unit quaternion x, y, z, w (|q| = 1 in every block)."
+    },
+    {
+     "name": "unknown84",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always zero."
+    },
+    {
+     "name": "unknown100",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always zero."
+    },
+    {
+     "name": "inertia",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "A symmetric 3x3 matrix (w = 0). For bodies with a bhkSphereShape it is diag(0.4 m r^2) in most of them."
+    },
+    {
+     "name": "centerOfMass",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "mass",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0 exactly when inertia is all zero (14,868 of 14,880)."
+    },
+    {
+     "name": "unknown184",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown188",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown192",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1.0."
+    },
+    {
+     "name": "unknown196",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1.0."
+    },
+    {
+     "name": "unknown200",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown204",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown208",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown212",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown216",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown220",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown224",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "2-5."
+    },
+    {
+     "name": "unknown225",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1."
+    },
+    {
+     "name": "unknown226",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "1 or 2."
+    },
+    {
+     "name": "unknown227",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0, 1, 2 or 4."
+    },
+    {
+     "name": "unknown228",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown229",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown230",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 3."
+    },
+    {
+     "name": "unknown231",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown232",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Unstructured (uninitialized-looking)."
+    },
+    {
+     "name": "constraints",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "bhkBallSocketConstraintChain",
+        "bhkConstraint"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Every constraint block in the corpus is referenced from exactly one rigid body's list."
+    },
+    {
+     "name": "unknownTail",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0 except in one block (1)."
     }
-   ]
+   ],
+   "verified": [
+    "clutter/barrel01.nif#5"
+   ],
+   "doc": "250 bytes plus 4 per constraint in all 14,880 SSE bhkRigidBody/bhkRigidBodyT blocks (sizes 250, 254, 262, 266). Evidence per field is in docs/collision-provenance.md."
   },
   {
    "name": "bhkRigidBodyT",
-   "parent": "bhkShapeWrapper",
+   "parent": "bhkRigidBody",
    "abstract": false,
    "layout": [
     {
@@ -13215,14 +16474,494 @@
      "declaredBy": "bhkShapeWrapper"
     },
     {
-     "name": "data",
+     "name": "unknown4",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
-     "declaredBy": "bhkShapeWrapper",
-     "doc": "The remaining Havok fields, raw."
+     "declaredBy": "bhkRigidBody",
+     "doc": "Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1 (2 in bhkSimpleShapePhantom)."
+    },
+    {
+     "name": "unknown13",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Unstructured (uninitialized-looking)."
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0, 0, 0x80000000."
+    },
+    {
+     "name": "unknown28",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Byte 0 is always 1 and bytes 2-3 always 0xFFFF."
+    },
+    {
+     "name": "unknown32",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown36",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown40",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown44",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown48",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks."
+    },
+    {
+     "name": "translation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "w = 0 in 14,871 of 14,880."
+    },
+    {
+     "name": "rotation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Unit quaternion x, y, z, w (|q| = 1 in every block)."
+    },
+    {
+     "name": "unknown84",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always zero."
+    },
+    {
+     "name": "unknown100",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always zero."
+    },
+    {
+     "name": "inertia",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "A symmetric 3x3 matrix (w = 0). For bodies with a bhkSphereShape it is diag(0.4 m r^2) in most of them."
+    },
+    {
+     "name": "centerOfMass",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "mass",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0 exactly when inertia is all zero (14,868 of 14,880)."
+    },
+    {
+     "name": "unknown184",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown188",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown192",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1.0."
+    },
+    {
+     "name": "unknown196",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1.0."
+    },
+    {
+     "name": "unknown200",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown204",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown208",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown212",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown216",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown220",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkRigidBody"
+    },
+    {
+     "name": "unknown224",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "2-5."
+    },
+    {
+     "name": "unknown225",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 1."
+    },
+    {
+     "name": "unknown226",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "1 or 2."
+    },
+    {
+     "name": "unknown227",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0, 1, 2 or 4."
+    },
+    {
+     "name": "unknown228",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown229",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown230",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 3."
+    },
+    {
+     "name": "unknown231",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown232",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Unstructured (uninitialized-looking)."
+    },
+    {
+     "name": "constraints",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "bhkBallSocketConstraintChain",
+        "bhkConstraint"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Every constraint block in the corpus is referenced from exactly one rigid body's list."
+    },
+    {
+     "name": "unknownTail",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0 except in one block (1)."
     }
-   ]
+   ],
+   "doc": "The same layout as bhkRigidBody (all 3,546 SSE blocks decode with it). Its translation and rotation place the shape in its node's space; see docs/collision-provenance.md."
   },
   {
    "name": "bhkSPCollisionObject",
@@ -13285,32 +17024,177 @@
       ]
      },
      "declaredBy": "bhkShapeWrapper"
-    },
-    {
-     "name": "data",
-     "type": {
-      "kind": "bytes"
-     },
-     "declaredBy": "bhkShapeWrapper",
-     "doc": "The remaining Havok fields, raw."
     }
    ],
-   "doc": "A structural grouping, not a game class: the blocks that start with a shape link. Typed structurally: the links that keep the block graph walkable are decoded and the Havok payload is kept raw."
+   "doc": "A structural grouping, not a game class: the blocks whose first field is a shape link."
   },
   {
    "name": "bhkSimpleShapePhantom",
-   "parent": "NiObject",
+   "parent": "bhkShapeWrapper",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "shape",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "bhkBoxShape",
+       "bhkCapsuleShape",
+       "bhkCompressedMeshShape",
+       "bhkConvexTransformShape",
+       "bhkConvexVerticesShape",
+       "bhkCylinderShape",
+       "bhkListShape",
+       "bhkMoppBvTreeShape",
+       "bhkNiTriStripsShape",
+       "bhkPlaneShape",
+       "bhkSphereShape",
+       "bhkTransformShape"
+      ]
+     },
+     "declaredBy": "bhkShapeWrapper"
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkSimpleShapePhantom"
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "u32"
      },
      "declaredBy": "bhkSimpleShapePhantom",
-     "doc": "Not yet decoded."
+     "doc": "Varies per block like a 32-bit address."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkSimpleShapePhantom",
+     "doc": "Always 2."
+    },
+    {
+     "name": "unknown13",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkSimpleShapePhantom"
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 3
+     },
+     "declaredBy": "bhkSimpleShapePhantom",
+     "doc": "Always 0, 0, 0x80000000."
+    },
+    {
+     "name": "unknown28",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 2
+     },
+     "declaredBy": "bhkSimpleShapePhantom",
+     "doc": "Unstructured."
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "HavokTransform",
+      "fields": [
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        },
+        "doc": "Orthonormal basis vectors (xyz), w = 0."
+       },
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkSimpleShapePhantom"
     }
-   ]
+   ],
+   "doc": "100 bytes in all 190 SSE blocks. The first 28 bytes follow bhkRigidBody's (unknown12 is 2 here instead of 1)."
   },
   {
    "name": "bhkSphereShape",
@@ -13322,39 +17206,125 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkPrimitiveShape"
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "A hash-like ID (68 distinct values over the corpus's primitive shapes)."
     },
     {
      "name": "radius",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkPrimitiveShape"
-    },
-    {
-     "name": "data",
-     "type": {
-      "kind": "bytes"
-     },
      "declaredBy": "bhkPrimitiveShape",
-     "doc": "Dimensions, vertices or parameters, raw."
+     "doc": "For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value."
     }
-   ]
+   ],
+   "doc": "8 bytes in all 207 SSE blocks."
   },
   {
    "name": "bhkStiffSpringConstraint",
-   "parent": "NiObject",
+   "parent": "bhkConstraint",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "entities",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "bhkRigidBody"
+       ]
+      },
+      "countPrefix": "u32"
      },
-     "declaredBy": "bhkStiffSpringConstraint",
-     "doc": "Not yet decoded."
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 2 entries."
+    },
+    {
+     "name": "unknown",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkConstraint",
+     "doc": "Always 1."
+    },
+    {
+     "name": "pointA",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkStiffSpringConstraint"
+    },
+    {
+     "name": "pointB",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkStiffSpringConstraint"
+    },
+    {
+     "name": "unknown48",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkStiffSpringConstraint"
     }
-   ]
+   ],
+   "doc": "52 bytes in all 5 SSE blocks."
   },
   {
    "name": "bhkTransformShape",
@@ -13383,14 +17353,118 @@
      "declaredBy": "bhkShapeWrapper"
     },
     {
-     "name": "data",
+     "name": "material",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
-     "declaredBy": "bhkShapeWrapper",
-     "doc": "The remaining Havok fields, raw."
+     "declaredBy": "bhkTransformShape",
+     "doc": "Equal to the child's material whenever the child is a primitive shape (79 of 79)."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkTransformShape",
+     "doc": "Always 0."
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkTransformShape"
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkTransformShape"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "HavokTransform",
+      "fields": [
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "count": 3
+        },
+        "doc": "Orthonormal basis vectors (xyz), w = 0."
+       },
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec4",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "w",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "declaredBy": "bhkTransformShape"
     }
-   ]
+   ],
+   "doc": "84 bytes in all 94 SSE blocks; the same layout as bhkConvexTransformShape."
   }
  ]
 }

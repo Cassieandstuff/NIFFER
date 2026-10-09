@@ -1,2 +1,18 @@
 block: bhkMoppBvTreeShape
 inherits: bhkShapeWrapper
+doc: >-
+  The block size is 41 + dataSize in all 8,362 SSE blocks. For the 8,214 whose shape is a
+  bhkCompressedMeshShape, origin = data.boundsMin - shape.radius (8,066) and scale * (largest
+  extent of the data bounds + 2 * radius) = 254 * 65536 (8,076): origin and scale map the child's
+  bounds onto a 24-bit-like integer grid.
+verified: ["clutter/barrel01.nif#4"]
+fields:
+  - { name: material, type: u32, doc: "0 in 8,336 blocks; otherwise a value that also occurs as a primitive shape's material." }
+  - { name: unknown8, type: u32 }
+  - { name: unknown12, type: u32 }
+  - { name: unknown16, type: f32, doc: Always 1.0. }
+  - { name: dataSize, type: u32 }
+  - { name: origin, type: Vec3 }
+  - { name: scale, type: f32 }
+  - { name: unknown40, type: u8, doc: "1 in 8,279 blocks; 0xCD (an uninitialized-memory fill) in 78." }
+  - { name: moppData, type: bytes, size: dataSize, doc: "The tree's byte code, not decoded." }

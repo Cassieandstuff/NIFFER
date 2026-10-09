@@ -1,0 +1,10 @@
+block: NiPSysModifier
+inherits: NiObject
+abstract: true
+doc: >-
+  The particle modifier and emitter base. Confirmed against ashpileghost block 153.
+fields:
+  - { name: name, type: stringref }
+  - { name: order, type: u32 }
+  - { name: target, type: ptr, to: [NiParticleSystem, BSStripParticleSystem, NiMeshParticleSystem] }
+  - { name: active, type: u8 }

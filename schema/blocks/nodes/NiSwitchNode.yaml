@@ -1,0 +1,5 @@
+block: NiSwitchNode
+inherits: NiNode
+fields:
+  - { name: switchFlags, type: u16 }
+  - { name: index, type: u32 }

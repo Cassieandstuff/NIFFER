@@ -71,6 +71,7 @@ ctest --test-dir build -C RelWithDebInfo
 
 ```
 niffer-tool roundtrip     <dir>         # every SSE .nif under <dir> must re-emit byte-identically
+niffer-tool roundtrip --schema [--refs] <dir>   # the schema path's gate (see "The schema")
 niffer-tool tri-roundtrip <dir>         # same for .tri
 niffer-tool histogram     <dir>         # block-type census
 niffer-tool dump          <file.nif> [blockIdx]
@@ -78,8 +79,56 @@ niffer-tool decode        <file.nif>
 niffer-tool collision     <file.nif>
 ```
 
-A change to any block layout must keep `roundtrip` and `tri-roundtrip` green over the full
-vanilla corpus.
+A change to any block layout must keep `roundtrip`, `roundtrip --schema` and `tri-roundtrip`
+green over the full vanilla corpus.
+
+## The schema
+
+Block layouts are described once, as YAML, in [`schema/`](schema): one file per block class,
+with inheritance, block references and their allowed targets, conditions and length fields. The
+descriptor language is specified in [docs/schema-language.md](docs/schema-language.md), and the
+design is in [docs/schema-design.md](docs/schema-design.md). `tools/schemagen` compiles the
+schema into:
+
+- [`schema.json`](schema.json): the whole schema, resolved into one file, for tools in any
+  language;
+- `include/niffer/generated/`: typed handles (`niffer::fields`) and typed views (`niffer::view`);
+- `hpp/generated/Tables.h`: the tables the engine interprets.
+
+All of these are committed, so consumers never need Python. One generic engine,
+`niffer::Nif` / `niffer::Block`, interprets the tables for every block class:
+
+```cpp
+auto nif = niffer::Nif::LoadFile("meshes/clutter/barrel01.nif");
+for (niffer::Block& b : nif->blocks)
+    if (auto shape = niffer::view::BSTriShape::From(b)) {
+        auto shader = nif->Get(shape->ShaderProperty());   // a typed ref -> a view
+        shape->SetBoundRadius(2.f);                        // marks only this block dirty
+    }
+std::vector<uint8_t> bytes = nif->Save();   // unmodified blocks are written verbatim
+```
+
+To change the schema, you need Python 3 and PyYAML:
+
+```
+# edit schema/..., then:
+cmake --build build --target niffer-schemagen            # regenerate (commit the result)
+ctest --test-dir build -C RelWithDebInfo                 # includes the freshness + validation checks
+niffer-tool roundtrip --schema <extracted meshes>        # the real-data gate (NIFFER_BUILD_TOOLS=ON)
+```
+
+The schema gate does more than check bytes. Every block reference is checked against its
+declared target classes, the owning-reference graph must be acyclic, and every string-table
+index must be in range. The byte round-trip alone can't catch a mislabeled field; these checks
+can.
+
+## Status
+
+NIFFER is moving from hand-written typed structs (`NifFile` and the block structs in `Niffer.h`)
+to the schema-driven engine. Both ship side by side until the migration completes. Today the
+schema models every SSE block class the typed path does, with the same raw tails (vertex data,
+material scalars, Havok payloads), and corrects a few typed-path labels the new checks found
+([docs/bugs.md](docs/bugs.md)). The public API will change while the rest lands.
 
 ## Provenance
 

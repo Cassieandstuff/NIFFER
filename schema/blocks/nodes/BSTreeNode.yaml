@@ -1,0 +1,5 @@
+block: BSTreeNode
+inherits: NiNode
+fields:
+  - { name: bones1, type: "ref[count: u32]", to: [NiNode] }
+  - { name: bones2, type: "ref[count: u32]", to: [NiNode] }

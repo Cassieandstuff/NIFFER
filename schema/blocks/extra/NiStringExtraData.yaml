@@ -1,0 +1,4 @@
+block: NiStringExtraData
+inherits: NiExtraData
+fields:
+  - { name: stringData, type: stringref }

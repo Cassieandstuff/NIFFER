@@ -1,0 +1,4 @@
+block: NiBooleanExtraData
+inherits: NiExtraData
+fields:
+  - { name: booleanData, type: u8 }

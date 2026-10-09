@@ -1,0 +1,6 @@
+struct: Matrix33
+size: 36
+doc: >-
+  A 3x3 rotation matrix.
+fields:
+  - { name: m, type: "f32[9]", doc: The nine floats in disk order. }

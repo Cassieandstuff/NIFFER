@@ -1,0 +1,6 @@
+block: BSLODTriShape
+inherits: NiAVObject
+doc: >-
+  Legacy geometry, typed structurally: the NiAVObject fields are decoded and the rest is kept raw.
+fields:
+  - { name: tail, type: bytes, doc: Not yet decoded. }

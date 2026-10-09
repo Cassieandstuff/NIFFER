@@ -1,0 +1,4 @@
+block: bhkSimpleShapePhantom
+inherits: NiObject
+fields:
+  - { name: data, type: bytes, doc: Not yet decoded. }

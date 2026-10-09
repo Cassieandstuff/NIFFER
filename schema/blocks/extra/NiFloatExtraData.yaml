@@ -1,0 +1,4 @@
+block: NiFloatExtraData
+inherits: NiExtraData
+fields:
+  - { name: floatData, type: f32 }

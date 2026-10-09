@@ -1,0 +1,9368 @@
+{
+ "schemaVersion": "0.1.0",
+ "languageVersion": "0.1",
+ "structs": [
+  {
+   "name": "AvTransform",
+   "fields": [
+    {
+     "name": "translation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "name": "rotation",
+     "type": {
+      "kind": "struct",
+      "name": "Matrix33",
+      "fields": [
+       {
+        "name": "m",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 9
+        },
+        "doc": "The nine floats in disk order."
+       }
+      ]
+     }
+    },
+    {
+     "name": "scale",
+     "type": {
+      "kind": "f32"
+     }
+    }
+   ]
+  },
+  {
+   "name": "KeyGroup",
+   "fields": [
+    {
+     "name": "numKeys",
+     "type": {
+      "kind": "u32"
+     }
+    },
+    {
+     "name": "interpolation",
+     "type": {
+      "kind": "u32"
+     },
+     "if": {
+      "field": "numKeys",
+      "min": 1
+     },
+     "doc": "The key type; present only when there are keys."
+    },
+    {
+     "name": "keys",
+     "type": {
+      "kind": "bytes"
+     },
+     "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+    }
+   ]
+  },
+  {
+   "name": "Matrix33",
+   "fields": [
+    {
+     "name": "m",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "count": 9
+     },
+     "doc": "The nine floats in disk order."
+    }
+   ]
+  },
+  {
+   "name": "NiTransform",
+   "fields": [
+    {
+     "name": "rotation",
+     "type": {
+      "kind": "struct",
+      "name": "Matrix33",
+      "fields": [
+       {
+        "name": "m",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 9
+        },
+        "doc": "The nine floats in disk order."
+       }
+      ]
+     }
+    },
+    {
+     "name": "translation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "name": "scale",
+     "type": {
+      "kind": "f32"
+     }
+    }
+   ]
+  },
+  {
+   "name": "Quat",
+   "fields": [
+    {
+     "name": "w",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "x",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "y",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "z",
+     "type": {
+      "kind": "f32"
+     }
+    }
+   ]
+  },
+  {
+   "name": "Vec2",
+   "fields": [
+    {
+     "name": "x",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "y",
+     "type": {
+      "kind": "f32"
+     }
+    }
+   ]
+  },
+  {
+   "name": "Vec3",
+   "fields": [
+    {
+     "name": "x",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "y",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "z",
+     "type": {
+      "kind": "f32"
+     }
+    }
+   ]
+  },
+  {
+   "name": "Vec4",
+   "fields": [
+    {
+     "name": "x",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "y",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "z",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "w",
+     "type": {
+      "kind": "f32"
+     }
+    }
+   ]
+  }
+ ],
+ "blocks": [
+  {
+   "name": "BSBehaviorGraphExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "behaviorGraphFile",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "BSBehaviorGraphExtraData"
+    },
+    {
+     "name": "controlsBaseSkeleton",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSBehaviorGraphExtraData"
+    }
+   ],
+   "doc": "The root node's behavior graph path."
+  },
+  {
+   "name": "BSBlastNode",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSBlastNode",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSBoneLODExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "boneLODs",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "BSBoneLODExtraDataBoneLODs",
+       "fields": [
+        {
+         "name": "distance",
+         "type": {
+          "kind": "u32"
+         }
+        },
+        {
+         "name": "boneName",
+         "type": {
+          "kind": "stringref"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "BSBoneLODExtraData"
+    }
+   ],
+   "doc": "Per-bone LOD distances."
+  },
+  {
+   "name": "BSBound",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "center",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSBound"
+    },
+    {
+     "name": "dimensions",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSBound"
+    }
+   ],
+   "doc": "An axis-aligned bound."
+  },
+  {
+   "name": "BSDamageStage",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSDamageStage",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSDecalPlacementVectorExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSDecalPlacementVectorExtraData",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Extra data: referenced from NiObjectNET.extraData across the SSE corpus, and its first u32 is always a valid string-table index."
+  },
+  {
+   "name": "BSDismemberSkinInstance",
+   "parent": "NiSkinInstance",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiSkinData"
+      ]
+     },
+     "declaredBy": "NiSkinInstance"
+    },
+    {
+     "name": "skinPartition",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiSkinPartition"
+      ]
+     },
+     "declaredBy": "NiSkinInstance"
+    },
+    {
+     "name": "skeletonRoot",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiSkinInstance"
+    },
+    {
+     "name": "bones",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "NiNode"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiSkinInstance"
+    },
+    {
+     "name": "partitions",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "BSDismemberSkinInstancePartitions",
+       "fields": [
+        {
+         "name": "partFlag",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "bodyPart",
+         "type": {
+          "kind": "u16"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "BSDismemberSkinInstance"
+    }
+   ],
+   "doc": "NiSkinInstance plus dismemberment body-part partitions."
+  },
+  {
+   "name": "BSDynamicTriShape",
+   "parent": "BSTriShape",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "boundCenter",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "skin",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiSkinInstance"
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "shaderProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSEffectShaderProperty",
+       "BSLightingShaderProperty",
+       "BSSkyShaderProperty",
+       "BSWaterShaderProperty"
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "alphaProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiAlphaProperty"
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "vertexDesc",
+     "type": {
+      "kind": "u64"
+     },
+     "declaredBy": "BSTriShape",
+     "doc": "The BSVertexDesc bitfield: the per-vertex layout."
+    },
+    {
+     "name": "numTriangles",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "numVertices",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "dataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "geometryData",
+     "type": {
+      "kind": "bytes",
+      "sizeField": "dataSize"
+     },
+     "declaredBy": "BSTriShape",
+     "doc": "Interleaved vertex data then triangles, raw until vertex unions land."
+    },
+    {
+     "name": "particleDataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "particleData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countField": "particleDataSize"
+     },
+     "declaredBy": "BSTriShape",
+     "doc": "Present only on particle/FX shapes."
+    },
+    {
+     "name": "dynamicDataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSDynamicTriShape",
+     "doc": "Bytes; numVertices * 16."
+    },
+    {
+     "name": "dynamicData",
+     "type": {
+      "kind": "bytes",
+      "sizeField": "dynamicDataSize"
+     },
+     "declaredBy": "BSDynamicTriShape",
+     "doc": "A Vector4 per vertex, raw."
+    }
+   ],
+   "verified": [
+    "actors/character/character assets/childhead.nif#3"
+   ],
+   "doc": "CPU-writable geometry (compiled NPC facegen heads). Confirmed against actors/character/character assets/childhead.nif block 3."
+  },
+  {
+   "name": "BSEffectShaderProperty",
+   "parent": "NiObjectNET",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSEffectShaderProperty",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiObjectNET fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSEffectShaderPropertyColorController",
+   "parent": "NiSingleInterpController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "targetVariable",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSEffectShaderPropertyColorController"
+    }
+   ]
+  },
+  {
+   "name": "BSEffectShaderPropertyFloatController",
+   "parent": "NiSingleInterpController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "targetVariable",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSEffectShaderPropertyFloatController"
+    }
+   ]
+  },
+  {
+   "name": "BSFadeNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    }
+   ],
+   "verified": [
+    "clutter/barrel01.nif#0"
+   ],
+   "doc": "Same layout as NiNode."
+  },
+  {
+   "name": "BSFrustumFOVController",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSFrustumFOVController",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSFurnitureMarkerNode",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSFurnitureMarkerNode",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Extra data: referenced from NiObjectNET.extraData across the SSE corpus, and its first u32 is always a valid string-table index."
+  },
+  {
+   "name": "BSInvMarker",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "rotationX",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "BSInvMarker"
+    },
+    {
+     "name": "rotationY",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "BSInvMarker"
+    },
+    {
+     "name": "rotationZ",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "BSInvMarker"
+    },
+    {
+     "name": "zoom",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSInvMarker"
+    }
+   ],
+   "doc": "The inventory display transform."
+  },
+  {
+   "name": "BSLODTriShape",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSLODTriShape",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Legacy geometry, typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSLagBoneController",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSLagBoneController",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSLeafAnimNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    }
+   ],
+   "doc": "Same layout as NiNode."
+  },
+  {
+   "name": "BSLightingShaderProperty",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "shaderType",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSLightingShaderProperty",
+     "doc": "Selects the material tail's layout."
+    },
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "shaderFlags1",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "shaderFlags2",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "uvOffset",
+     "type": {
+      "kind": "struct",
+      "name": "Vec2",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "uvScale",
+     "type": {
+      "kind": "struct",
+      "name": "Vec2",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "textureSet",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSShaderTextureSet"
+      ]
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "materialTail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSLightingShaderProperty",
+     "doc": "The shader-type-dependent material scalars, raw until unions land."
+    }
+   ],
+   "verified": [
+    "clutter/barrel01.nif#8"
+   ],
+   "doc": "The main lighting material. Confirmed against clutter/barrel01.nif block 8. The leading u32 is the shader type: across the SSE corpus it takes 10 values (0-6, 11, 14, 16) and the block size is a function of it alone. The NiObjectNET fields (name, extra data, controller) follow it, so this class can't inherit NiObjectNET's layout."
+  },
+  {
+   "name": "BSLightingShaderPropertyColorController",
+   "parent": "NiSingleInterpController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "targetVariable",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSLightingShaderPropertyColorController"
+    }
+   ]
+  },
+  {
+   "name": "BSLightingShaderPropertyFloatController",
+   "parent": "NiSingleInterpController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "targetVariable",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSLightingShaderPropertyFloatController"
+    }
+   ]
+  },
+  {
+   "name": "BSMasterParticleSystem",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSMasterParticleSystem",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSMultiBound",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSMultiBound",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSMultiBoundAABB",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSMultiBoundAABB",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSMultiBoundNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "multiBound",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSMultiBound"
+      ]
+     },
+     "declaredBy": "BSMultiBoundNode"
+    },
+    {
+     "name": "cullingMode",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSMultiBoundNode"
+    }
+   ]
+  },
+  {
+   "name": "BSMultiBoundOBB",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSMultiBoundOBB",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSNiAlphaPropertyTestRefController",
+   "parent": "NiSingleInterpController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    }
+   ]
+  },
+  {
+   "name": "BSOrderedNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "alphaSortBound",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSOrderedNode"
+    },
+    {
+     "name": "staticBound",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSOrderedNode"
+    }
+   ]
+  },
+  {
+   "name": "BSPSysHavokUpdateModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysHavokUpdateModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSPSysInheritVelocityModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysInheritVelocityModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSPSysLODModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysLODModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSPSysMultiTargetEmitterCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysMultiTargetEmitterCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSPSysRecycleBoundModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysRecycleBoundModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSPSysScaleModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysScaleModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSPSysSimpleColorModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysSimpleColorModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSPSysStripUpdateModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysStripUpdateModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSPSysSubTexModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSPSysSubTexModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSProceduralLightningController",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSProceduralLightningController",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSShaderTextureSet",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "textures",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "sizedstring"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "BSShaderTextureSet"
+    }
+   ],
+   "verified": [
+    "clutter/barrel01.nif#9"
+   ],
+   "doc": "The texture-path list. Confirmed against clutter/barrel01.nif block 9 (9 slots, 2 named, 7 empty)."
+  },
+  {
+   "name": "BSSkyShaderProperty",
+   "parent": "NiObjectNET",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSSkyShaderProperty",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiObjectNET fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSStripPSysData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSStripPSysData",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSStripParticleSystem",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSStripParticleSystem",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSTreeNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "bones1",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiNode"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "BSTreeNode"
+    },
+    {
+     "name": "bones2",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiNode"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "BSTreeNode"
+    }
+   ]
+  },
+  {
+   "name": "BSTriShape",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "boundCenter",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "skin",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiSkinInstance"
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "shaderProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSEffectShaderProperty",
+       "BSLightingShaderProperty",
+       "BSSkyShaderProperty",
+       "BSWaterShaderProperty"
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "alphaProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiAlphaProperty"
+      ]
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "vertexDesc",
+     "type": {
+      "kind": "u64"
+     },
+     "declaredBy": "BSTriShape",
+     "doc": "The BSVertexDesc bitfield: the per-vertex layout."
+    },
+    {
+     "name": "numTriangles",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "numVertices",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "dataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "geometryData",
+     "type": {
+      "kind": "bytes",
+      "sizeField": "dataSize"
+     },
+     "declaredBy": "BSTriShape",
+     "doc": "Interleaved vertex data then triangles, raw until vertex unions land."
+    },
+    {
+     "name": "particleDataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSTriShape"
+    },
+    {
+     "name": "particleData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countField": "particleDataSize"
+     },
+     "declaredBy": "BSTriShape",
+     "doc": "Present only on particle/FX shapes."
+    }
+   ],
+   "verified": [
+    "clutter/barrel01.nif#7"
+   ],
+   "doc": "Confirmed against clutter/barrel01.nif block 7."
+  },
+  {
+   "name": "BSValueNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "value",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSValueNode"
+    },
+    {
+     "name": "valueNodeFlags",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSValueNode"
+    }
+   ]
+  },
+  {
+   "name": "BSWaterShaderProperty",
+   "parent": "NiObjectNET",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSWaterShaderProperty",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiObjectNET fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "BSWindModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "BSWindModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "BSXFlags",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "integerData",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSXFlags"
+    }
+   ],
+   "doc": "Bit flags on the root node (havok, animation, \u2026)."
+  },
+  {
+   "name": "NiAVObject",
+   "parent": "NiObjectNET",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    }
+   ],
+   "doc": "A scene object with a local transform and an optional collision object."
+  },
+  {
+   "name": "NiAlphaProperty",
+   "parent": "NiObjectNET",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiAlphaProperty"
+    },
+    {
+     "name": "threshold",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiAlphaProperty"
+    }
+   ],
+   "doc": "Blend and test state. Confirmed against akatoshamuletf block 10 (15 bytes)."
+  },
+  {
+   "name": "NiBSBoneLODController",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiBSBoneLODController",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiBillboardNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "billboardMode",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiBillboardNode"
+    }
+   ]
+  },
+  {
+   "name": "NiBinaryExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "dataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiBinaryExtraData"
+    },
+    {
+     "name": "binaryData",
+     "type": {
+      "kind": "bytes",
+      "sizeField": "dataSize"
+     },
+     "declaredBy": "NiBinaryExtraData"
+    }
+   ]
+  },
+  {
+   "name": "NiBlendBoolInterpolator",
+   "parent": "NiBlendInterpolator",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "arraySize",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "weightThreshold",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "value",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendBoolInterpolator"
+    }
+   ]
+  },
+  {
+   "name": "NiBlendFloatInterpolator",
+   "parent": "NiBlendInterpolator",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "arraySize",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "weightThreshold",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "value",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiBlendFloatInterpolator"
+    }
+   ]
+  },
+  {
+   "name": "NiBlendInterpolator",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "arraySize",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "weightThreshold",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    }
+   ],
+   "doc": "Manager-controlled blend state. Confirmed against hotiron and eyeofmagnus (the managed form, with no stored interpolator arrays)."
+  },
+  {
+   "name": "NiBlendPoint3Interpolator",
+   "parent": "NiBlendInterpolator",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "arraySize",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "weightThreshold",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiBlendInterpolator"
+    },
+    {
+     "name": "value",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiBlendPoint3Interpolator"
+    }
+   ]
+  },
+  {
+   "name": "NiBoolData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "keys",
+     "type": {
+      "kind": "struct",
+      "name": "KeyGroup",
+      "fields": [
+       {
+        "name": "numKeys",
+        "type": {
+         "kind": "u32"
+        }
+       },
+       {
+        "name": "interpolation",
+        "type": {
+         "kind": "u32"
+        },
+        "if": {
+         "field": "numKeys",
+         "min": 1
+        },
+        "doc": "The key type; present only when there are keys."
+       },
+       {
+        "name": "keys",
+        "type": {
+         "kind": "bytes"
+        },
+        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+       }
+      ]
+     },
+     "declaredBy": "NiBoolData"
+    }
+   ]
+  },
+  {
+   "name": "NiBoolInterpolator",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "value",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBoolInterpolator"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBoolData"
+      ]
+     },
+     "declaredBy": "NiBoolInterpolator"
+    }
+   ]
+  },
+  {
+   "name": "NiBoolTimelineInterpolator",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "value",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBoolTimelineInterpolator"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBoolData"
+      ]
+     },
+     "declaredBy": "NiBoolTimelineInterpolator"
+    }
+   ],
+   "doc": "The same layout as NiBoolInterpolator."
+  },
+  {
+   "name": "NiBooleanExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "booleanData",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiBooleanExtraData"
+    }
+   ]
+  },
+  {
+   "name": "NiCamera",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiCamera",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiColorData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "keys",
+     "type": {
+      "kind": "struct",
+      "name": "KeyGroup",
+      "fields": [
+       {
+        "name": "numKeys",
+        "type": {
+         "kind": "u32"
+        }
+       },
+       {
+        "name": "interpolation",
+        "type": {
+         "kind": "u32"
+        },
+        "if": {
+         "field": "numKeys",
+         "min": 1
+        },
+        "doc": "The key type; present only when there are keys."
+       },
+       {
+        "name": "keys",
+        "type": {
+         "kind": "bytes"
+        },
+        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+       }
+      ]
+     },
+     "declaredBy": "NiColorData"
+    }
+   ]
+  },
+  {
+   "name": "NiControllerManager",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "cumulative",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiControllerManager"
+    },
+    {
+     "name": "controllerSequences",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiControllerSequence"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiControllerManager"
+    },
+    {
+     "name": "objectPalette",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiDefaultAVObjectPalette"
+      ]
+     },
+     "declaredBy": "NiControllerManager"
+    }
+   ],
+   "doc": "Confirmed against shacklewall block 4 (47 bytes)."
+  },
+  {
+   "name": "NiControllerSequence",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiControllerSequence"
+    },
+    {
+     "name": "numControlledBlocks",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiControllerSequence"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiControllerSequence",
+     "doc": "The controlled blocks and sequence parameters, raw."
+    }
+   ]
+  },
+  {
+   "name": "NiDefaultAVObjectPalette",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiDefaultAVObjectPalette",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiExtraData",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    }
+   ],
+   "doc": "The extra-data family's base: a name in the header string table."
+  },
+  {
+   "name": "NiFloatData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "keys",
+     "type": {
+      "kind": "struct",
+      "name": "KeyGroup",
+      "fields": [
+       {
+        "name": "numKeys",
+        "type": {
+         "kind": "u32"
+        }
+       },
+       {
+        "name": "interpolation",
+        "type": {
+         "kind": "u32"
+        },
+        "if": {
+         "field": "numKeys",
+         "min": 1
+        },
+        "doc": "The key type; present only when there are keys."
+       },
+       {
+        "name": "keys",
+        "type": {
+         "kind": "bytes"
+        },
+        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+       }
+      ]
+     },
+     "declaredBy": "NiFloatData"
+    }
+   ]
+  },
+  {
+   "name": "NiFloatExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "floatData",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiFloatExtraData"
+    }
+   ]
+  },
+  {
+   "name": "NiFloatExtraDataController",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiFloatExtraDataController",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiFloatInterpolator",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "value",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiFloatInterpolator"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiFloatData"
+      ]
+     },
+     "declaredBy": "NiFloatInterpolator"
+    }
+   ]
+  },
+  {
+   "name": "NiIntegerExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "integerData",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiIntegerExtraData"
+    }
+   ]
+  },
+  {
+   "name": "NiLookAtInterpolator",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiLookAtInterpolator",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiMeshPSysData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiMeshPSysData",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiMeshParticleSystem",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiMeshParticleSystem",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiMultiTargetTransformController",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "extraTargets",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "NiNode"
+       ]
+      },
+      "countPrefix": "u16"
+     },
+     "declaredBy": "NiMultiTargetTransformController"
+    }
+   ]
+  },
+  {
+   "name": "NiNode",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    }
+   ],
+   "verified": [
+    "clutter/barrel01.nif#0"
+   ],
+   "doc": "A grouping node. NiObjectNET, NiAVObject and NiNode were confirmed byte for byte against clutter/barrel01.nif's 88-byte BSFadeNode (block 0)."
+  },
+  {
+   "name": "NiObject",
+   "parent": null,
+   "abstract": true,
+   "layout": [],
+   "doc": "The root of every block class. It has no fields."
+  },
+  {
+   "name": "NiObjectNET",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    }
+   ],
+   "doc": "A named object that can carry extra data and a controller."
+  },
+  {
+   "name": "NiPSysAgeDeathModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysAgeDeathModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysBombModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysBombModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysBoundUpdateModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysBoundUpdateModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysBoxEmitter",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysBoxEmitter",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysColliderManager",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysColliderManager",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysCylinderEmitter",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysCylinderEmitter",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysDragModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysDragModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysEmitterCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysEmitterCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysEmitterDeclinationCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysEmitterDeclinationCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysEmitterInitialRadiusCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysEmitterInitialRadiusCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysEmitterLifeSpanCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysEmitterLifeSpanCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysEmitterPlanarAngleCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysEmitterPlanarAngleCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysEmitterSpeedCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysEmitterSpeedCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysGravityModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysGravityModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysGravityStrengthCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysGravityStrengthCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysInitialRotSpeedCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysInitialRotSpeedCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysMeshEmitter",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysMeshEmitter",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysModifier",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    }
+   ],
+   "doc": "The particle modifier and emitter base. Confirmed against ashpileghost block 153."
+  },
+  {
+   "name": "NiPSysModifierActiveCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysModifierActiveCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPSysPlanarCollider",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysPlanarCollider",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysPositionModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysPositionModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysRotationModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysRotationModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysSpawnModifier",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysSpawnModifier",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysSphereEmitter",
+   "parent": "NiPSysModifier",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "order",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSStripParticleSystem",
+       "NiMeshParticleSystem",
+       "NiParticleSystem"
+      ]
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "active",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysModifier"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysSphereEmitter",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysSphericalCollider",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysSphericalCollider",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPSysUpdateCtlr",
+   "parent": "NiTimeController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPSysUpdateCtlr",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiParticleSystem",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiPathInterpolator",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiPathInterpolator",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiPoint3Interpolator",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "value",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiPoint3Interpolator"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiPosData"
+      ]
+     },
+     "declaredBy": "NiPoint3Interpolator"
+    }
+   ]
+  },
+  {
+   "name": "NiPosData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "keys",
+     "type": {
+      "kind": "struct",
+      "name": "KeyGroup",
+      "fields": [
+       {
+        "name": "numKeys",
+        "type": {
+         "kind": "u32"
+        }
+       },
+       {
+        "name": "interpolation",
+        "type": {
+         "kind": "u32"
+        },
+        "if": {
+         "field": "numKeys",
+         "min": 1
+        },
+        "doc": "The key type; present only when there are keys."
+       },
+       {
+        "name": "keys",
+        "type": {
+         "kind": "bytes"
+        },
+        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+       }
+      ]
+     },
+     "declaredBy": "NiPosData"
+    }
+   ]
+  },
+  {
+   "name": "NiSingleInterpController",
+   "parent": "NiTimeController",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    }
+   ]
+  },
+  {
+   "name": "NiSkinData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "skinTransform",
+     "type": {
+      "kind": "struct",
+      "name": "NiTransform",
+      "fields": [
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiSkinData"
+    },
+    {
+     "name": "numBones",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiSkinData"
+    },
+    {
+     "name": "hasVertexWeights",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiSkinData"
+    },
+    {
+     "name": "bones",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "NiSkinDataBones",
+       "fields": [
+        {
+         "name": "transform",
+         "type": {
+          "kind": "struct",
+          "name": "NiTransform",
+          "fields": [
+           {
+            "name": "rotation",
+            "type": {
+             "kind": "struct",
+             "name": "Matrix33",
+             "fields": [
+              {
+               "name": "m",
+               "type": {
+                "kind": "array",
+                "element": {
+                 "kind": "f32"
+                },
+                "count": 9
+               },
+               "doc": "The nine floats in disk order."
+              }
+             ]
+            }
+           },
+           {
+            "name": "translation",
+            "type": {
+             "kind": "struct",
+             "name": "Vec3",
+             "fields": [
+              {
+               "name": "x",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "y",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "z",
+               "type": {
+                "kind": "f32"
+               }
+              }
+             ]
+            }
+           },
+           {
+            "name": "scale",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "doc": "Skin to bone (the inverse bind)."
+        },
+        {
+         "name": "boundingOffset",
+         "type": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         }
+        },
+        {
+         "name": "boundingRadius",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "numVertices",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "vertexWeights",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "struct",
+           "name": "NiSkinDataBonesVertexWeights",
+           "fields": [
+            {
+             "name": "index",
+             "type": {
+              "kind": "u16"
+             }
+            },
+            {
+             "name": "weight",
+             "type": {
+              "kind": "f32"
+             }
+            }
+           ]
+          },
+          "countField": "numVertices"
+         },
+         "if": {
+          "field": "hasVertexWeights",
+          "ne": 0
+         }
+        }
+       ]
+      },
+      "countField": "numBones"
+     },
+     "declaredBy": "NiSkinData"
+    }
+   ],
+   "verified": [
+    "actors/character/character assets/childhead.nif#5"
+   ],
+   "doc": "Per-bone inverse-bind transforms and vertex weights. Confirmed against actors/character/character assets/childhead.nif block 5."
+  },
+  {
+   "name": "NiSkinInstance",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiSkinData"
+      ]
+     },
+     "declaredBy": "NiSkinInstance"
+    },
+    {
+     "name": "skinPartition",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiSkinPartition"
+      ]
+     },
+     "declaredBy": "NiSkinInstance"
+    },
+    {
+     "name": "skeletonRoot",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiSkinInstance"
+    },
+    {
+     "name": "bones",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "NiNode"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiSkinInstance"
+    }
+   ],
+   "verified": [
+    "actors/character/character assets/childhead.nif#4"
+   ],
+   "doc": "Binds a shape to its skin data, partition and bones. Confirmed against actors/character/character assets/childhead.nif block 4."
+  },
+  {
+   "name": "NiSkinPartition",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "numPartitions",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiSkinPartition"
+    },
+    {
+     "name": "dataSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiSkinPartition",
+     "doc": "Bytes of vertexData: numVertices * vertexSize."
+    },
+    {
+     "name": "vertexSize",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiSkinPartition"
+    },
+    {
+     "name": "vertexDesc",
+     "type": {
+      "kind": "u64"
+     },
+     "declaredBy": "NiSkinPartition",
+     "doc": "BSVertexDesc, the same layout as BSTriShape's."
+    },
+    {
+     "name": "vertexData",
+     "type": {
+      "kind": "bytes",
+      "sizeField": "dataSize"
+     },
+     "declaredBy": "NiSkinPartition"
+    },
+    {
+     "name": "partitionData",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiSkinPartition",
+     "doc": "The per-partition tables, raw until decoded."
+    }
+   ],
+   "doc": "The SSE variant: where a skinned shape's vertices live when its BSTriShape dataSize is 0. Header confirmed against goldringdiamond block 5."
+  },
+  {
+   "name": "NiStringExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "stringData",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiStringExtraData"
+    }
+   ]
+  },
+  {
+   "name": "NiStringsExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "sizedstring"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiStringsExtraData"
+    }
+   ]
+  },
+  {
+   "name": "NiSwitchNode",
+   "parent": "NiNode",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "children",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "switchFlags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiSwitchNode"
+    },
+    {
+     "name": "index",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiSwitchNode"
+    }
+   ]
+  },
+  {
+   "name": "NiTextKeyExtraData",
+   "parent": "NiExtraData",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiExtraData"
+    },
+    {
+     "name": "keys",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "NiTextKeyExtraDataKeys",
+       "fields": [
+        {
+         "name": "time",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "value",
+         "type": {
+          "kind": "stringref"
+         }
+        }
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiTextKeyExtraData"
+    }
+   ],
+   "doc": "Animation text keys: (time, string) pairs."
+  },
+  {
+   "name": "NiTimeController",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    }
+   ],
+   "doc": "The controller base. Confirmed against fxspiderweb block 29."
+  },
+  {
+   "name": "NiTransformController",
+   "parent": "NiSingleInterpController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    }
+   ]
+  },
+  {
+   "name": "NiTransformData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "numRotationKeys",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiTransformData"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiTransformData",
+     "doc": "The rotation, translation and scale key groups, raw."
+    }
+   ]
+  },
+  {
+   "name": "NiTransformInterpolator",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "translation",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiTransformInterpolator"
+    },
+    {
+     "name": "rotation",
+     "type": {
+      "kind": "struct",
+      "name": "Quat",
+      "fields": [
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiTransformInterpolator"
+    },
+    {
+     "name": "scale",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTransformInterpolator"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTransformData"
+      ]
+     },
+     "declaredBy": "NiTransformInterpolator"
+    }
+   ]
+  },
+  {
+   "name": "NiTriShape",
+   "parent": "NiAVObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "name",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "extraData",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiExtraData"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "controller",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiObjectNET"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "transform",
+     "type": {
+      "kind": "struct",
+      "name": "AvTransform",
+      "fields": [
+       {
+        "name": "translation",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "rotation",
+        "type": {
+         "kind": "struct",
+         "name": "Matrix33",
+         "fields": [
+          {
+           "name": "m",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "f32"
+            },
+            "count": 9
+           },
+           "doc": "The nine floats in disk order."
+          }
+         ]
+        }
+       },
+       {
+        "name": "scale",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "collisionObject",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBlendCollisionObject",
+       "bhkCollisionObject"
+      ]
+     },
+     "declaredBy": "NiAVObject"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiTriShape",
+     "doc": "Not yet decoded."
+    }
+   ],
+   "doc": "Legacy geometry, typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+  },
+  {
+   "name": "NiTriShapeData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiTriShapeData",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiTriStripsData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "NiTriStripsData",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "NiVisController",
+   "parent": "NiSingleInterpController",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "nextController",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTimeController"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "frequency",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "phase",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "BSLightingShaderProperty",
+       "NiObjectNET"
+      ]
+     },
+     "declaredBy": "NiTimeController"
+    },
+    {
+     "name": "interpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    }
+   ]
+  },
+  {
+   "name": "bhkBallAndSocketConstraint",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkBallAndSocketConstraint",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkBallSocketConstraintChain",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkBallSocketConstraintChain",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkBlendCollisionObject",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkBlendCollisionObject",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkBoxShape",
+   "parent": "bhkPrimitiveShape",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "Dimensions, vertices or parameters, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkBreakableConstraint",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkBreakableConstraint",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkCapsuleShape",
+   "parent": "bhkPrimitiveShape",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "Dimensions, vertices or parameters, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkCollisionObject",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "bhkCollisionObject"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "bhkCollisionObject"
+    },
+    {
+     "name": "body",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkRigidBody",
+       "bhkRigidBodyT",
+       "bhkSimpleShapePhantom"
+      ]
+     },
+     "declaredBy": "bhkCollisionObject"
+    }
+   ],
+   "verified": [
+    "clutter/barrel01.nif#6"
+   ],
+   "doc": "Confirmed against clutter/barrel01.nif block 6 (10 bytes)."
+  },
+  {
+   "name": "bhkCompressedMeshShape",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "bhkCompressedMeshShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkCompressedMeshShape",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ],
+   "doc": "The first field is a pointer back to the scene node (CollisionExtract reads it as the shape's target), not a child shape. Across the SSE corpus it is always 0, the root node, so the data alone can't distinguish it from a constant 0; it is modeled as a ptr to keep the ref graph acyclic."
+  },
+  {
+   "name": "bhkCompressedMeshShapeData",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkCompressedMeshShapeData",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkConvexTransformShape",
+   "parent": "bhkShapeWrapper",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "shape",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBoxShape",
+       "bhkCapsuleShape",
+       "bhkCompressedMeshShape",
+       "bhkConvexTransformShape",
+       "bhkConvexVerticesShape",
+       "bhkCylinderShape",
+       "bhkListShape",
+       "bhkMoppBvTreeShape",
+       "bhkNiTriStripsShape",
+       "bhkPlaneShape",
+       "bhkSphereShape",
+       "bhkTransformShape"
+      ]
+     },
+     "declaredBy": "bhkShapeWrapper"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkShapeWrapper",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkConvexVerticesShape",
+   "parent": "bhkPrimitiveShape",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "Dimensions, vertices or parameters, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkCylinderShape",
+   "parent": "bhkPrimitiveShape",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "Dimensions, vertices or parameters, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkHingeConstraint",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkHingeConstraint",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkLimitedHingeConstraint",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkLimitedHingeConstraint",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkListShape",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "subShapes",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "bhkBoxShape",
+        "bhkCapsuleShape",
+        "bhkCompressedMeshShape",
+        "bhkConvexTransformShape",
+        "bhkConvexVerticesShape",
+        "bhkCylinderShape",
+        "bhkListShape",
+        "bhkMoppBvTreeShape",
+        "bhkNiTriStripsShape",
+        "bhkPlaneShape",
+        "bhkSphereShape",
+        "bhkTransformShape"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "bhkListShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkListShape",
+     "doc": "The material and filter tail, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkMoppBvTreeShape",
+   "parent": "bhkShapeWrapper",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "shape",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBoxShape",
+       "bhkCapsuleShape",
+       "bhkCompressedMeshShape",
+       "bhkConvexTransformShape",
+       "bhkConvexVerticesShape",
+       "bhkCylinderShape",
+       "bhkListShape",
+       "bhkMoppBvTreeShape",
+       "bhkNiTriStripsShape",
+       "bhkPlaneShape",
+       "bhkSphereShape",
+       "bhkTransformShape"
+      ]
+     },
+     "declaredBy": "bhkShapeWrapper"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkShapeWrapper",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkNiTriStripsShape",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkNiTriStripsShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkNiTriStripsShape",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ],
+   "doc": "The first u32 is not a block reference: across the SSE corpus it is 0 in 26 blocks and an unrelated value in one."
+  },
+  {
+   "name": "bhkPlaneShape",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkPlaneShape",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkPrimitiveShape",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "Dimensions, vertices or parameters, raw."
+    }
+   ],
+   "doc": "A structural grouping, not a game class: convex leaf shapes (Havok material and radius). Typed structurally: the links that keep the block graph walkable are decoded and the Havok payload is kept raw."
+  },
+  {
+   "name": "bhkRagdollConstraint",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkRagdollConstraint",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkRigidBody",
+   "parent": "bhkShapeWrapper",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "shape",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBoxShape",
+       "bhkCapsuleShape",
+       "bhkCompressedMeshShape",
+       "bhkConvexTransformShape",
+       "bhkConvexVerticesShape",
+       "bhkCylinderShape",
+       "bhkListShape",
+       "bhkMoppBvTreeShape",
+       "bhkNiTriStripsShape",
+       "bhkPlaneShape",
+       "bhkSphereShape",
+       "bhkTransformShape"
+      ]
+     },
+     "declaredBy": "bhkShapeWrapper"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkShapeWrapper",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkRigidBodyT",
+   "parent": "bhkShapeWrapper",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "shape",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBoxShape",
+       "bhkCapsuleShape",
+       "bhkCompressedMeshShape",
+       "bhkConvexTransformShape",
+       "bhkConvexVerticesShape",
+       "bhkCylinderShape",
+       "bhkListShape",
+       "bhkMoppBvTreeShape",
+       "bhkNiTriStripsShape",
+       "bhkPlaneShape",
+       "bhkSphereShape",
+       "bhkTransformShape"
+      ]
+     },
+     "declaredBy": "bhkShapeWrapper"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkShapeWrapper",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkSPCollisionObject",
+   "parent": "bhkCollisionObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "target",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "bhkCollisionObject"
+    },
+    {
+     "name": "flags",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "bhkCollisionObject"
+    },
+    {
+     "name": "body",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkRigidBody",
+       "bhkRigidBodyT",
+       "bhkSimpleShapePhantom"
+      ]
+     },
+     "declaredBy": "bhkCollisionObject"
+    }
+   ]
+  },
+  {
+   "name": "bhkShapeWrapper",
+   "parent": "NiObject",
+   "abstract": true,
+   "layout": [
+    {
+     "name": "shape",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBoxShape",
+       "bhkCapsuleShape",
+       "bhkCompressedMeshShape",
+       "bhkConvexTransformShape",
+       "bhkConvexVerticesShape",
+       "bhkCylinderShape",
+       "bhkListShape",
+       "bhkMoppBvTreeShape",
+       "bhkNiTriStripsShape",
+       "bhkPlaneShape",
+       "bhkSphereShape",
+       "bhkTransformShape"
+      ]
+     },
+     "declaredBy": "bhkShapeWrapper"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkShapeWrapper",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ],
+   "doc": "A structural grouping, not a game class: the blocks that start with a shape link. Typed structurally: the links that keep the block graph walkable are decoded and the Havok payload is kept raw."
+  },
+  {
+   "name": "bhkSimpleShapePhantom",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkSimpleShapePhantom",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkSphereShape",
+   "parent": "bhkPrimitiveShape",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "material",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "radius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "bhkPrimitiveShape"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkPrimitiveShape",
+     "doc": "Dimensions, vertices or parameters, raw."
+    }
+   ]
+  },
+  {
+   "name": "bhkStiffSpringConstraint",
+   "parent": "NiObject",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkStiffSpringConstraint",
+     "doc": "Not yet decoded."
+    }
+   ]
+  },
+  {
+   "name": "bhkTransformShape",
+   "parent": "bhkShapeWrapper",
+   "abstract": false,
+   "layout": [
+    {
+     "name": "shape",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "bhkBoxShape",
+       "bhkCapsuleShape",
+       "bhkCompressedMeshShape",
+       "bhkConvexTransformShape",
+       "bhkConvexVerticesShape",
+       "bhkCylinderShape",
+       "bhkListShape",
+       "bhkMoppBvTreeShape",
+       "bhkNiTriStripsShape",
+       "bhkPlaneShape",
+       "bhkSphereShape",
+       "bhkTransformShape"
+      ]
+     },
+     "declaredBy": "bhkShapeWrapper"
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "bytes"
+     },
+     "declaredBy": "bhkShapeWrapper",
+     "doc": "The remaining Havok fields, raw."
+    }
+   ]
+  }
+ ]
+}

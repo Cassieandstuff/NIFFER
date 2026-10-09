@@ -1,0 +1,5 @@
+block: BSOrderedNode
+inherits: NiNode
+fields:
+  - { name: alphaSortBound, type: Vec4 }
+  - { name: staticBound, type: u8 }

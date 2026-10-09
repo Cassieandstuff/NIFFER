@@ -22,19 +22,23 @@ bool NifRegistry::Has(std::string_view typeName) const {
 
 // Central registration. Explicit calls (not static-init) so no blocks/ TU can
 // be dropped by the static linker. Add each new area's registrar here.
+// Thread-safe: a function-local static initializer runs exactly once, and
+// concurrent first callers wait for it (a plain `done` flag set before the
+// registrars ran let a parallel Load see a half-filled registry).
 void EnsureBlocksRegistered() {
-    static bool done = false;
-    if (done) return;
-    done = true;
-    NifRegistry& reg = NifRegistry::Instance();
-    RegisterExtra(reg);
-    RegisterNodes(reg);
-    RegisterGeometry(reg);
-    RegisterShaders(reg);
-    RegisterSkin(reg);
-    RegisterAnim(reg);
-    RegisterCollision(reg);
-    RegisterParticles(reg);
+    static const bool registered = [] {
+        NifRegistry& reg = NifRegistry::Instance();
+        RegisterExtra(reg);
+        RegisterNodes(reg);
+        RegisterGeometry(reg);
+        RegisterShaders(reg);
+        RegisterSkin(reg);
+        RegisterAnim(reg);
+        RegisterCollision(reg);
+        RegisterParticles(reg);
+        return true;
+    }();
+    (void)registered;
 }
 
 }  // namespace niffer

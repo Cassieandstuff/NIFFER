@@ -1,0 +1,5 @@
+block: NiPoint3Interpolator
+inherits: NiObject
+fields:
+  - { name: value, type: Vec3 }
+  - { name: data, type: ref, to: [NiPosData] }

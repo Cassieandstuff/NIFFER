@@ -1,0 +1,2 @@
+block: bhkCylinderShape
+inherits: bhkPrimitiveShape

@@ -1,0 +1,10 @@
+block: NiTextKeyExtraData
+inherits: NiExtraData
+doc: >-
+  Animation text keys: (time, string) pairs.
+fields:
+  - name: keys
+    array: "count: u32"
+    fields:
+      - { name: time, type: f32 }
+      - { name: value, type: stringref }

@@ -1,0 +1,7 @@
+block: NiExtraData
+inherits: NiObject
+abstract: true
+doc: >-
+  The extra-data family's base: a name in the header string table.
+fields:
+  - { name: name, type: stringref }

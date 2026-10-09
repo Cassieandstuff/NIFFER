@@ -1,0 +1,4 @@
+block: BSLeafAnimNode
+inherits: NiNode
+doc: >-
+  Same layout as NiNode.

@@ -1,0 +1,8 @@
+struct: AvTransform
+size: 52
+doc: >-
+  NiAVObject's inline transform: translation, rotation, scale. The opposite order to the NiTransform compound; a byte round-trip can't tell the two apart, so they are kept distinct.
+fields:
+  - { name: translation, type: Vec3 }
+  - { name: rotation, type: Matrix33 }
+  - { name: scale, type: f32 }

@@ -1,0 +1,4 @@
+block: NiIntegerExtraData
+inherits: NiExtraData
+fields:
+  - { name: integerData, type: u32 }

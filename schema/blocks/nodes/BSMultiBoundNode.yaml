@@ -1,0 +1,5 @@
+block: BSMultiBoundNode
+inherits: NiNode
+fields:
+  - { name: multiBound, type: ref, to: [BSMultiBound] }
+  - { name: cullingMode, type: u32 }

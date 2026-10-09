@@ -1,0 +1,4 @@
+block: NiObject
+abstract: true
+doc: >-
+  The root of every block class. It has no fields.

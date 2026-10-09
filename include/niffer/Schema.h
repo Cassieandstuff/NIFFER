@@ -1,0 +1,397 @@
+#pragma once
+// ── Niffer schema engine — the schema-driven block model ─────────────────────
+// Behind the umbrella: consumers include <niffer/Niffer.h>, which pulls this in.
+// One generic engine interprets a SchemaSet (generated from schema/ by
+// tools/schemagen) for every block class; nothing here is per-block code. The
+// semantics are specified in docs/schema-language.md.
+//
+//   auto nif = niffer::Nif::LoadFile(path);                     // std::expected
+//   for (niffer::Block& b : nif->blocks)
+//       if (auto node = niffer::view::NiNode::From(b))
+//           for (auto child : node->Children()) use(nif->Get(child));
+//   nif->Save();                                                // verbatim unless modified
+//
+// Fidelity: every block keeps its original bytes. Encode emits them verbatim
+// unless the block was modified (or `force`, which the real-data gate uses to
+// prove every layout re-encodes byte-exactly). A block the schema can't
+// reproduce exactly — no descriptor, or decoding didn't consume exactly its
+// declared size — stays raw.
+
+#include <niffer/Niffer.h>
+
+#include <array>
+#include <bit>
+#include <cstdint>
+#include <expected>
+#include <functional>
+#include <optional>
+#include <span>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <vector>
+
+namespace niffer {
+
+// ── Compiled schema tables ────────────────────────────────────────────────────
+// Flat constexpr tables, linked by index, emitted by tools/schemagen:
+//   TypeDef   a value layout: scalar, ref, string, bytes, struct (→ FieldDef
+//             range) or array (→ element TypeDef). Ref/Ptr types carry their
+//             allowed targets (→ links range of BlockDef indices).
+//   FieldDef  one struct field, with its length source and condition, both
+//             as (structs up, field index) from the field's own struct.
+//   BlockDef  a block class: its parent and its flattened layout (a struct
+//             TypeDef: inherited fields first). Sorted by name.
+namespace schema {
+
+enum class Kind : uint8_t {
+    U8, U16, U32, U64, I8, I16, I32, I64, F32,
+    Ref,          // i32 block index, -1 = null; owning link
+    Ptr,          // i32 block index, -1 = null; non-owning link
+    StringRef,    // u32 header string-table index, 0xFFFFFFFF = empty
+    SizedString,  // u32 length + raw bytes
+    Bytes,        // opaque
+    Struct,
+    Array,
+};
+
+enum class LenKind : uint8_t {
+    None,
+    Fixed,      // Bytes: `count` bytes; Array: `count` elements
+    Rest,       // to the end of the block
+    Prefix8,    // Array: element count read from a leading u8 / u16 / u32
+    Prefix16,
+    Prefix32,
+    Field,      // the value of an earlier field (FieldDef::lenUp / lenField)
+};
+
+enum class CondOp : uint8_t { None, Eq, Ne, Min, Max, Mask };
+
+inline constexpr uint16_t kNoField = 0xFFFF;
+
+struct TypeDef {
+    Kind        kind      = Kind::U8;
+    LenKind     len       = LenKind::None;
+    uint32_t    count     = 0;   // Fixed Bytes: byte count; Fixed Array: element count
+    uint16_t    ref       = 0;   // Array: element TypeDef; Struct: first FieldDef
+    uint16_t    refCount  = 0;   // Struct: FieldDef count
+    uint16_t    linkFirst = 0;   // Ref/Ptr: allowed target BlockDefs (empty = any)
+    uint16_t    linkCount = 0;
+    const char* name      = nullptr;  // named struct / block layout, for diagnostics
+};
+
+struct FieldDef {
+    const char* name      = nullptr;
+    uint16_t    type      = 0;
+    uint8_t     lenUp     = 0;         // LenKind::Field: structs outward from this field's struct
+    uint16_t    lenField  = kNoField;  //   …and the field index there
+    CondOp      cond      = CondOp::None;
+    uint8_t     condUp    = 0;
+    uint16_t    condField = kNoField;
+    int64_t     condValue = 0;
+};
+
+struct BlockDef {
+    const char* name     = nullptr;
+    int16_t     parent   = -1;       // BlockDef index; -1 for the root (NiObject)
+    uint16_t    type     = 0;        // the flattened layout (a Struct TypeDef)
+    uint16_t    ownFirst = 0;        // index of this class's first own field in the layout
+    bool        abstract = false;
+};
+
+struct SchemaSet {
+    std::span<const TypeDef>  types;
+    std::span<const FieldDef> fields;
+    std::span<const uint16_t> links;
+    std::span<const BlockDef> blocks;    // sorted by name
+    const char*               schemaVersion   = nullptr;
+    const char*               languageVersion = nullptr;
+
+    // nullptr if no block of that name.
+    const BlockDef* Find(std::string_view name) const {
+        size_t lo = 0, hi = blocks.size();
+        while (lo < hi) {
+            const size_t mid = (lo + hi) / 2;
+            if (std::string_view(blocks[mid].name) < name) lo = mid + 1;
+            else hi = mid;
+        }
+        return (lo < blocks.size() && name == blocks[lo].name) ? &blocks[lo] : nullptr;
+    }
+    uint16_t IndexOf(const BlockDef* b) const { return static_cast<uint16_t>(b - blocks.data()); }
+    // True when block `derived` is `base` or inherits from it.
+    bool IsA(uint16_t derived, uint16_t base) const {
+        for (int32_t b = derived; b >= 0; b = blocks[static_cast<size_t>(b)].parent)
+            if (static_cast<uint16_t>(b) == base) return true;
+        return false;
+    }
+};
+
+// The schema generated from schema/ (hpp/generated/Tables.h).
+const SchemaSet& Main();
+
+}  // namespace schema
+
+// ── Values ────────────────────────────────────────────────────────────────────
+// A decoded value. Integers, f32 bits, block refs and string refs live in `bits`
+// (floats as raw bits, so NaN payloads survive); strings in `str`; opaque bytes
+// in `bytes`; struct fields and array elements in `items`. A conditional field
+// whose condition was false is `present == false`.
+struct Value {
+    uint64_t             bits    = 0;
+    std::string          str;
+    std::vector<uint8_t> bytes;
+    std::vector<Value>   items;
+    bool                 present = true;
+    friend bool operator==(const Value&, const Value&) = default;
+};
+
+// A path into a block's value: struct field indices, with an element index after
+// each array field ("bones/2/transform" = { bones, 2, transform }).
+struct RelPath {
+    std::array<uint16_t, 8> idx{};
+    uint8_t depth = 0;
+
+    RelPath Child(uint16_t i) const {
+        RelPath p = *this;
+        if (p.depth < p.idx.size()) p.idx[p.depth++] = i;
+        return p;
+    }
+};
+
+// Generated handles (include/niffer/generated/Fields.h). `block` is the class
+// that declares the field (a BlockDef index); the handle works on any block that
+// is-a that class, because inherited fields keep their positions. `T` is the
+// value type the schema gives the field, so a wrong name or type fails to compile.
+template <class T>
+struct FieldRef {
+    uint16_t block = 0;
+    RelPath  path;
+};
+struct StructRef {
+    uint16_t block = 0;
+    RelPath  path;
+};
+
+// ── Block ─────────────────────────────────────────────────────────────────────
+class Block {
+public:
+    // Never fails: a block with no concrete descriptor, or one whose decode was
+    // refused, is raw (Modeled() == false) and keeps its bytes.
+    static Block Load(const schema::SchemaSet& set, std::string_view typeName,
+                      std::span<const uint8_t> bytes);
+
+    std::string_view          TypeName() const { return typeName_; }
+    bool                      Modeled() const { return def_ != nullptr; }
+    // Why a block that has a descriptor stayed raw ("" when modeled or no descriptor).
+    const std::string&        Refusal() const { return refusal_; }
+    // The descriptor's class, or nullptr when raw.
+    const schema::BlockDef*   Def() const { return def_; }
+    const schema::SchemaSet*  Schema() const { return set_; }
+    bool                      IsA(uint16_t blockIndex) const;
+    bool                      IsA(std::string_view blockName) const;
+    std::span<const uint8_t>  Original() const { return original_; }
+    bool                      Dirty() const { return dirty_; }
+
+    // Emits the original bytes unless the block is dirty or `force` (modeled
+    // blocks only) re-encodes it from its value.
+    void                 Encode(std::vector<uint8_t>& out, bool force = false) const;
+    std::vector<uint8_t> Encode(bool force = false) const;
+
+    // ── Typed access through generated handles ───────────────────────────────
+    template <class T> std::optional<T> Get(const FieldRef<T>& f) const;
+    template <class T> bool Set(const FieldRef<T>& f, const T& v);
+
+    // ── Path access (tools/UIs): "transform/translation/x", "bones/0/transform"
+    std::optional<RelPath> Find(std::string_view path) const;
+    const Value*           Root() const { return Modeled() ? &value_ : nullptr; }
+    // nullptr when the path doesn't exist or the field is absent.
+    const Value*           GetValue(const RelPath& p) const;
+    // The schema type at `p` (whether or not the value is present).
+    const schema::TypeDef* TypeAt(const RelPath& p) const;
+    // Replaces the value at `p`. A no-op when unchanged, so untouched blocks stay
+    // verbatim. Replacing an array/bytes field also updates its length field.
+    // Returns false when the block isn't modeled or `p` doesn't exist.
+    bool                   StoreValue(const RelPath& p, Value v);
+
+    template <class T> std::optional<T> GetAt(const RelPath& p) const;
+    template <class T> std::vector<T>   GetElements(const RelPath& arrayPath) const;
+    template <class T> bool             SetAt(const RelPath& p, const T& v);
+
+    // ── References ──────────────────────────────────────────────────────────
+    // Every ref/ptr value in layout order, with its declared targets (BlockDef
+    // indices; empty = any).
+    void ForEachRef(const std::function<void(int32_t index, bool isPtr,
+                                             std::span<const uint16_t> to)>& fn) const;
+    // Every stringref value in layout order.
+    void ForEachStringRef(const std::function<void(uint32_t index)>& fn) const;
+
+    // T <-> Value given the TypeDef the value lives in.
+    template <class T> static T     FromValue(const Value& v, const schema::TypeDef& t, const schema::SchemaSet& s);
+    template <class T> static Value ToValue(const T& x, const schema::TypeDef& t, const schema::SchemaSet& s);
+
+private:
+    const schema::SchemaSet* set_ = nullptr;
+    const schema::BlockDef*  def_ = nullptr;
+    std::string              typeName_;
+    std::vector<uint8_t>     original_;
+    Value                    value_;
+    std::string              refusal_;
+    bool                     dirty_ = false;
+
+    friend struct BlockAccess;
+};
+
+// ── Nif — the schema-path container ──────────────────────────────────────────
+// Header, blocks, footer roots and trailing bytes. The header is parsed by the
+// same framing code as NifFile (SSE only). During the migration this coexists
+// with the typed NifFile; it takes over that name once the typed path is gone.
+class Nif {
+public:
+    Header                header;
+    std::vector<Block>    blocks;     // index == file block index
+    std::vector<int32_t>  roots;      // footer root refs
+    std::vector<uint8_t>  trailing;   // bytes past the footer, verbatim
+
+    static std::expected<Nif, NifError> Load(const uint8_t* data, size_t len,
+                                             const schema::SchemaSet& set = schema::Main());
+    static std::expected<Nif, NifError> Load(const std::vector<uint8_t>& bytes,
+                                             const schema::SchemaSet& set = schema::Main());
+    static std::expected<Nif, NifError> LoadFile(const std::string& path,
+                                                 const schema::SchemaSet& set = schema::Main());
+
+    // Block sizes are re-measured; every other header fact is emitted verbatim.
+    // `force` re-encodes every modeled block from its value (the real-data gate).
+    std::vector<uint8_t> Save(bool force = false) const;
+
+    Block*           GetBlock(int32_t index);
+    const Block*     GetBlock(int32_t index) const;
+    std::string_view String(NiStringRef ref) const;  // "" if empty/invalid
+    size_t           RawCount() const;
+
+    // Resolves a typed ref to its view; nullopt if null, out of range, raw, or
+    // not of the view's class.
+    template <class V> std::optional<V> Get(NiRef<V> ref) {
+        Block* b = GetBlock(ref.index);
+        return b ? V::From(*b) : std::nullopt;
+    }
+};
+
+// ── Value conversions ────────────────────────────────────────────────────────
+namespace schema_detail {
+template <class T> struct IsVector : std::false_type {};
+template <class T> struct IsVector<std::vector<T>> : std::true_type { using Elem = T; };
+
+inline uint64_t MaskFor(schema::Kind k) {
+    switch (k) {
+    case schema::Kind::U8:  case schema::Kind::I8:  return 0xFFull;
+    case schema::Kind::U16: case schema::Kind::I16: return 0xFFFFull;
+    case schema::Kind::U64: case schema::Kind::I64: return ~0ull;
+    default:                                        return 0xFFFFFFFFull;
+    }
+}
+}  // namespace schema_detail
+
+template <class T>
+T Block::FromValue(const Value& v, const schema::TypeDef& t, const schema::SchemaSet& s) {
+    if constexpr (std::is_same_v<T, Value>) {
+        return v;
+    } else if constexpr (std::is_same_v<T, float>) {
+        return std::bit_cast<float>(static_cast<uint32_t>(v.bits));
+    } else if constexpr (std::is_integral_v<T>) {
+        return static_cast<T>(v.bits);
+    } else if constexpr (std::is_base_of_v<NiRefBase, T>) {
+        T r;
+        r.index = static_cast<int32_t>(static_cast<uint32_t>(v.bits));
+        return r;
+    } else if constexpr (std::is_same_v<T, NiStringRef>) {
+        return NiStringRef{ static_cast<uint32_t>(v.bits) };
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        return v.str;
+    } else if constexpr (schema_detail::IsVector<T>::value) {
+        using E = typename schema_detail::IsVector<T>::Elem;
+        T out;
+        if (t.kind == schema::Kind::Bytes) {
+            if constexpr (std::is_same_v<E, uint8_t>) out = v.bytes;
+            return out;
+        }
+        const schema::TypeDef& et = s.types[t.ref];
+        out.reserve(v.items.size());
+        for (const Value& item : v.items) out.push_back(FromValue<E>(item, et, s));
+        return out;
+    } else {
+        static_assert(sizeof(T) == 0, "niffer::Block: unsupported value type");
+    }
+}
+
+template <class T>
+Value Block::ToValue(const T& x, const schema::TypeDef& t, const schema::SchemaSet& s) {
+    Value v;
+    if constexpr (std::is_same_v<T, Value>) {
+        v = x;
+    } else if constexpr (std::is_same_v<T, float>) {
+        v.bits = std::bit_cast<uint32_t>(x);
+    } else if constexpr (std::is_integral_v<T>) {
+        v.bits = static_cast<uint64_t>(x) & schema_detail::MaskFor(t.kind);
+    } else if constexpr (std::is_base_of_v<NiRefBase, T>) {
+        v.bits = static_cast<uint32_t>(x.index);
+    } else if constexpr (std::is_same_v<T, NiStringRef>) {
+        v.bits = x.index;
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        v.str = x;
+    } else if constexpr (schema_detail::IsVector<T>::value) {
+        using E = typename schema_detail::IsVector<T>::Elem;
+        if (t.kind == schema::Kind::Bytes) {
+            if constexpr (std::is_same_v<E, uint8_t>) v.bytes = x;
+            return v;
+        }
+        const schema::TypeDef& et = s.types[t.ref];
+        v.items.reserve(x.size());
+        for (const E& e : x) v.items.push_back(ToValue<E>(e, et, s));
+    } else {
+        static_assert(sizeof(T) == 0, "niffer::Block: unsupported value type");
+    }
+    return v;
+}
+
+template <class T>
+std::optional<T> Block::GetAt(const RelPath& p) const {
+    const Value* v = GetValue(p);
+    if (!v) return std::nullopt;
+    return FromValue<T>(*v, *TypeAt(p), *set_);
+}
+
+template <class T>
+std::vector<T> Block::GetElements(const RelPath& arrayPath) const {
+    std::vector<T> out;
+    const Value* v = GetValue(arrayPath);
+    const schema::TypeDef* t = TypeAt(arrayPath);
+    if (!v || !t || t->kind != schema::Kind::Array) return out;
+    const schema::TypeDef& et = set_->types[t->ref];
+    out.reserve(v->items.size());
+    for (const Value& item : v->items) out.push_back(FromValue<T>(item, et, *set_));
+    return out;
+}
+
+template <class T>
+bool Block::SetAt(const RelPath& p, const T& x) {
+    const schema::TypeDef* t = TypeAt(p);
+    if (!t) return false;
+    return StoreValue(p, ToValue<T>(x, *t, *set_));
+}
+
+template <class T>
+std::optional<T> Block::Get(const FieldRef<T>& f) const {
+    if (!IsA(f.block)) return std::nullopt;
+    return GetAt<T>(f.path);
+}
+
+template <class T>
+bool Block::Set(const FieldRef<T>& f, const T& v) {
+    if (!IsA(f.block)) return false;
+    return SetAt<T>(f.path, v);
+}
+
+}  // namespace niffer
+
+#include <niffer/generated/Fields.h>
+#include <niffer/generated/Views.h>

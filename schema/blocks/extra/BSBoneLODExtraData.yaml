@@ -1,0 +1,10 @@
+block: BSBoneLODExtraData
+inherits: NiExtraData
+doc: >-
+  Per-bone LOD distances.
+fields:
+  - name: boneLODs
+    array: "count: u32"
+    fields:
+      - { name: distance, type: u32 }
+      - { name: boneName, type: stringref }

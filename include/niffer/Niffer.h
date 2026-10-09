@@ -4,11 +4,12 @@
 // parity ONLY: NIF version 20.2.0.7 (0x14020007), user version 12, BS stream
 // version 100. No Fallout 4, Legendary Edition, or other-game paths.
 //
-// SINGLE PUBLIC HEADER (CommonLib `Skyrim.h` model): this file is the entire
-// cross-project surface — consumers write `#include <niffer/Niffer.h>` and
-// nothing else. All component headers live in the library's private hpp/ tree;
-// nothing besides this file may ever be added to include/niffer/.
-// Internal machinery (Stream, registry) is forward-declared here at most.
+// SINGLE PUBLIC HEADER (CommonLib `Skyrim.h` model): consumers write
+// `#include <niffer/Niffer.h>` and nothing else. The only other files under
+// include/niffer/ sit behind this umbrella: Schema.h (the schema engine) and
+// generated/ (its generated handles and views). Internal machinery (Stream,
+// registry, framing, engine tables) lives in the private hpp/ tree and is
+// forward-declared here at most.
 //
 // Round-trip contract: NifFile::Load followed by NifFile::Save reproduces the
 // input bytes exactly. Unimplemented block types are carried as UnknownBlock
@@ -885,3 +886,6 @@ std::vector<float> ApplyMorphs(const std::vector<float>& base, const TriFile& tr
                                const std::map<std::string, float>& weights);
 
 }  // namespace niffer
+
+// The schema engine (Nif, Block, views) — behind this umbrella.
+#include <niffer/Schema.h>

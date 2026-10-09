@@ -1,0 +1,19 @@
+block: BSLightingShaderProperty
+inherits: NiObject
+doc: >-
+  The main lighting material. Confirmed against clutter/barrel01.nif block 8. The leading u32 is the
+  shader type: across the SSE corpus it takes 10 values (0-6, 11, 14, 16) and the block size is a
+  function of it alone. The NiObjectNET fields (name, extra data, controller) follow it, so this
+  class can't inherit NiObjectNET's layout.
+verified: ["clutter/barrel01.nif#8"]
+fields:
+  - { name: shaderType, type: u32, doc: "Selects the material tail's layout." }
+  - { name: name, type: stringref }
+  - { name: extraData, type: "ref[count: u32]", to: [NiExtraData] }
+  - { name: controller, type: ref, to: [NiTimeController] }
+  - { name: shaderFlags1, type: u32 }
+  - { name: shaderFlags2, type: u32 }
+  - { name: uvOffset, type: Vec2 }
+  - { name: uvScale, type: Vec2 }
+  - { name: textureSet, type: ref, to: [BSShaderTextureSet] }
+  - { name: materialTail, type: bytes, doc: "The shader-type-dependent material scalars, raw until unions land." }

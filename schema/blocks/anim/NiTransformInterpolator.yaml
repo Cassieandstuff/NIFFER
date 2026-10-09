@@ -1,0 +1,7 @@
+block: NiTransformInterpolator
+inherits: NiObject
+fields:
+  - { name: translation, type: Vec3 }
+  - { name: rotation, type: Quat }
+  - { name: scale, type: f32 }
+  - { name: data, type: ref, to: [NiTransformData] }

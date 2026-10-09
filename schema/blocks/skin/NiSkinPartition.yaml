@@ -1,0 +1,11 @@
+block: NiSkinPartition
+inherits: NiObject
+doc: >-
+  The SSE variant: where a skinned shape's vertices live when its BSTriShape dataSize is 0. Header confirmed against goldringdiamond block 5.
+fields:
+  - { name: numPartitions, type: u32 }
+  - { name: dataSize, type: u32, doc: "Bytes of vertexData: numVertices * vertexSize." }
+  - { name: vertexSize, type: u32 }
+  - { name: vertexDesc, type: u64, doc: "BSVertexDesc, the same layout as BSTriShape's." }
+  - { name: vertexData, type: bytes, size: dataSize }
+  - { name: partitionData, type: bytes, doc: "The per-partition tables, raw until decoded." }

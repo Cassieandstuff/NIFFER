@@ -1,0 +1,6 @@
+block: NiControllerSequence
+inherits: NiObject
+fields:
+  - { name: name, type: stringref }
+  - { name: numControlledBlocks, type: u32 }
+  - { name: tail, type: bytes, doc: "The controlled blocks and sequence parameters, raw." }

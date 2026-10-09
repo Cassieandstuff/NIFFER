@@ -1,0 +1,6 @@
+block: BSSkyShaderProperty
+inherits: NiObjectNET
+doc: >-
+  Typed structurally: the NiObjectNET fields are decoded and the rest is kept raw.
+fields:
+  - { name: tail, type: bytes, doc: Not yet decoded. }

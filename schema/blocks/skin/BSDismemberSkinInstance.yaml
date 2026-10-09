@@ -1,0 +1,10 @@
+block: BSDismemberSkinInstance
+inherits: NiSkinInstance
+doc: >-
+  NiSkinInstance plus dismemberment body-part partitions.
+fields:
+  - name: partitions
+    array: "count: u32"
+    fields:
+      - { name: partFlag, type: u16 }
+      - { name: bodyPart, type: u16 }

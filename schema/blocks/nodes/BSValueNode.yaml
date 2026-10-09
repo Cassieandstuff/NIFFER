@@ -1,0 +1,5 @@
+block: BSValueNode
+inherits: NiNode
+fields:
+  - { name: value, type: u32 }
+  - { name: valueNodeFlags, type: u8 }

@@ -1,0 +1,2 @@
+block: bhkCapsuleShape
+inherits: bhkPrimitiveShape

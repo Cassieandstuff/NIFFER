@@ -1,0 +1,4 @@
+block: NiPSysPositionModifier
+inherits: NiPSysModifier
+fields:
+  - { name: tail, type: bytes, doc: Not yet decoded. }

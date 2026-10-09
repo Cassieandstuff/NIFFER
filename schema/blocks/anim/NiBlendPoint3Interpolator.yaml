@@ -1,0 +1,4 @@
+block: NiBlendPoint3Interpolator
+inherits: NiBlendInterpolator
+fields:
+  - { name: value, type: Vec3 }

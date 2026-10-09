@@ -1,0 +1,2 @@
+block: bhkSphereShape
+inherits: bhkPrimitiveShape

@@ -1,0 +1,22 @@
+block: NiSkinData
+inherits: NiObject
+doc: >-
+  Per-bone inverse-bind transforms and vertex weights. Confirmed against actors/character/character assets/childhead.nif block 5.
+verified: ["actors/character/character assets/childhead.nif#5"]
+fields:
+  - { name: skinTransform, type: NiTransform }
+  - { name: numBones, type: u32 }
+  - { name: hasVertexWeights, type: u8 }
+  - name: bones
+    array: "count: numBones"
+    fields:
+      - { name: transform, type: NiTransform, doc: Skin to bone (the inverse bind). }
+      - { name: boundingOffset, type: Vec3 }
+      - { name: boundingRadius, type: f32 }
+      - { name: numVertices, type: u16 }
+      - name: vertexWeights
+        array: "count: numVertices"
+        if: { field: hasVertexWeights, ne: 0 }
+        fields:
+          - { name: index, type: u16 }
+          - { name: weight, type: f32 }

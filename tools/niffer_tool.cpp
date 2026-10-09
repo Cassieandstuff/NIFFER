@@ -189,6 +189,296 @@ static int CmdRoundtrip(const fs::path& root) {
     return gateGreen ? 0 : 1;
 }
 
+// ── roundtrip --schema ────────────────────────────────────────────────────────
+// The schema path's real-data gate (docs/schema-design.md "Gates"). For every
+// SSE file, against the same bytes:
+//   - Nif verbatim save and FORCED re-encode are byte-identical to the input;
+//   - every block the typed path models, the schema models (no regressions),
+//     and no block with a descriptor is refused;
+//   - every ref/ptr is null or in range and satisfies its `to:` claim;
+//   - the `ref` graph (ptr excluded) is acyclic;
+//   - every stringref is empty or in range.
+// `--refs` additionally reports, per ref field without `to:`, the classes its
+// targets actually have — the evidence for adding a `to:` claim.
+struct SchemaFileResult {
+    bool unsupported = false, malformed = false;
+    bool verbatimOk = false, forcedOk = false;
+    size_t forcedDiverge = 0;
+    std::string forcedDivergeType;
+    uint64_t blocks = 0, modeled = 0, typedModeled = 0;
+    std::map<std::string, std::pair<uint64_t, std::string>> refusals;   // type -> (n, first reason)
+    std::map<std::string, uint64_t> regressions;   // typed-modeled but schema-raw, by type
+    std::map<std::string, uint64_t> refViolations; // "Owner.field -> Target: why"
+    std::map<std::string, uint64_t> badStringRefs; // by field
+    uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
+    std::string cycle;                              // first ref cycle's edge, "" if none
+    std::string cycleAt;                            // …and where it is
+    std::map<std::string, std::map<std::string, uint64_t>> refTargets;  // "Owner.field" -> target type -> n
+};
+
+// The class in `def`'s chain that declares layout field `i`.
+static const schema::BlockDef* DeclaringClass(const schema::SchemaSet& s,
+                                              const schema::BlockDef* def, uint16_t i) {
+    while (def->parent >= 0 && i < def->ownFirst) def = &s.blocks[static_cast<size_t>(def->parent)];
+    return def;
+}
+
+// Walks a block's leaf values with the "Owner.field[/sub]" name of each.
+template <class Fn>
+static void WalkNamed(const schema::SchemaSet& s, const schema::TypeDef& t, const Value& v,
+                      const std::string& name, Fn& fn) {
+    if (!v.present) return;
+    switch (t.kind) {
+    case schema::Kind::Struct:
+        for (uint16_t i = 0; i < t.refCount && i < v.items.size(); ++i) {
+            const auto& fd = s.fields[t.ref + i];
+            WalkNamed(s, s.types[fd.type], v.items[i], name + "/" + fd.name, fn);
+        }
+        return;
+    case schema::Kind::Array:
+        for (const Value& item : v.items) WalkNamed(s, s.types[t.ref], item, name, fn);
+        return;
+    default:
+        fn(name, t, v);
+        return;
+    }
+}
+
+static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
+    SchemaFileResult r;
+    auto bytes = ReadFile(p);
+    auto nif = Nif::Load(bytes);
+    if (!nif) {
+        if (nif.error().kind == NifErrorKind::UnsupportedVersion) r.unsupported = true;
+        else r.malformed = true;
+        return r;
+    }
+    const schema::SchemaSet& s = schema::Main();
+
+    auto verbatim = nif->Save(false);
+    r.verbatimOk = verbatim == bytes;
+    auto forced = nif->Save(true);
+    r.forcedOk = forced == bytes;
+    if (!r.forcedOk) {
+        size_t n = std::min(forced.size(), bytes.size()), i = 0;
+        while (i < n && forced[i] == bytes[i]) ++i;
+        r.forcedDiverge = i;
+        for (auto& b : nif->blocks) {   // which block re-encoded differently
+            if (b.Modeled() && b.Encode(true) != std::vector<uint8_t>(b.Original().begin(), b.Original().end())) {
+                r.forcedDivergeType = std::string(b.TypeName());
+                break;
+            }
+        }
+    }
+
+    // Typed-path parity.
+    auto typed = NifFile::Load(bytes);
+    std::vector<bool> typedRaw(nif->blocks.size(), false);
+    if (typed) {
+        for (auto& u : typed->unknownBlocks) typedRaw[u.blockIndex] = true;
+        for (auto& m : typed->layoutMismatches) typedRaw[m.blockIndex] = true;
+    }
+
+    const size_t nb = nif->blocks.size();
+    r.blocks = nb;
+    std::vector<std::vector<std::pair<int32_t, std::string>>> refEdges(nb);
+    for (size_t i = 0; i < nb; ++i) {
+        const Block& b = nif->blocks[i];
+        if (!typedRaw[i]) ++r.typedModeled;
+        if (!b.Modeled()) {
+            if (!b.Refusal().empty()) {
+                auto& e = r.refusals[std::string(b.TypeName())];
+                if (e.first++ == 0) e.second = b.Refusal();
+            }
+            if (!typedRaw[i]) ++r.regressions[std::string(b.TypeName())];
+            continue;
+        }
+        ++r.modeled;
+
+        const schema::TypeDef& layout = s.types[b.Def()->type];
+        for (uint16_t fi = 0; fi < layout.refCount && fi < b.Root()->items.size(); ++fi) {
+            const auto& fd = s.fields[layout.ref + fi];
+            const std::string owner = DeclaringClass(s, b.Def(), fi)->name;
+            auto visit = [&](const std::string& name, const schema::TypeDef& t, const Value& v) {
+                if (t.kind == schema::Kind::StringRef) {
+                    const uint32_t si = static_cast<uint32_t>(v.bits);
+                    if (si != 0xFFFFFFFFu && si >= nif->header.strings.size()) ++r.badStringRefs[name];
+                    ++r.stringRefsChecked;
+                    return;
+                }
+                if (t.kind != schema::Kind::Ref && t.kind != schema::Kind::Ptr) return;
+                const int32_t idx = static_cast<int32_t>(static_cast<uint32_t>(v.bits));
+                const bool isPtr = t.kind == schema::Kind::Ptr;
+                const auto to = s.links.subspan(t.linkFirst, t.linkCount);
+                if (idx == -1) return;
+                ++r.refsChecked;
+                if (idx < 0 || static_cast<size_t>(idx) >= nb) {
+                    ++r.refViolations[name + " (in " + std::string(b.TypeName()) + "): out of range"];
+                    return;
+                }
+                const Block& target = nif->blocks[static_cast<size_t>(idx)];
+                if (!isPtr) refEdges[i].push_back({idx, name});
+                if (wantRefs && to.empty()) ++r.refTargets[name][std::string(target.TypeName())];
+                if (to.empty()) return;
+                if (!target.Modeled()) {
+                    ++r.refViolations[name + " -> " + std::string(target.TypeName()) + ": target not modeled"];
+                    return;
+                }
+                ++r.claimsChecked;
+                bool ok = false;
+                for (uint16_t tt : to) ok = ok || target.IsA(tt);
+                if (!ok) ++r.refViolations[name + " -> " + std::string(target.TypeName()) + ": not a declared target"];
+            };
+            WalkNamed(s, s.types[fd.type], b.Root()->items[fi], owner + "." + fd.name, visit);
+        }
+    }
+
+    // The ref graph must be acyclic (iterative three-colour DFS).
+    std::vector<uint8_t> colour(nb, 0);
+    for (size_t start = 0; start < nb && r.cycle.empty(); ++start) {
+        if (colour[start]) continue;
+        std::vector<std::pair<size_t, size_t>> stack{{start, 0}};
+        colour[start] = 1;
+        while (!stack.empty() && r.cycle.empty()) {
+            auto& [node, next] = stack.back();
+            if (next < refEdges[node].size()) {
+                const auto& edge = refEdges[node][next++];
+                const size_t to = static_cast<size_t>(edge.first);
+                if (colour[to] == 1) {
+                    r.cycle = edge.second + " (in " + std::string(nif->blocks[node].TypeName()) + ") -> " +
+                              std::string(nif->blocks[to].TypeName());
+                    r.cycleAt = "[" + std::to_string(node) + "] -> [" + std::to_string(to) + "]";
+                } else if (colour[to] == 0) {
+                    colour[to] = 1;
+                    stack.push_back({to, 0});
+                }
+            } else {
+                colour[node] = 2;
+                stack.pop_back();
+            }
+        }
+    }
+    return r;
+}
+
+static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
+    auto files = CollectNifs(root);
+    const auto& s = schema::Main();
+    std::printf("roundtrip --schema: %zu .nif files under %s (schema %s, language %s)\n",
+                files.size(), root.string().c_str(), s.schemaVersion, s.languageVersion);
+
+    std::vector<SchemaFileResult> results(files.size());
+    std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
+                   [&](const fs::path& p) { return SchemaRoundtripOne(p, wantRefs); });
+
+    uint64_t checked = 0, unsupported = 0, malformed = 0, verbatimBad = 0, forcedBad = 0;
+    uint64_t blocks = 0, modeled = 0, typedModeled = 0, badStrings = 0, cycles = 0;
+    std::map<std::string, uint64_t> badStringsByField, cyclesByEdge;
+    uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
+    std::map<std::string, std::string> cycleExample;
+    std::map<std::string, std::pair<uint64_t, std::string>> refusals;
+    std::map<std::string, uint64_t> regressions, refViolations, forcedByType;
+    std::map<std::string, std::map<std::string, uint64_t>> refTargets;
+    std::vector<size_t> forcedFiles;
+    for (size_t i = 0; i < results.size(); ++i) {
+        auto& r = results[i];
+        if (r.unsupported) { ++unsupported; continue; }
+        if (r.malformed) { ++malformed; continue; }
+        ++checked;
+        verbatimBad += r.verbatimOk ? 0 : 1;
+        if (!r.forcedOk) {
+            ++forcedBad;
+            ++forcedByType[r.forcedDivergeType];
+            if (forcedFiles.size() < 10) forcedFiles.push_back(i);
+        }
+        blocks += r.blocks;
+        modeled += r.modeled;
+        typedModeled += r.typedModeled;
+        refsChecked += r.refsChecked;
+        claimsChecked += r.claimsChecked;
+        stringRefsChecked += r.stringRefsChecked;
+        for (auto& [f, n] : r.badStringRefs) { badStringsByField[f] += n; badStrings += n; }
+        for (auto& [t, e] : r.refusals) {
+            auto& agg = refusals[t];
+            if (agg.first == 0) agg.second = e.second;
+            agg.first += e.first;
+        }
+        for (auto& [t, n] : r.regressions) regressions[t] += n;
+        for (auto& [k, n] : r.refViolations) refViolations[k] += n;
+        for (auto& [f, m] : r.refTargets)
+            for (auto& [t, n] : m) refTargets[f][t] += n;
+        if (!r.cycle.empty()) {
+            ++cycles;
+            if (cyclesByEdge[r.cycle]++ == 0)
+                cycleExample[r.cycle] = r.cycleAt + " " + files[i].string();
+        }
+    }
+
+    if (!forcedFiles.empty()) {
+        std::printf("\nFORCED RE-ENCODE differs (first block type per file):\n");
+        for (auto& [t, n] : forcedByType) std::printf("  %8llu  %s\n", (unsigned long long)n, t.c_str());
+        for (size_t i : forcedFiles)
+            std::printf("  @%zu  %s\n", results[i].forcedDiverge, files[i].string().c_str());
+    }
+    if (!refusals.empty()) {
+        std::printf("\nREFUSED blocks (descriptor exists, decode refused):\n");
+        for (auto& [t, e] : refusals)
+            std::printf("  %8llu  %s — %s\n", (unsigned long long)e.first, t.c_str(), e.second.c_str());
+    }
+    if (!regressions.empty()) {
+        std::printf("\nREGRESSIONS (typed path models, schema path raw):\n");
+        for (auto& [t, n] : regressions) std::printf("  %8llu  %s\n", (unsigned long long)n, t.c_str());
+    }
+    if (!refViolations.empty()) {
+        std::printf("\nREF VIOLATIONS:\n");
+        for (auto& [k, n] : refViolations) std::printf("  %8llu  %s\n", (unsigned long long)n, k.c_str());
+    }
+    if (!cyclesByEdge.empty()) {
+        std::printf("\nREF CYCLES by closing edge (a `ref` that should be a `ptr`):\n");
+        for (auto& [e, n] : cyclesByEdge)
+            std::printf("  %8llu  %s\n            e.g. %s\n", (unsigned long long)n, e.c_str(),
+                        cycleExample[e].c_str());
+    }
+    if (!badStringsByField.empty()) {
+        std::printf("\nBAD STRINGREFS by field:\n");
+        for (auto& [f, n] : badStringsByField) std::printf("  %8llu  %s\n", (unsigned long long)n, f.c_str());
+    }
+    if (wantRefs && !refTargets.empty()) {
+        std::printf("\nREF TARGETS of fields without `to:` (evidence for `to:` claims):\n");
+        for (auto& [f, m] : refTargets) {
+            std::printf("  %s\n", f.c_str());
+            for (auto& [t, n] : m) std::printf("      %10llu  %s\n", (unsigned long long)n, t.c_str());
+        }
+    }
+
+    uint64_t refused = 0, regressed = 0, violations = 0;
+    for (auto& [t, e] : refusals) refused += e.first;
+    for (auto& [t, n] : regressions) regressed += n;
+    for (auto& [k, n] : refViolations) violations += n;
+
+    std::printf("\n── roundtrip --schema summary ──\n");
+    std::printf("  files checked     %llu  (unsupported-ver %llu, malformed %llu)\n",
+                (unsigned long long)checked, (unsigned long long)unsupported, (unsigned long long)malformed);
+    std::printf("  verbatim diff     %llu\n", (unsigned long long)verbatimBad);
+    std::printf("  forced diff       %llu\n", (unsigned long long)forcedBad);
+    std::printf("  blocks            %llu  modeled %llu (%.2f%%), typed path %llu\n",
+                (unsigned long long)blocks, (unsigned long long)modeled,
+                blocks ? 100.0 * double(modeled) / double(blocks) : 0.0, (unsigned long long)typedModeled);
+    std::printf("  refused           %llu\n", (unsigned long long)refused);
+    std::printf("  regressions       %llu\n", (unsigned long long)regressed);
+    std::printf("  refs              %llu non-null, %llu checked against `to:`\n",
+                (unsigned long long)refsChecked, (unsigned long long)claimsChecked);
+    std::printf("  ref violations    %llu\n", (unsigned long long)violations);
+    std::printf("  ref cycles        %llu files\n", (unsigned long long)cycles);
+    std::printf("  stringrefs        %llu checked, %llu bad\n",
+                (unsigned long long)stringRefsChecked, (unsigned long long)badStrings);
+
+    const bool green = malformed == 0 && verbatimBad == 0 && forcedBad == 0 && refused == 0 &&
+                       regressed == 0 && violations == 0 && cycles == 0 && badStrings == 0;
+    std::printf("\n  GATE: %s\n", green ? "GREEN" : "RED");
+    return green ? 0 : 1;
+}
+
 static void HexDump(const std::vector<uint8_t>& b) {
     for (size_t i = 0; i < b.size(); i += 16) {
         std::printf("  %4zu:", i);
@@ -342,6 +632,7 @@ int main(int argc, char** argv) {
         std::printf("usage:\n"
                     "  niffer-tool histogram <dir>\n"
                     "  niffer-tool roundtrip <dir>\n"
+                    "  niffer-tool roundtrip --schema [--refs] <dir>\n"
                     "  niffer-tool tri-roundtrip <dir>\n"
                     "  niffer-tool dump <file.nif> [blockIdx]\n"
                     "  niffer-tool decode <file.nif>\n"
@@ -349,6 +640,11 @@ int main(int argc, char** argv) {
         return 2;
     }
     if (std::string(argv[1]) == "decode") return CmdDecode(argv[2]);
+    if (std::string(argv[1]) == "roundtrip" && std::string(argv[2]) == "--schema") {
+        bool refs = argc >= 5 && std::string(argv[3]) == "--refs";
+        if (argc < (refs ? 5 : 4)) { std::printf("roundtrip --schema needs a directory\n"); return 2; }
+        return CmdSchemaRoundtrip(argv[refs ? 4 : 3], refs);
+    }
     std::string cmd = argv[1];
     fs::path arg = argv[2];
     if (cmd == "collision") return CmdCollision(arg);

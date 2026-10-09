@@ -1,0 +1,13 @@
+block: NiTimeController
+inherits: NiObject
+abstract: true
+doc: >-
+  The controller base. Confirmed against fxspiderweb block 29.
+fields:
+  - { name: nextController, type: ref, to: [NiTimeController] }
+  - { name: flags, type: u16 }
+  - { name: frequency, type: f32 }
+  - { name: phase, type: f32 }
+  - { name: startTime, type: f32 }
+  - { name: stopTime, type: f32 }
+  - { name: target, type: ptr, to: [NiObjectNET, BSLightingShaderProperty] }

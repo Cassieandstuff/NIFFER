@@ -8,19 +8,20 @@ also uses it under other terms (dual licensing).
 
 - **Dual licensing depends on the copyright holder owning every line.** Never take code,
   layouts or schema from `nif.xml` (GPL-3.0), nifly (GPL-3.0), NifSkope, PyFFI or niflib, not
-  even "just to check". Layouts come from shipped game bytes. Each layout comment cites the
-  file and block it was confirmed against.
+  even "just to check". Layouts come from shipped game bytes. Each layout comment or `verified:`
+  entry cites the file and block it was confirmed against.
 - **External contributions need a signed CLA** (see CONTRIBUTING.md). Never merge an
   external PR without one.
 - Stay a dependency-free leaf. Any dependency must be permissively licensed.
 
 ## Public surface
 
-- Consumers link `niffer::niffer` and `#include <niffer/Niffer.h>`, and nothing else.
-  `include/niffer/` holds that one header and must never gain a second file. Internals live
-  in private `hpp/` (included as `"Stream.h"`, `"Registry.h"`) and are at most
-  forward-declared in the public header.
-- Everything is in `namespace niffer`.
+- Consumers link `niffer::niffer` and `#include <niffer/Niffer.h>`, and nothing else. It is an
+  umbrella, like CommonLib's `Skyrim.h`. The only other files under `include/niffer/` sit behind
+  it: `Schema.h` (the schema engine) and `generated/` (generated handles and views). Never add a
+  header there that consumers would include directly. Internals live in private `hpp/`
+  (`"Stream.h"`, `"Registry.h"`, `"Framing.h"`, `"generated/Tables.h"`).
+- Everything is in `namespace niffer` (generated: `niffer::fields`, `niffer::view`).
 - Never set `CMAKE_MSVC_RUNTIME_LIBRARY`. NIFFER builds under the consumer's choice
   (static-CRT SKSE plugins and dynamic-CRT desktop tools both consume it).
 
@@ -29,35 +30,60 @@ also uses it under other terms (dual licensing).
 - **Round-trip or gate.** `Load` followed by `Save` reproduces the input byte-for-byte. Header
   facts are stored and re-emitted verbatim, never recomputed; only block sizes are re-measured
   on save. Length-prefixed strings keep their raw bytes, including any nulls.
-- **One `Sync(Stream&)` per block drives both directions.** The omnidirectional rule: never
-  write a separate read or write path, so the two layouts can't drift.
-- **Unknowns are loud.** Untyped blocks become `UnknownBlock` and are listed on
-  `unknownBlocks`. A typed layout that disagrees with the declared block size is demoted to
-  raw and listed on `layoutMismatches`, because that means NIFFER's layout is wrong.
+- **One description drives both directions.** On the typed path that's one `Sync(Stream&)` per
+  block. On the schema path it's one descriptor, interpreted by one engine. Never add a separate
+  read or write path.
+- **Unknowns are loud.** A block with no descriptor, or one whose decode doesn't consume exactly
+  its declared size, stays raw and is reported (typed path: `unknownBlocks` / `layoutMismatches`;
+  schema path: `Block::Modeled()` / `Refusal()`).
 - **Size-match is not verification.** A wrong layout that consumes the right byte count still
-  round-trips, so mislabeled fields can't be caught by the gate. Example: NiAVObject's inline
-  transform order (Translation, Rotation, Scale) is the reverse of the NiTransform compound's.
-  Defer a block, raw, until its field meanings are verified.
-- **Raw at disk precision, decode at the edge.** Vertex, key, morph and Havok payloads are
-  stored raw on the round-trip path. Decode helpers (`DecodeMesh`, `DecodeMorphDeltas`,
-  `ApplyMorphs`, `ExtractCollision`) turn them into usable values and are never on the
-  round-trip path.
+  round-trips. The schema gate's semantic checks (`to:` claims, the acyclic `ref` graph, string
+  ref ranges) catch mislabels the byte round-trip can't; see docs/bugs.md for what they found.
+- **Raw at disk precision, decode at the edge.** Payloads the language can't yet describe stay
+  `bytes`. Decode helpers (`DecodeMesh`, `DecodeMorphDeltas`, `ApplyMorphs`, `ExtractCollision`)
+  are never on the round-trip path.
+
+## Direction: schema-first
+
+NIFFER is moving from hand-written typed structs (`Niffer.h` + `cpp/blocks/`) to a schema the
+owner writes. Design and migration plan: [docs/schema-design.md](docs/schema-design.md). Spec:
+[docs/schema-language.md](docs/schema-language.md). The model is ESPER's
+(github.com/Cassieandstuff/ESPER).
+
+- **Engine:** `niffer::Nif` / `niffer::Block` (`include/niffer/Schema.h`, `cpp/engine/`)
+  interpret generated tables. It's one generic engine; never add per-block code to it.
+- **Typed path:** still ships until migration step 6. Don't extend it; new coverage goes in
+  `schema/`. It shares the file framing with the schema path (`hpp/Framing.h`).
+- **No host-language escape hatches.** If the language can't express something, the language
+  grows (spec + generator + engine + `tests/schema`, and a `LANGUAGE_VERSION` bump).
+
+## Schema workflow
+
+- **Source of truth:** `schema/` (YAML, one file per block class or struct) plus the spec. Never
+  edit `include/niffer/generated/`, `hpp/generated/`, `tests/generated/` or `schema.json` by
+  hand. Regenerate with the `niffer-schemagen` target (Python 3 + PyYAML) and commit them in the
+  same change as the YAML. CTest's `*-fresh` checks fail on stale output.
+- **Claims about data:** `to:`, `ref` vs `ptr`, and any field meaning describe the data. Add them
+  only when the gate confirms them on the vanilla corpus. `roundtrip --schema --refs` lists the
+  observed target classes of every ref field that has no `to:` yet.
+- A descriptor change must keep `roundtrip --schema` **GREEN**.
 
 ## Gates
 
-- `niffer-test` (CTest, synthetic) proves the code.
-- `niffer-tool roundtrip <dir>` and `tri-roundtrip <dir>` (`-DNIFFER_BUILD_TOOLS=ON`) prove it
-  on real data. The local extracted SE corpus is at
-  `D:/Modding/Development/Common/Vanilla Source Files/1170`.
-- Baseline at extraction (2026-10-09): 22,760 of 22,761 NIFs byte-identical (the one other is
-  a non-SSE version), 0 unknown blocks, 0 layout mismatches; 569 of 569 TRIs byte-identical.
-  Every change must keep both gates GREEN and must not add unknowns or mismatches.
+- `ctest` (top-level build): `niffer-test` (synthetic: stream, header, TRI, decode helpers, and
+  the schema engine over `tests/schema`), `niffer-schemagen-test` (generator validation), and
+  the two freshness checks.
+- With `-DNIFFER_BUILD_TOOLS=ON`, over the local extracted SE corpus at
+  `D:/Modding/Development/Common/Vanilla Source Files/1170`:
+  - `niffer-tool roundtrip <dir>`: the typed path. 22,760 of 22,761 NIFs byte-identical (the
+    one other is a non-SSE version), with 0 unknown blocks and 0 layout mismatches.
+  - `niffer-tool roundtrip --schema <dir>`: the schema path. Verbatim and forced re-encode are
+    byte-exact; 786,940 blocks, all modeled; 884,440 refs checked against `to:`; an acyclic
+    `ref` graph; 400,426 string refs in range.
+  - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
 
-## Direction: schema-driven (planned)
+## Bug log — sync is mandatory
 
-The next phase moves NIFFER from hand-written typed structs to a schema the owner writes (one
-YAML file per block or class). A generator emits the structs, `Sync` functions and reflection
-tables, and its output is committed so consumers never run it. ESPER
-(github.com/Cassieandstuff/ESPER) already took this path for plugin records (`schema/`,
-`tools/schemagen`, `docs/schema-language.md`), so look there first. The schema must be
-authored clean-room: it must not be derived from `nif.xml`.
+`docs/bugs.md`: symptom, what's ruled out, root cause, exact `file:line`, status
+(`OPEN`/`INVESTIGATING`/`FIXED`). Add an entry when you find a bug, flip it to `FIXED` (with the
+commit) when you fix one, in the same change as the code.

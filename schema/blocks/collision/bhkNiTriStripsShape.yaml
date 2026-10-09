@@ -1,0 +1,8 @@
+block: bhkNiTriStripsShape
+inherits: NiObject
+doc: >-
+  The first u32 is not a block reference: across the SSE corpus it is
+  0 in 26 blocks and an unrelated value in one.
+fields:
+  - { name: unknown0, type: u32 }
+  - { name: data, type: bytes, doc: "The remaining Havok fields, raw." }

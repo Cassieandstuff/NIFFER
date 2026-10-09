@@ -1,0 +1,5 @@
+block: NiSingleInterpController
+inherits: NiTimeController
+abstract: true
+fields:
+  - { name: interpolator, type: ref, to: [NiBlendInterpolator, NiBoolInterpolator, NiFloatInterpolator, NiLookAtInterpolator, NiPathInterpolator, NiPoint3Interpolator, NiTransformInterpolator] }

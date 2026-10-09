@@ -1,0 +1,6 @@
+block: NiPSysEmitterSpeedCtlr
+inherits: NiTimeController
+doc: >-
+  Typed structurally: the NiTimeController fields are decoded and the rest is kept raw.
+fields:
+  - { name: tail, type: bytes, doc: Not yet decoded. }

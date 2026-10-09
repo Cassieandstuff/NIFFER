@@ -1,0 +1,7 @@
+block: BSDecalPlacementVectorExtraData
+inherits: NiExtraData
+doc: >-
+  Extra data: referenced from NiObjectNET.extraData across the SSE corpus, and its first u32 is
+  always a valid string-table index.
+fields:
+  - { name: data, type: bytes, doc: Not yet decoded. }

@@ -1,0 +1,2 @@
+block: NiVisController
+inherits: NiSingleInterpController

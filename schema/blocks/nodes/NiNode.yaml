@@ -1,0 +1,8 @@
+block: NiNode
+inherits: NiAVObject
+doc: >-
+  A grouping node. NiObjectNET, NiAVObject and NiNode were confirmed byte for byte against clutter/barrel01.nif's 88-byte BSFadeNode (block 0).
+verified: ["clutter/barrel01.nif#0"]
+fields:
+  - { name: children, type: "ref[count: u32]", to: [NiAVObject] }
+  - { name: effects, type: "ref[count: u32]" }

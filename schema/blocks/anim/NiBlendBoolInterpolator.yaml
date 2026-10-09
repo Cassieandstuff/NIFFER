@@ -1,0 +1,4 @@
+block: NiBlendBoolInterpolator
+inherits: NiBlendInterpolator
+fields:
+  - { name: value, type: u8 }

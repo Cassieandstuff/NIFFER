@@ -1,0 +1,4 @@
+block: BSLightingShaderPropertyFloatController
+inherits: NiSingleInterpController
+fields:
+  - { name: targetVariable, type: u32 }

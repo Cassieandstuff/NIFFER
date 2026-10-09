@@ -1,0 +1,7 @@
+block: NiBoolTimelineInterpolator
+inherits: NiObject
+doc: >-
+  The same layout as NiBoolInterpolator.
+fields:
+  - { name: value, type: u8 }
+  - { name: data, type: ref, to: [NiBoolData] }

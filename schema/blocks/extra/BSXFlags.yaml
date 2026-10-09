@@ -1,0 +1,6 @@
+block: BSXFlags
+inherits: NiExtraData
+doc: >-
+  Bit flags on the root node (havok, animation, …).
+fields:
+  - { name: integerData, type: u32 }

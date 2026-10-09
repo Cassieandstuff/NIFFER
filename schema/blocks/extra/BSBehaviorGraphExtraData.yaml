@@ -1,0 +1,7 @@
+block: BSBehaviorGraphExtraData
+inherits: NiExtraData
+doc: >-
+  The root node's behavior graph path.
+fields:
+  - { name: behaviorGraphFile, type: stringref }
+  - { name: controlsBaseSkeleton, type: u8 }

@@ -6,6 +6,7 @@ void run_stream_tests();
 void run_header_tests();
 void run_tri_tests();
 void run_decode_tests();
+void run_schema_tests();
 
 int main() {
     std::printf("niffer tests\n");
@@ -13,6 +14,7 @@ int main() {
     run_header_tests();
     run_tri_tests();
     run_decode_tests();
+    run_schema_tests();
     std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;
 }

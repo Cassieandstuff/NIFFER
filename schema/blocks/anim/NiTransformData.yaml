@@ -1,0 +1,5 @@
+block: NiTransformData
+inherits: NiObject
+fields:
+  - { name: numRotationKeys, type: u32 }
+  - { name: tail, type: bytes, doc: "The rotation, translation and scale key groups, raw." }

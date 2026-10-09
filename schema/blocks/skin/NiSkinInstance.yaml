@@ -1,0 +1,10 @@
+block: NiSkinInstance
+inherits: NiObject
+doc: >-
+  Binds a shape to its skin data, partition and bones. Confirmed against actors/character/character assets/childhead.nif block 4.
+verified: ["actors/character/character assets/childhead.nif#4"]
+fields:
+  - { name: data, type: ref, to: [NiSkinData] }
+  - { name: skinPartition, type: ref, to: [NiSkinPartition] }
+  - { name: skeletonRoot, type: ptr, to: [NiNode] }
+  - { name: bones, type: "ptr[count: u32]", to: [NiNode] }

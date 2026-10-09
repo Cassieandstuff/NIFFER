@@ -1,0 +1,4 @@
+block: BSPSysSimpleColorModifier
+inherits: NiPSysModifier
+fields:
+  - { name: tail, type: bytes, doc: Not yet decoded. }

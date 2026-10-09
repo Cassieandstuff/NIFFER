@@ -1,0 +1,9 @@
+block: BSInvMarker
+inherits: NiExtraData
+doc: >-
+  The inventory display transform.
+fields:
+  - { name: rotationX, type: u16 }
+  - { name: rotationY, type: u16 }
+  - { name: rotationZ, type: u16 }
+  - { name: zoom, type: f32 }

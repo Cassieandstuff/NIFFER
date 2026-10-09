@@ -1,0 +1,8 @@
+block: NiControllerManager
+inherits: NiTimeController
+doc: >-
+  Confirmed against shacklewall block 4 (47 bytes).
+fields:
+  - { name: cumulative, type: u8 }
+  - { name: controllerSequences, type: "ref[count: u32]", to: [NiControllerSequence] }
+  - { name: objectPalette, type: ref, to: [NiDefaultAVObjectPalette] }

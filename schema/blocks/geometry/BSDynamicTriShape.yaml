@@ -1,0 +1,8 @@
+block: BSDynamicTriShape
+inherits: BSTriShape
+doc: >-
+  CPU-writable geometry (compiled NPC facegen heads). Confirmed against actors/character/character assets/childhead.nif block 3.
+verified: ["actors/character/character assets/childhead.nif#3"]
+fields:
+  - { name: dynamicDataSize, type: u32, doc: "Bytes; numVertices * 16." }
+  - { name: dynamicData, type: bytes, size: dynamicDataSize, doc: "A Vector4 per vertex, raw." }

@@ -1,0 +1,9 @@
+block: NiBlendInterpolator
+inherits: NiObject
+abstract: true
+doc: >-
+  Manager-controlled blend state. Confirmed against hotiron and eyeofmagnus (the managed form, with no stored interpolator arrays).
+fields:
+  - { name: flags, type: u8 }
+  - { name: arraySize, type: u8 }
+  - { name: weightThreshold, type: f32 }

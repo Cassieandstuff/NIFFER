@@ -1,0 +1,4 @@
+block: NiBillboardNode
+inherits: NiNode
+fields:
+  - { name: billboardMode, type: u16 }

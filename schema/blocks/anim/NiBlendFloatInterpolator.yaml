@@ -1,0 +1,4 @@
+block: NiBlendFloatInterpolator
+inherits: NiBlendInterpolator
+fields:
+  - { name: value, type: f32 }

@@ -1,0 +1,9 @@
+block: bhkCollisionObject
+inherits: NiObject
+doc: >-
+  Confirmed against clutter/barrel01.nif block 6 (10 bytes).
+verified: ["clutter/barrel01.nif#6"]
+fields:
+  - { name: target, type: ptr, to: [NiNode] }
+  - { name: flags, type: u16 }
+  - { name: body, type: ref, to: [bhkRigidBody, bhkRigidBodyT, bhkSimpleShapePhantom] }

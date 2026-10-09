@@ -1,0 +1,5 @@
+block: BSFadeNode
+inherits: NiNode
+doc: >-
+  Same layout as NiNode.
+verified: ["clutter/barrel01.nif#0"]

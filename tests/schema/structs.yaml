@@ -1,0 +1,13 @@
+# Test-only schema: exercises every language-0.1 construct (several descriptors
+# per file, which the language allows; the real schema keeps one per file).
+struct: Pair
+size: 4
+fields:
+  - { name: a, type: u16 }
+  - { name: b, type: u16 }
+---
+struct: Counted
+doc: A named struct whose array is counted by its own earlier field.
+fields:
+  - { name: n, type: u8 }
+  - { name: items, type: "u16[count: n]" }

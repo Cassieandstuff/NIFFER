@@ -1,0 +1,4 @@
+block: NiFloatData
+inherits: NiObject
+fields:
+  - { name: keys, type: KeyGroup }

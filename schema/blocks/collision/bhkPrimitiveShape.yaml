@@ -1,0 +1,9 @@
+block: bhkPrimitiveShape
+inherits: NiObject
+abstract: true
+doc: >-
+  A structural grouping, not a game class: convex leaf shapes (Havok material and radius). Typed structurally: the links that keep the block graph walkable are decoded and the Havok payload is kept raw.
+fields:
+  - { name: material, type: u32 }
+  - { name: radius, type: f32 }
+  - { name: data, type: bytes, doc: "Dimensions, vertices or parameters, raw." }

@@ -1,0 +1,5 @@
+block: NiFloatInterpolator
+inherits: NiObject
+fields:
+  - { name: value, type: f32 }
+  - { name: data, type: ref, to: [NiFloatData] }

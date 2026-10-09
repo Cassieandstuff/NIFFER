@@ -1,0 +1,4 @@
+block: NiColorData
+inherits: NiObject
+fields:
+  - { name: keys, type: KeyGroup }

@@ -1,0 +1,58 @@
+block: NiObject
+abstract: true
+---
+block: TBase
+inherits: NiObject
+abstract: true
+fields:
+  - { name: name, type: stringref }
+  - { name: flags, type: u32 }
+---
+block: TLeaf
+inherits: TBase
+fields:
+  - { name: value, type: u32 }
+---
+block: TRest
+inherits: NiObject
+fields:
+  - { name: data, type: bytes }
+---
+block: TAll
+inherits: TBase
+verified: ["synthetic"]
+fields:
+  - { name: u8v, type: u8 }
+  - { name: u16v, type: u16 }
+  - { name: u32v, type: u32 }
+  - { name: u64v, type: u64 }
+  - { name: i8v, type: i8 }
+  - { name: i16v, type: i16 }
+  - { name: i32v, type: i32 }
+  - { name: i64v, type: i64 }
+  - { name: f32v, type: f32 }
+  - { name: child, type: ref, to: [TBase] }
+  - { name: back, type: ptr }
+  - { name: label, type: sizedstring }
+  - { name: fixedBytes, type: bytes, size: 3 }
+  - { name: pairs, type: "Pair[2]" }
+  - { name: small, type: "u8[count: u8]" }
+  - { name: medium, type: "u16[count: u16]" }
+  - { name: leaves, type: "ref[count: u32]", to: [TLeaf] }
+  - { name: count, type: u16 }
+  - { name: byCount, type: "u32[count: count]" }
+  - { name: blobSize, type: u32 }
+  - { name: blob, type: bytes, size: blobSize }
+  - { name: counted, type: Counted }
+  - name: rows
+    array: "count: u8"
+    fields:
+      - { name: mask, type: u8 }
+      - { name: value, type: f32, if: { field: mask, mask: 1 } }
+      - { name: outer, type: u16, if: { field: flags, mask: 16 } }
+  - { name: sel, type: i8 }
+  - { name: negOnly, type: u8, if: { field: sel, max: -1 } }
+  - { name: eqTwo, type: u8, if: { field: sel, eq: 2 } }
+  - { name: neTwo, type: u8, if: { field: sel, ne: 2 } }
+  - { name: minOne, type: u8, if: { field: sel, min: 1 } }
+  - { name: tail, type: "u8[]" }

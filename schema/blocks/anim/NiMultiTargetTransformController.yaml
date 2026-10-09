@@ -1,0 +1,4 @@
+block: NiMultiTargetTransformController
+inherits: NiTimeController
+fields:
+  - { name: extraTargets, type: "ptr[count: u16]", to: [NiNode] }

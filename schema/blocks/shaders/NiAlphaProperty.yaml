@@ -1,0 +1,7 @@
+block: NiAlphaProperty
+inherits: NiObjectNET
+doc: >-
+  Blend and test state. Confirmed against akatoshamuletf block 10 (15 bytes).
+fields:
+  - { name: flags, type: u16 }
+  - { name: threshold, type: u8 }

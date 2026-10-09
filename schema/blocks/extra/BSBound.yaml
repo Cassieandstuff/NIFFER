@@ -1,0 +1,7 @@
+block: BSBound
+inherits: NiExtraData
+doc: >-
+  An axis-aligned bound.
+fields:
+  - { name: center, type: Vec3 }
+  - { name: dimensions, type: Vec3 }

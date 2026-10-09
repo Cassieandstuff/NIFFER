@@ -27,11 +27,24 @@ preference. When you add or change a block layout:
   byte count still round-trips, so check that the field *meanings* are right, not just the
   byte counts.
 
+## Changing the schema
+
+Block layouts live in `schema/` (see [docs/schema-language.md](docs/schema-language.md)). After
+editing a descriptor, regenerate the outputs with the `niffer-schemagen` target (Python 3 +
+PyYAML) and commit them together with the YAML. Never edit generated files by hand.
+
+`to:` targets, `ref` vs `ptr`, and field meanings are claims about the data. Add one only when
+`niffer-tool roundtrip --schema` confirms it over the vanilla corpus; `--refs` shows the target
+classes each untyped reference field actually has.
+
+The typed path (`cpp/blocks/`) is being retired. Don't extend it; new coverage goes in the
+schema.
+
 ## Before you open a pull request
 
-- `ctest` passes (`niffer-test`).
-- With `-DNIFFER_BUILD_TOOLS=ON`, `niffer-tool roundtrip` and `niffer-tool tri-roundtrip`
-  over the full extracted vanilla corpus stay **GREEN**: every SSE file byte-identical, and
-  no new unknown blocks or layout mismatches.
-- Each block keeps **one** `Sync(Stream&)` that drives both read and write. Never add a
-  separate read or write path for one direction.
+- `ctest` passes: `niffer-test`, the generator tests, and the generated-output freshness checks.
+- With `-DNIFFER_BUILD_TOOLS=ON`, `niffer-tool roundtrip`, `niffer-tool roundtrip --schema` and
+  `niffer-tool tri-roundtrip` over the full extracted vanilla corpus stay **GREEN**: every SSE
+  file byte-identical, no new unknown or refused blocks, and no reference or string violations.
+- One description drives both read and write: one descriptor, or on the typed path one
+  `Sync(Stream&)`. Never add a separate read or write path for one direction.

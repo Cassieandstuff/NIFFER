@@ -1,0 +1,9 @@
+block: NiObjectNET
+inherits: NiObject
+abstract: true
+doc: >-
+  A named object that can carry extra data and a controller.
+fields:
+  - { name: name, type: stringref }
+  - { name: extraData, type: "ref[count: u32]", to: [NiExtraData] }
+  - { name: controller, type: ref, to: [NiTimeController] }

@@ -1,0 +1,18 @@
+block: BSTriShape
+inherits: NiAVObject
+doc: >-
+  Confirmed against clutter/barrel01.nif block 7.
+verified: ["clutter/barrel01.nif#7"]
+fields:
+  - { name: boundCenter, type: Vec3 }
+  - { name: boundRadius, type: f32 }
+  - { name: skin, type: ref, to: [NiSkinInstance] }
+  - { name: shaderProperty, type: ref, to: [BSLightingShaderProperty, BSEffectShaderProperty, BSSkyShaderProperty, BSWaterShaderProperty] }
+  - { name: alphaProperty, type: ref, to: [NiAlphaProperty] }
+  - { name: vertexDesc, type: u64, doc: "The BSVertexDesc bitfield: the per-vertex layout." }
+  - { name: numTriangles, type: u16 }
+  - { name: numVertices, type: u16 }
+  - { name: dataSize, type: u32 }
+  - { name: geometryData, type: bytes, size: dataSize, doc: "Interleaved vertex data then triangles, raw until vertex unions land." }
+  - { name: particleDataSize, type: u32 }
+  - { name: particleData, type: "u16[count: particleDataSize]", doc: Present only on particle/FX shapes. }

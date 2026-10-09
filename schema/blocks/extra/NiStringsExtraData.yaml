@@ -1,0 +1,4 @@
+block: NiStringsExtraData
+inherits: NiExtraData
+fields:
+  - { name: data, type: "sizedstring[count: u32]" }

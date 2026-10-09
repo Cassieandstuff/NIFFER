@@ -1,0 +1,5 @@
+block: bhkListShape
+inherits: NiObject
+fields:
+  - { name: subShapes, type: "ref[count: u32]", to: [bhkBoxShape, bhkCapsuleShape, bhkCompressedMeshShape, bhkConvexTransformShape, bhkConvexVerticesShape, bhkCylinderShape, bhkListShape, bhkMoppBvTreeShape, bhkNiTriStripsShape, bhkPlaneShape, bhkSphereShape, bhkTransformShape] }
+  - { name: data, type: bytes, doc: "The material and filter tail, raw." }

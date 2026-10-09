@@ -1,0 +1,5 @@
+block: NiBoolInterpolator
+inherits: NiObject
+fields:
+  - { name: value, type: u8 }
+  - { name: data, type: ref, to: [NiBoolData] }

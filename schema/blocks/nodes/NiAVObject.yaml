@@ -1,0 +1,9 @@
+block: NiAVObject
+inherits: NiObjectNET
+abstract: true
+doc: >-
+  A scene object with a local transform and an optional collision object.
+fields:
+  - { name: flags, type: u32 }
+  - { name: transform, type: AvTransform }
+  - { name: collisionObject, type: ref, to: [bhkCollisionObject, bhkBlendCollisionObject] }

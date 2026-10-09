@@ -1,0 +1,7 @@
+block: BSShaderTextureSet
+inherits: NiObject
+doc: >-
+  The texture-path list. Confirmed against clutter/barrel01.nif block 9 (9 slots, 2 named, 7 empty).
+verified: ["clutter/barrel01.nif#9"]
+fields:
+  - { name: textures, type: "sizedstring[count: u32]" }

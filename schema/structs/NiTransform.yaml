@@ -1,0 +1,8 @@
+struct: NiTransform
+size: 52
+doc: >-
+  The transform compound: rotation, translation, scale (NiSkinData's skin and bone transforms).
+fields:
+  - { name: rotation, type: Matrix33 }
+  - { name: translation, type: Vec3 }
+  - { name: scale, type: f32 }

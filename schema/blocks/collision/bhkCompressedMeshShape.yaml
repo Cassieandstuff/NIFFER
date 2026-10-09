@@ -1,0 +1,10 @@
+block: bhkCompressedMeshShape
+inherits: NiObject
+doc: >-
+  The first field is a pointer back to the scene node (CollisionExtract reads it as the shape's
+  target), not a child shape. Across the SSE corpus it is always 0, the root node, so the data
+  alone can't distinguish it from a constant 0; it is modeled as a ptr to keep the ref graph
+  acyclic.
+fields:
+  - { name: target, type: ptr, to: [NiNode] }
+  - { name: data, type: bytes, doc: "The remaining Havok fields, raw." }

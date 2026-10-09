@@ -281,6 +281,121 @@ void Container() {
     CHECK(!bad.has_value() && bad.error().kind == NifErrorKind::UnsupportedVersion);
 }
 
+// TNew: kind, h, pick (union on kind & 3), windowSize, window (Probe[] in a
+// byte window), fixedWindow (u16[] in 4 bytes), tail (Probe). Probe.y is present
+// when the enclosing `kind` has bit 2 set.
+std::vector<uint8_t> MakeTNew(uint8_t kind) {
+    const bool y = kind & 4;
+    Bytes x;
+    x.put<uint8_t>(kind).put<uint16_t>(0x3C00);                 // kind, h = 1.0
+    switch (kind & 3) {
+    case 1: x.put<float>(1.5f); break;                          // pick/one
+    case 2: case 3:                                             // pick/many
+        x.put<uint8_t>(7).put<uint8_t>(1);
+        if (y) x.put<uint16_t>(0x1234);
+        break;
+    default: break;                                             // pick/none: no bytes
+    }
+    x.put<uint16_t>(y ? 6 : 2);                                 // windowSize
+    x.put<uint8_t>(2); if (y) x.put<uint16_t>(0x2222);          // window[0]
+    x.put<uint8_t>(3); if (y) x.put<uint16_t>(0x3333);          // window[1]
+    x.put<uint16_t>(9).put<uint16_t>(10);                       // fixedWindow
+    x.put<uint8_t>(4); if (y) x.put<uint16_t>(5);               // tail
+    return x.b;
+}
+
+void Language02() {
+    // Halves.
+    CHECK_EQ(Half::FromFloat(1.0f).bits, 0x3C00);
+    CHECK_EQ(Half::FromFloat(-2.0f).bits, 0xC000);
+    CHECK_EQ(Half::FromFloat(65504.0f).bits, 0x7BFF);
+    CHECK_EQ(Half::FromFloat(1e9f).bits, 0x7C00);
+    CHECK_EQ(Half::FromFloat(0.0f).bits, 0x0000);
+    CHECK_EQ(Half{0x3C00}.ToFloat(), 1.0f);
+    CHECK_EQ(Half::FromFloat(Half{0x3555}.ToFloat()).bits, 0x3555);   // exact round trip
+    CHECK_EQ(Half::FromFloat(Half{0x0001}.ToFloat()).bits, 0x0001);   // smallest subnormal
+
+    for (uint8_t kind : {uint8_t(0), uint8_t(1), uint8_t(2), uint8_t(6), uint8_t(7), uint8_t(4)}) {
+        const auto bytes = MakeTNew(kind);
+        Block b = Block::Load(Test(), "TNew", bytes);
+        CHECK(b.Modeled());
+        if (!b.Modeled()) { std::printf("    TNew kind=%u: %s\n", kind, b.Refusal().c_str()); continue; }
+        CHECK(b.Encode(true) == bytes);
+        auto v = tv::TNew::From(b);
+        CHECK(v.has_value());
+        if (!v) continue;
+        CHECK_EQ(v->H().ToFloat(), 1.0f);
+        const int expected = (kind & 3) == 1 ? 0 : (kind & 3) >= 2 ? 1 : 2;
+        CHECK_EQ(v->PickCase(), expected);
+        CHECK_EQ(v->PickOne().has_value(), expected == 0);
+        CHECK_EQ(v->PickMany().has_value(), expected == 1);
+        CHECK_EQ(v->PickNone(), expected == 2);
+        if (expected == 0) CHECK_EQ(*v->PickOne(), 1.5f);
+        if (expected == 1) {
+            CHECK_EQ(v->PickMany()->A(), 7);
+            CHECK_EQ(v->PickMany()->B().X(), 1);
+            CHECK_EQ(v->PickMany()->B().Y().has_value(), (kind & 4) != 0);
+        }
+        CHECK_EQ(v->Window().size(), 2u);
+        CHECK_EQ(v->Window()[1].X(), 3);
+        CHECK_EQ(v->Window()[1].Y().has_value(), (kind & 4) != 0);
+        CHECK(v->FixedWindow() == (std::vector<uint16_t>{9, 10}));
+        CHECK_EQ(v->Tail().X(), 4);
+    }
+
+    // Paths through a union case, and a case that isn't selected.
+    {
+        Block b = Block::Load(Test(), "TNew", MakeTNew(6));
+        auto y = b.Find("pick/many/b/y");
+        CHECK(y.has_value() && *b.GetAt<uint16_t>(*y) == 0x1234);
+        CHECK(b.Find("pick/one").has_value());
+        CHECK(!b.GetAt<float>(*b.Find("pick/one")).has_value());
+        CHECK(!b.SetAt<float>(*b.Find("pick/one"), 2.f));   // the selector chooses the case
+        CHECK(!b.Dirty());
+        CHECK(!b.Find("pick/nope").has_value());
+        CHECK_EQ(*b.Get(tf::TNew::pick::many::a), 7);
+
+        // Editing inside the selected case re-encodes exactly.
+        CHECK(b.Set(tf::TNew::pick::many::a, uint8_t(9)));
+        Block r = Block::Load(Test(), "TNew", b.Encode());
+        CHECK(r.Modeled() && *r.Get(tf::TNew::pick::many::a) == 9);
+    }
+
+    // Replacing a byte-window array updates its size field to the encoded size.
+    {
+        Block b = Block::Load(Test(), "TNew", MakeTNew(4));   // Probe has y: 3 bytes each
+        Value three = *b.GetValue(*b.Find("window"));
+        three.items.push_back(three.items[0]);
+        CHECK(b.StoreValue(*b.Find("window"), three));
+        CHECK_EQ(*b.Get(tf::TNew::windowSize), 9);
+        Block r = Block::Load(Test(), "TNew", b.Encode());
+        CHECK(r.Modeled());
+        CHECK_EQ(tv::TNew::From(r)->Window().size(), 3u);
+    }
+
+    // The same named struct resolved at a different site: TNew2's kind sits
+    // after a u32, and Probe still reads it.
+    {
+        Bytes x;
+        x.put<uint32_t>(0xAAAAAAAA).put<uint8_t>(4).put<uint8_t>(8).put<uint16_t>(0x4444);
+        Block b = Block::Load(Test(), "TNew2", x.b);
+        CHECK(b.Modeled());
+        auto v = tv::TNew2::From(b);
+        CHECK(v && v->P().Y() == uint16_t(0x4444));
+        CHECK(b.Encode(true) == x.b);
+    }
+
+    // A byte window larger than what's left refuses. Kind 4 selects the empty
+    // case, so windowSize sits right after kind (1) and h (2).
+    {
+        auto bad = MakeTNew(4);
+        bad[3] = 0xFF;   // windowSize = 255: past the end of the block
+        Block b = Block::Load(Test(), "TNew", bad);
+        CHECK(!b.Modeled());
+        CHECK(b.Refusal().find("window") != std::string::npos);
+    }
+}
+
 void RealSchemaSmoke() {
     const auto& s = schema::Main();
     CHECK(s.Find("NiNode") != nullptr);
@@ -322,5 +437,6 @@ void run_schema_tests() {
     LengthFields();
     Refusals();
     Container();
+    Language02();
     RealSchemaSmoke();
 }

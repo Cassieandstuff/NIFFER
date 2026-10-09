@@ -20,6 +20,7 @@ rejected by name.
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import re
 import sys
@@ -31,7 +32,7 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit("schemagen: PyYAML is required (pip install pyyaml)")
 
-LANGUAGE_VERSION = "0.1"
+LANGUAGE_VERSION = "0.2"
 
 # spelling -> (C++ Kind, C++ value type, byte size)
 SCALARS = {
@@ -39,7 +40,7 @@ SCALARS = {
     "u32": ("U32", "uint32_t", 4), "u64": ("U64", "uint64_t", 8),
     "i8": ("I8", "int8_t", 1), "i16": ("I16", "int16_t", 2),
     "i32": ("I32", "int32_t", 4), "i64": ("I64", "int64_t", 8),
-    "f32": ("F32", "float", 4),
+    "f32": ("F32", "float", 4), "half": ("Half", "::niffer::Half", 2),
 }
 INTEGER_KINDS = {"U8", "U16", "U32", "U64", "I8", "I16", "I32", "I64"}
 PREFIX_LEN = {"u8": "Prefix8", "u16": "Prefix16", "u32": "Prefix32"}
@@ -47,7 +48,7 @@ COND_OPS = {"eq": "Eq", "ne": "Ne", "min": "Min", "max": "Max", "mask": "Mask"}
 
 # Constructs specified by the design but not in this language version: reject by name.
 NOT_YET = {
-    "union": "unions", "half": "half-precision floats", "packed": "packed arrays",
+    "packed": "packed arrays", "lookup": "lookup selectors",
     "enum": "enum hints", "flags": "flag hints", "unit": "unit hints",
 }
 
@@ -64,11 +65,21 @@ RESERVED_FIELDS = {"self", "block", "cursor", "path", "from"}
 BLOCK_KEYS = {"block", "inherits", "abstract", "fields", "verified", "doc"}
 STRUCT_KEYS = {"struct", "size", "fields", "doc"}
 MANIFEST_KEYS = {"manifest", "schemaVersion"}
-FIELD_KEYS = {"name", "type", "fields", "array", "to", "size", "if", "doc"}
+FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "doc"}
+UNION_KEYS = {"by", "cases", "default"}
+CASE_KEYS = {"when", "name", "type", "fields", "to", "doc"}
+SELECTOR_KEYS = {"field", "mask"}
+
+_serial = itertools.count()
 
 
 class SchemaError(Exception):
     pass
+
+
+class LookupMiss(SchemaError):
+    """A field reference found no earlier field; a named struct resolved in
+    isolation retries in its use site's context."""
 
 
 def fail(where: str, msg: str):
@@ -91,11 +102,11 @@ def check_keys(where: str, d: dict, allowed: set[str]):
             fail(where, f"unknown key '{k}' (allowed: {', '.join(sorted(allowed))})")
 
 
-def check_field_name(where: str, name) -> str:
+def check_field_name(where: str, name, what="field name") -> str:
     if not isinstance(name, str) or not re.fullmatch(r"[a-z][A-Za-z0-9]*", name):
-        fail(where, f"field name must be camelCase ([a-z][A-Za-z0-9]*), got {name!r}")
+        fail(where, f"{what} must be camelCase ([a-z][A-Za-z0-9]*), got {name!r}")
     if name in RESERVED_FIELDS:
-        fail(where, f"field name '{name}' is reserved")
+        fail(where, f"{what} '{name}' is reserved")
     return name
 
 
@@ -111,7 +122,21 @@ def check_block_name(where: str, name) -> str:
     return name
 
 
+def check_int(where: str, v, what: str) -> int:
+    if not isinstance(v, int) or isinstance(v, bool):
+        fail(where, f"{what} must be an integer, got {v!r}")
+    return v
+
+
 # ── Model ─────────────────────────────────────────────────────────────────────
+
+@dataclass
+class Case:
+    name: str
+    when: tuple                    # values; empty for the default case
+    type: "Type | None"            # None: an empty case (zero bytes)
+    is_default: bool = False
+
 
 @dataclass
 class Type:
@@ -124,6 +149,7 @@ class Type:
     struct: "Struct | None" = None  # Struct
     to: tuple = ()                 # Ref/Ptr target block names
     spelling: str = ""             # scalar/base spelling, for json
+    cases: list = field(default_factory=list)   # Union: [Case]
 
     def fixed_size(self) -> int | None:
         if self.kind in ("Ref", "Ptr", "StringRef"):
@@ -136,6 +162,8 @@ class Type:
         if self.kind == "Array" and self.len == "Fixed":
             es = self.elem.fixed_size()
             return None if es is None else es * self.count
+        if self.kind == "Array" and self.len == "Window" and self.count:
+            return self.count
         if self.kind == "Struct":
             return self.struct.fixed_size()
         return None
@@ -145,6 +173,8 @@ class Type:
             return True
         if self.kind == "Struct" and self.struct.fields:
             return self.struct.fields[-1].type.consumes_rest()
+        if self.kind == "Union":
+            return any(c.type is not None and c.type.consumes_rest() for c in self.cases)
         return False
 
 
@@ -155,6 +185,7 @@ class Field:
     where: str
     len_ref: tuple | None = None        # (up, index, name)
     cond: tuple | None = None           # (op, up, index, value, fieldName, opSpelling)
+    sel: tuple | None = None            # Union: (up, index, mask, fieldName)
     doc: str | None = None
     declared_by: str | None = None      # block that declares it (block layouts)
 
@@ -165,7 +196,10 @@ class Struct:
     where: str
     named: bool
     fields: list[Field] = field(default_factory=list)
-    resolved: bool = False
+    key: str = ""
+
+    def __post_init__(self):
+        self.key = f"struct:{self.name}#{next(_serial)}"
 
     def fixed_size(self) -> int | None:
         total = 0
@@ -198,10 +232,10 @@ class Schema:
     def __init__(self):
         self.version: str | None = None
         self.struct_docs: dict[str, tuple[str, dict]] = {}
-        self.structs: dict[str, Struct] = {}
-        self.inline_structs: list[Struct] = []
+        self.free_structs: dict[str, Struct] = {}   # named structs that read only their own fields
+        self.structs: list[Struct] = []              # every resolved struct object
         self.blocks: dict[str, Block] = {}
-        self._resolving_structs: set[str] = set()
+        self._resolving: set[str] = set()
 
     # ── Loading ───────────────────────────────────────────────────────────────
     def load(self, root: Path):
@@ -218,10 +252,10 @@ class Schema:
                 where = rel if len(docs) == 1 else f"{rel}[{i}]"
                 if not isinstance(doc, dict):
                     fail(where, "a descriptor must be a mapping")
-                kinds = [k for k in ("manifest", "block", "struct") if k in doc]
                 for k in doc:
-                    if k in NOT_YET and k not in FIELD_KEYS:
+                    if k in NOT_YET:
                         fail(where, f"'{k}' ({NOT_YET[k]}) is not supported in language {LANGUAGE_VERSION}")
+                kinds = [k for k in ("manifest", "block", "struct") if k in doc]
                 if len(kinds) != 1:
                     fail(where, "a descriptor needs exactly one of: manifest, block, struct")
                 getattr(self, f"_load_{kinds[0]}")(where, doc)
@@ -254,8 +288,7 @@ class Schema:
         b.abstract = bool(d.get("abstract", False))
         if "abstract" in d and not isinstance(d["abstract"], bool):
             fail(b.where, "'abstract' must be true or false")
-        fields = d.get("fields", [])
-        if not isinstance(fields, list):
+        if not isinstance(d.get("fields", []), list):
             fail(b.where, "'fields' must be a list")
         verified = d.get("verified", [])
         if not isinstance(verified, list) or not all(isinstance(v, str) for v in verified):
@@ -278,35 +311,66 @@ class Schema:
                 fail(b.where, "'inherits' is required (every block except NiObject has a parent)")
             elif b.parent not in self.blocks:
                 fail(b.where, f"inherits unknown block '{b.parent}'")
-        for name in self.struct_docs:
-            self.named_struct(name, "schema")
         for b in self.blocks.values():
             self.resolve_block(b)
+        # Context-free named structs nothing uses still get validated (and a view).
+        for name in self.struct_docs:
+            if name not in self.free_structs:
+                try:
+                    self.named_struct(name, "schema", [])
+                except LookupMiss:
+                    pass   # reads enclosing fields: validated at its use sites
         # `to:` targets can only be checked once every block is known.
         for t in self.all_types():
             for target in t.to:
                 if target not in self.blocks:
                     raise SchemaError(f"'to:' names unknown block '{target}'")
+        # One view per struct name: every instance of a name must agree.
+        shapes: dict[str, tuple] = {}
+        for s in self.structs:
+            shape = tuple((f.name, f.type.kind) for f in s.fields)
+            if shapes.setdefault(s.name, shape) != shape:
+                fail(s.where, f"two different structs are both named '{s.name}'")
 
-    def named_struct(self, name: str, where: str) -> Struct:
-        if name in self.structs:
-            s = self.structs[name]
-            if not s.resolved:
-                fail(where, f"struct '{name}' contains itself")
-            return s
+    def named_struct(self, name: str, where: str, chain: list[list[Field]]) -> Struct:
+        """A named struct at a use site. A struct whose fields reference only
+        its own fields is resolved once; one that reads an enclosing field is
+        resolved again at each use site, against that site's fields."""
+        if name in self.free_structs:
+            return self.free_structs[name]
         if name not in self.struct_docs:
             fail(where, f"unknown type '{name}'")
+        if name in self._resolving:
+            fail(where, f"struct '{name}' contains itself")
         swhere, d = self.struct_docs[name]
+        mark = len(self.structs)
+        try:
+            s = self._resolve_named(name, swhere, d, [])
+            self.free_structs[name] = s
+            return s
+        except LookupMiss:
+            # Discard what the isolated attempt built, except context-free named
+            # structs it resolved along the way (those are cached and reused).
+            self.structs[mark:] = [x for x in self.structs[mark:]
+                                   if self.free_structs.get(x.name) is x]
+            if not chain:
+                raise
+        return self._resolve_named(name, swhere, d, chain)
+
+    def _resolve_named(self, name, swhere, d, chain) -> Struct:
         s = Struct(name=name, where=f"{swhere} ({name})", named=True)
-        self.structs[name] = s
-        self.resolve_fields(s.where, s.name, d["fields"], s.fields, chain=[], named=True)
+        self._resolving.add(name)
+        try:
+            self.resolve_fields(s.where, s.name, d["fields"], s.fields, chain=chain)
+        finally:
+            self._resolving.discard(name)
         self.check_rest(s.where, s.fields)
-        s.resolved = True
         if "size" in d:
             fs = s.fixed_size()
             if not isinstance(d["size"], int) or fs != d["size"]:
                 fail(s.where, f"declared size {d['size']!r} but the fields add up to "
                               f"{fs if fs is not None else 'a variable size'}")
+        self.structs.append(s)
         return s
 
     def resolve_block(self, b: Block):
@@ -321,7 +385,7 @@ class Schema:
             self.resolve_block(parent)
             layout = list(parent.layout)
         own_start = len(layout)
-        self.resolve_fields(b.where, b.name, b.raw.get("fields", []), layout, chain=[], named=False)
+        self.resolve_fields(b.where, b.name, b.raw.get("fields", []), layout, chain=[])
         b.own = layout[own_start:]
         for f in b.own:
             f.declared_by = b.name
@@ -337,7 +401,7 @@ class Schema:
                      "only the last field may consume the rest of the block")
 
     def resolve_fields(self, where: str, owner: str, raw_fields, out: list[Field],
-                       chain: list[list[Field]], named: bool):
+                       chain: list[list[Field]]):
         """Resolves `raw_fields` into `out` (which may already hold inherited
         fields). `chain` is the enclosing structs' fields, outermost first."""
         if not isinstance(raw_fields, list):
@@ -354,41 +418,36 @@ class Schema:
                              "inherited fields included)")
             scopes = chain + [out]
 
-            if ("type" in fd) == ("fields" in fd):
-                fail(fwhere, "a field needs exactly one of 'type' or 'fields'")
+            if sum(k in fd for k in ("type", "fields", "union")) != 1:
+                fail(fwhere, "a field needs exactly one of 'type', 'fields' or 'union'")
             if "array" in fd and "fields" not in fd:
                 fail(fwhere, "'array' is only for inline structs ('fields:'); put the suffix in 'type'")
 
+            sel = None
+            len_name = None
             if "fields" in fd:
-                s = Struct(name=f"{owner}{pascal(name)}", where=fwhere, named=False)
-                if s.name in self.struct_docs or s.name in self.blocks or \
-                        any(x.name == s.name for x in self.inline_structs):
-                    fail(fwhere, f"inline struct name '{s.name}' collides with another type")
-                self.inline_structs.append(s)
-                self.resolve_fields(fwhere, s.name, fd["fields"], s.fields, chain=scopes, named=False)
-                if not s.fields:
-                    fail(fwhere, "an inline struct needs fields")
-                self.check_rest(fwhere, s.fields)
-                s.resolved = True
-                base = Type(kind="Struct", key=f"struct:{s.name}", struct=s)
+                s = self.inline_struct(fwhere, f"{owner}{pascal(name)}", fd["fields"], scopes)
+                base = Type(kind="Struct", key=s.key, struct=s)
                 suffix = fd.get("array")
                 if suffix is not None and not isinstance(suffix, str):
                     suffix = str(suffix)
-                ftype, len_name = self.apply_suffix(fwhere, base, suffix)
+                ftype, len_name = self.apply_suffix(fwhere, base, suffix, fd)
+            elif "union" in fd:
+                ftype, sel = self.parse_union(fwhere, f"{owner}{pascal(name)}", fd["union"], scopes)
+                if "to" in fd or "size" in fd:
+                    fail(fwhere, "put 'to'/'size' on the union's cases")
             else:
-                ftype, len_name = self.parse_type(fwhere, fd["type"], fd, named)
+                ftype, len_name = self.parse_type(fwhere, fd["type"], fd, scopes)
 
-            f = Field(name=name, type=ftype, where=fwhere, doc=fd.get("doc"))
-
-            # Options that belong to particular types.
+            f = Field(name=name, type=ftype, where=fwhere, doc=fd.get("doc"), sel=sel)
             base_t = ftype.elem if ftype.kind == "Array" else ftype
             if "to" in fd and base_t.kind not in ("Ref", "Ptr"):
                 fail(fwhere, "'to' applies only to ref/ptr")
-            if "size" in fd and ftype.kind != "Bytes":
-                fail(fwhere, "'size' applies only to bytes")
+            if "size" in fd and not (ftype.kind == "Bytes" or ftype.len == "Window"):
+                fail(fwhere, "'size' applies only to bytes and to T[] arrays")
 
             if len_name is not None:
-                up, idx, target = self.lookup(fwhere, len_name, scopes, named)
+                up, idx, _ = self.lookup(fwhere, len_name, scopes)
                 f.len_ref = (up, idx, len_name)
             if "if" in fd:
                 c = fd["if"]
@@ -397,33 +456,93 @@ class Schema:
                 ops = [k for k in c if k != "field"]
                 if len(ops) != 1 or ops[0] not in COND_OPS:
                     fail(fwhere, f"'if' needs exactly one operator of: {', '.join(COND_OPS)}")
-                operand = c[ops[0]]
-                if not isinstance(operand, int) or isinstance(operand, bool):
-                    fail(fwhere, "'if' operand must be an integer")
-                up, idx, _ = self.lookup(fwhere, c["field"], scopes, named)
+                operand = check_int(fwhere, c[ops[0]], "the 'if' operand")
+                up, idx, _ = self.lookup(fwhere, c["field"], scopes)
                 f.cond = (COND_OPS[ops[0]], up, idx, operand, c["field"], ops[0])
             out.append(f)
 
-    def lookup(self, where: str, name, scopes: list[list[Field]], named: bool):
-        """Nearest earlier field `name`: the innermost scope first, then outward.
-        A named struct may only see its own fields."""
+    def inline_struct(self, where: str, name: str, raw_fields, scopes) -> Struct:
+        if name in self.struct_docs or name in self.blocks:
+            fail(where, f"inline struct name '{name}' collides with another type")
+        s = Struct(name=name, where=where, named=False)
+        self.resolve_fields(where, s.name, raw_fields, s.fields, chain=scopes)
+        if not s.fields:
+            fail(where, "an inline struct needs fields")
+        self.check_rest(where, s.fields)
+        self.structs.append(s)
+        return s
+
+    def parse_union(self, where: str, owner: str, u, scopes):
+        if not isinstance(u, dict):
+            fail(where, "'union' must be a mapping with 'by' and 'cases'")
+        check_keys(where, u, UNION_KEYS)
+        by = u.get("by")
+        if not isinstance(by, dict) or "field" not in by:
+            fail(where, "union 'by' must be a mapping with 'field' (and optionally 'mask')")
+        check_keys(f"{where}.by", by, SELECTOR_KEYS)
+        mask = check_int(where, by["mask"], "the selector mask") if "mask" in by else 0
+        up, idx, _ = self.lookup(where, by["field"], scopes)
+        raw_cases = u.get("cases")
+        if not isinstance(raw_cases, list) or not raw_cases:
+            fail(where, "a union needs a non-empty 'cases' list")
+        cases: list[Case] = []
+        seen_when: set[int] = set()
+        entries = [(c, False) for c in raw_cases]
+        if "default" in u:
+            entries.append((u["default"], True))
+        for c, is_default in entries:
+            cwhere = f"{where}.{'default' if is_default else 'cases'}"
+            if not isinstance(c, dict):
+                fail(cwhere, "a case must be a mapping")
+            check_keys(cwhere, c, CASE_KEYS - ({"when"} if is_default else set()))
+            cname = check_field_name(cwhere, c.get("name"), "case name")
+            cwhere = f"{where}.{cname}"
+            if any(x.name == cname for x in cases):
+                fail(cwhere, "duplicate case name")
+            when: tuple = ()
+            if not is_default:
+                w = c.get("when")
+                vals = w if isinstance(w, list) else [w]
+                if not vals:
+                    fail(cwhere, "'when' needs at least one value")
+                for v in vals:
+                    check_int(cwhere, v, "a 'when' value")
+                    if v in seen_when:
+                        fail(cwhere, f"'when' value {v} appears in two cases")
+                    seen_when.add(v)
+                when = tuple(vals)
+            if "type" in c and "fields" in c:
+                fail(cwhere, "a case has 'type', 'fields' or neither (empty)")
+            ctype = None
+            if "fields" in c:
+                s = self.inline_struct(cwhere, f"{owner}{pascal(cname)}", c["fields"], scopes)
+                ctype = Type(kind="Struct", key=s.key, struct=s)
+            elif "type" in c:
+                ctype, len_name = self.parse_type(cwhere, c["type"], c, scopes)
+                if len_name is not None:
+                    fail(cwhere, "a case's type can't take its length from a field; "
+                                 "use an inline struct case ('fields:') for that")
+            cases.append(Case(name=cname, when=when, type=ctype, is_default=is_default))
+        t = Type(kind="Union", key=f"union#{next(_serial)}", cases=cases)
+        return t, (up, idx, mask, by["field"])
+
+    def lookup(self, where: str, name, scopes: list[list[Field]]):
+        """Nearest earlier field `name`: the innermost scope first, then outward."""
         if not isinstance(name, str):
             fail(where, f"field reference must be a field name, got {name!r}")
-        search = scopes[-1:] if named else scopes
-        for up, scope in enumerate(reversed(search)):
+        for up, scope in enumerate(reversed(scopes)):
             for idx, f in enumerate(scope):
                 if f.name == name:
                     if f.type.kind not in INTEGER_KINDS:
-                        fail(where, f"'{name}' must be an integer scalar to be a count, size or condition")
+                        fail(where, f"'{name}' must be an integer scalar to be a count, size, "
+                                    "condition or selector")
                     if f.cond is not None:
-                        fail(where, f"'{name}' is conditional, so it can't be a count, size or condition")
+                        fail(where, f"'{name}' is conditional, so it can't be a count, size, "
+                                    "condition or selector")
                     return up, idx, f
-        if named and any(f.name == name for s in scopes[:-1] for f in s):
-            fail(where, f"'{name}' is outside this named struct; only inline structs may "
-                        "reference enclosing fields")
-        fail(where, f"no earlier field '{name}' to reference")
+        raise LookupMiss(f"{where}: no earlier field '{name}' to reference")
 
-    def parse_type(self, where: str, spec, fd: dict, named: bool):
+    def parse_type(self, where: str, spec, fd: dict, scopes):
         if not isinstance(spec, str):
             fail(where, f"type must be a string, got {spec!r}")
         m = re.fullmatch(r"\s*([A-Za-z][A-Za-z0-9_]*)\s*(?:\[([^\]]*)\])?\s*", spec)
@@ -460,11 +579,11 @@ class Schema:
                             spelling="bytes"), None
             return Type(kind="Bytes", key="bytes:field", len="Field", spelling="bytes"), size
         else:
-            base = Type(kind="Struct", key=f"struct:{base_name}",
-                        struct=self.named_struct(base_name, where))
-        return self.apply_suffix(where, base, suffix)
+            s = self.named_struct(base_name, where, scopes)
+            base = Type(kind="Struct", key=s.key, struct=s)
+        return self.apply_suffix(where, base, suffix, fd)
 
-    def apply_suffix(self, where: str, base: Type, suffix: str | None):
+    def apply_suffix(self, where: str, base: Type, suffix: str | None, fd: dict):
         """Returns (type, length field name or None)."""
         if suffix is None:
             return base, None
@@ -474,7 +593,16 @@ class Schema:
             fail(where, "an array element can't consume the rest of the block")
         s = suffix.strip()
         if s == "":
-            return Type(kind="Array", key=f"{base.key}[]", len="Rest", elem=base), None
+            size = fd.get("size")
+            if size is None:
+                return Type(kind="Array", key=f"{base.key}[]", len="Rest", elem=base), None
+            # T[] inside a byte window: elements until exactly `size` bytes are consumed.
+            if isinstance(size, int) and not isinstance(size, bool):
+                return Type(kind="Array", key=f"{base.key}[window:{size}]", len="Window",
+                            count=size, elem=base), None
+            return Type(kind="Array", key=f"{base.key}[window]", len="Window", elem=base), size
+        if "size" in fd:
+            fail(where, "'size' on an array needs the open suffix T[]")
         if re.fullmatch(r"\d+", s):
             n = int(s)
             return Type(kind="Array", key=f"{base.key}[{n}]", len="Fixed", count=n, elem=base), None
@@ -487,8 +615,12 @@ class Schema:
         return Type(kind="Array", key=f"{base.key}[field]", len="Field", elem=base), src
 
     # ── Iteration helpers ─────────────────────────────────────────────────────
-    def all_structs(self) -> list[Struct]:
-        return list(self.structs.values()) + self.inline_structs
+    def view_structs(self) -> list[Struct]:
+        """One struct object per name (the view's shape), sorted by name."""
+        out: dict[str, Struct] = {}
+        for s in self.structs:
+            out.setdefault(s.name, s)
+        return [out[k] for k in sorted(out)]
 
     def all_types(self):
         seen = set()
@@ -503,8 +635,11 @@ class Schema:
             if t.struct is not None:
                 for f in t.struct.fields:
                     yield from walk(f.type)
+            for c in t.cases:
+                if c.type is not None:
+                    yield from walk(c.type)
 
-        for s in self.all_structs():
+        for s in self.structs:
             for f in s.fields:
                 yield from walk(f.type)
         for b in self.blocks.values():
@@ -543,13 +678,13 @@ class Tables:
         self.types: list[dict] = []
         self.type_index: dict[str, int] = {}
         self.fields: list[tuple] = []
+        self.cases: list[tuple] = []
+        self.whens: list[int] = []
         self.links: list[int] = []
         self.link_index: dict[tuple, int] = {}
-        self.struct_type: dict[str, int] = {}
         self.block_type: dict[str, int] = {}
-        # Named + inline structs first (each once), then each block's layout.
-        for s in schema.all_structs():
-            self.intern(Type(kind="Struct", key=f"struct:{s.name}", struct=s))
+        for s in schema.structs:
+            self.intern(Type(kind="Struct", key=s.key, struct=s))
         for b in self.blocks:
             self.block_type[b.name] = self.emit_struct(f"block:{b.name}", b.name, b.layout)
 
@@ -560,8 +695,18 @@ class Tables:
             return self.emit_struct(t.key, t.struct.name, t.struct.fields)
         row = {"kind": t.kind, "len": t.len, "count": t.count, "ref": 0, "refCount": 0,
                "linkFirst": 0, "linkCount": 0, "name": None, "comment": t.key}
+        idx = len(self.types)
+        self.type_index[t.key] = idx
+        self.types.append(row)
         if t.kind == "Array":
             row["ref"] = self.intern(t.elem)
+        if t.kind == "Union":
+            ctypes = [self.intern(c.type) if c.type is not None else None for c in t.cases]
+            row["ref"] = len(self.cases)
+            row["refCount"] = len(t.cases)
+            for c, ct in zip(t.cases, ctypes):
+                self.cases.append((c.name, ct, len(self.whens), len(c.when), c.is_default))
+                self.whens.extend(c.when)
         if t.to:
             targets = tuple(self.block_index[n] for n in t.to)
             if targets not in self.link_index:
@@ -569,9 +714,7 @@ class Tables:
                 self.links.extend(targets)
             row["linkFirst"] = self.link_index[targets]
             row["linkCount"] = len(targets)
-        self.type_index[t.key] = len(self.types)
-        self.types.append(row)
-        return self.type_index[t.key]
+        return idx
 
     def emit_struct(self, key: str, name: str, fields: list[Field]) -> int:
         if key in self.type_index:
@@ -589,9 +732,11 @@ class Tables:
                 op, cup, cidx, cval = f.cond[0], f.cond[1], f.cond[2], f.cond[3]
             else:
                 op, cup, cidx, cval = "None", 0, None, 0
-            self.fields.append((f.name, ft, len_up, len_field, op, cup, cidx, cval))
-        if key.startswith("struct:"):
-            self.struct_type[name] = idx
+            if f.sel:
+                sup, sidx, smask = f.sel[0], f.sel[1], f.sel[2]
+            else:
+                sup, sidx, smask = 0, None, 0
+            self.fields.append((f.name, ft, len_up, len_field, op, cup, cidx, cval, sup, sidx, smask))
         return idx
 
 
@@ -601,6 +746,11 @@ def c_str(s: str | None) -> str:
 
 def field_or_none(i) -> str:
     return "kNoField" if i is None else str(i)
+
+
+def c_int64(v: int) -> str:
+    # INT64_MIN can't be written as a literal; everything NIF needs is far from it.
+    return f"{v}ll" if v >= 0 else f"({v}ll)"
 
 
 GENERATED_NOTE = """// GENERATED by tools/schemagen from {src} — do not edit. Regenerate with
@@ -619,16 +769,30 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out.append("};")
     out.append("")
     out.append("inline constexpr FieldDef kFields[] = {")
-    for i, (name, ft, lup, lf, op, cup, cf, cval) in enumerate(tables.fields):
+    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask) in enumerate(tables.fields):
         out.append(f"    {{ {c_str(name)}, {ft}, {lup}, {field_or_none(lf)}, CondOp::{op}, {cup}, "
-                   f"{field_or_none(cf)}, {cval} }},  // {i}")
+                   f"{field_or_none(cf)}, {c_int64(cval)}, {sup}, {field_or_none(sf)}, {smask}ull }},  // {i}")
     out.append("};")
     out.append("")
+    spans = {}
+    if tables.cases:
+        out.append("inline constexpr CaseDef kCases[] = {")
+        for i, (name, ct, wf, wc, dflt) in enumerate(tables.cases):
+            out.append(f"    {{ {c_str(name)}, {field_or_none(ct)}, {wf}, {wc}, {'true' if dflt else 'false'} }},  // {i}")
+        out.append("};")
+        spans["cases"] = "kCases"
+    else:
+        spans["cases"] = "std::span<const CaseDef>{}"
+    if tables.whens:
+        out.append("inline constexpr int64_t kWhens[] = { " + ", ".join(map(c_int64, tables.whens)) + " };")
+        spans["whens"] = "kWhens"
+    else:
+        spans["whens"] = "std::span<const int64_t>{}"
     if tables.links:
         out.append("inline constexpr uint16_t kLinks[] = { " + ", ".join(map(str, tables.links)) + " };")
-        links = "kLinks"
+        spans["links"] = "kLinks"
     else:
-        links = "std::span<const uint16_t>{}"
+        spans["links"] = "std::span<const uint16_t>{}"
     out.append("")
     out.append("inline constexpr BlockDef kBlocks[] = {")
     for i, b in enumerate(tables.blocks):
@@ -638,8 +802,8 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
                    f"{'true' if b.abstract else 'false'} }},  // {i}")
     out.append("};")
     out.append("")
-    out.append(f"inline constexpr SchemaSet kSchema{{ kTypes, kFields, {links}, kBlocks, "
-               f"{c_str(schema.version)}, {c_str(LANGUAGE_VERSION)} }};")
+    out.append(f"inline constexpr SchemaSet kSchema{{ kTypes, kFields, {spans['cases']}, {spans['whens']}, "
+               f"{spans['links']}, kBlocks, {c_str(schema.version)}, {c_str(LANGUAGE_VERSION)} }};")
     out.append("")
     out.append(f"}}  // namespace {ns}")
     out.append("")
@@ -654,8 +818,8 @@ class Cpp:
         self.views_ns = views_ns
 
     def value_type(self, t: Type) -> str | None:
-        """The C++ type a FieldRef<T> / accessor uses, or None for struct-shaped
-        values (reached through views)."""
+        """The C++ type a FieldRef<T> / accessor uses, or None for struct- and
+        union-shaped values (reached through views)."""
         for k, cpp, _ in SCALARS.values():
             if t.kind == k:
                 return cpp
@@ -688,21 +852,28 @@ def emit_fields(schema: Schema, tables: Tables, ns: str, views_ns: str, src: str
     out.append("")
     out.append(f"namespace {ns} {{")
 
-    def emit(fields: list[Field], base: list[int], start: int, block_idx: int, indent: str):
-        for k, f in enumerate(fields):
-            idx = base + [start + k]
-            if len(idx) > 8:
-                raise SchemaError(f"{f.where}: path deeper than 8 levels")
-            t = f.type
-            if t.kind == "Struct":
-                out.append(f"{indent}namespace {ident(f.name)} {{")
-                out.append(f"{indent}    inline constexpr ::niffer::StructRef self{{ {block_idx}, {path_init(idx)} }};")
-                emit(t.struct.fields, idx, 0, block_idx, indent + "    ")
-                out.append(f"{indent}}}")
-                continue
-            vt = cpp.value_type(t) or "::niffer::Value"
-            out.append(f"{indent}inline constexpr ::niffer::FieldRef<{vt}> {ident(f.name)}"
-                       f"{{ {block_idx}, {path_init(idx)} }};")
+    def handle(name: str, t: Type, idx: list[int], block_idx: int, indent: str, where: str):
+        if len(idx) > 8:
+            raise SchemaError(f"{where}: path deeper than 8 levels")
+        if t is None:   # an empty union case: present when selected
+            out.append(f"{indent}inline constexpr ::niffer::StructRef {ident(name)}{{ {block_idx}, {path_init(idx)} }};")
+            return
+        if t.kind == "Struct":
+            out.append(f"{indent}namespace {ident(name)} {{")
+            out.append(f"{indent}    inline constexpr ::niffer::StructRef self{{ {block_idx}, {path_init(idx)} }};")
+            for k, f in enumerate(t.struct.fields):
+                handle(f.name, f.type, idx + [k], block_idx, indent + "    ", f.where)
+            out.append(f"{indent}}}")
+            return
+        if t.kind == "Union":
+            out.append(f"{indent}namespace {ident(name)} {{")
+            for c, case in enumerate(t.cases):
+                handle(case.name, case.type, idx + [c], block_idx, indent + "    ", where)
+            out.append(f"{indent}}}")
+            return
+        vt = cpp.value_type(t) or "::niffer::Value"
+        out.append(f"{indent}inline constexpr ::niffer::FieldRef<{vt}> {ident(name)}"
+                   f"{{ {block_idx}, {path_init(idx)} }};")
 
     for i, b in enumerate(tables.blocks):
         if not b.own:
@@ -710,7 +881,9 @@ def emit_fields(schema: Schema, tables: Tables, ns: str, views_ns: str, src: str
         out.append("")
         out.append(f"// {b.name}" + (f" : {b.parent}" if b.parent else ""))
         out.append(f"namespace {b.name} {{")
-        emit(b.own, [], len(b.layout) - len(b.own), i, "    ")
+        start = len(b.layout) - len(b.own)
+        for k, f in enumerate(b.own):
+            handle(f.name, f.type, [start + k], i, "    ", f.where)
         out.append("}")
     out.append("")
     out.append(f"}}  // namespace {ns}")
@@ -724,12 +897,40 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out = ["#pragma once", GENERATED_NOTE.format(src=src), "#include <niffer/Schema.h>", "",
            "#include <cstdint>", "#include <optional>", "#include <string>", "#include <vector>", "",
            f"namespace {ns} {{", ""]
-    structs = schema.all_structs()
-    for s in sorted(structs, key=lambda s: s.name):
+    structs = schema.view_structs()
+    for s in structs:
         out.append(f"class {s.name};")
     for b in tables.blocks:
         out.append(f"class {b.name};")
     out.append("")
+
+    def value_accessor(lines, acc: str, p: str, t: Type | None, optional: bool):
+        """Accessors for the value of type `t` at path expression `p`."""
+        if t is None:   # empty union case
+            lines.append(f"    bool {acc}() const {{ return b_->GetValue({p}) != nullptr; }}")
+            return
+        if t.kind == "Struct":
+            sv = q + t.struct.name
+            if optional:
+                lines.append(f"    std::optional<{sv}> {acc}() const {{ if (!b_->GetValue({p})) return std::nullopt; return {sv}(*b_, {p}); }}")
+            else:
+                lines.append(f"    {sv} {acc}() const {{ return {sv}(*b_, {p}); }}")
+            return
+        if t.kind == "Array" and t.elem.kind == "Struct":
+            sv = q + t.elem.struct.name
+            lines.append(f"    std::vector<{sv}> {acc}() const {{")
+            lines.append(f"        std::vector<{sv}> out;")
+            lines.append(f"        if (const ::niffer::Value* v = b_->GetValue({p}))")
+            lines.append(f"            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, {p}.Child(e));")
+            lines.append("        return out;")
+            lines.append("    }")
+            return
+        vt = cpp.value_type(t) or "::niffer::Value"
+        if optional:
+            lines.append(f"    std::optional<{vt}> {acc}() const {{ return b_->GetAt<{vt}>({p}); }}")
+        else:
+            lines.append(f"    {vt} {acc}() const {{ return b_->GetAt<{vt}>({p}).value_or({vt}{{}}); }}")
+        lines.append(f"    bool Set{acc}(const {vt}& v) const {{ return b_->SetAt<{vt}>({p}, v); }}")
 
     def accessors(fields: list[Field], start: int) -> list[str]:
         lines = []
@@ -737,45 +938,40 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
             i = start + k
             acc = pascal(f.name)
             p = f"p_.Child({i})"
-            t = f.type
             doc = f"    // {f.name}" + (f" — {f.doc.strip().splitlines()[0]}" if f.doc else "")
             lines.append(doc)
-            cond = f.cond is not None
-            if t.kind == "Struct":
-                sv = q + t.struct.name
-                if cond:
-                    lines.append(f"    std::optional<{sv}> {acc}() const {{ if (!b_->GetValue({p})) return std::nullopt; return {sv}(*b_, {p}); }}")
-                else:
-                    lines.append(f"    {sv} {acc}() const {{ return {sv}(*b_, {p}); }}")
+            if f.type.kind == "Union":
+                # One accessor per case; each is empty unless that case is selected.
+                lines.append(f"    int {acc}Case() const {{ const ::niffer::Value* v = b_->GetValue({p}); "
+                             f"return v ? static_cast<int>(v->bits) : -1; }}")
+                for c, case in enumerate(f.type.cases):
+                    value_accessor(lines, acc + pascal(case.name), f"{p}.Child({c})", case.type, True)
                 continue
-            if t.kind == "Array" and t.elem.kind == "Struct":
-                sv = q + t.elem.struct.name
-                lines.append(f"    std::vector<{sv}> {acc}() const {{")
-                lines.append(f"        std::vector<{sv}> out;")
-                lines.append(f"        if (const ::niffer::Value* v = b_->GetValue({p}))")
-                lines.append(f"            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, {p}.Child(e));")
-                lines.append("        return out;")
-                lines.append("    }")
-                continue
-            vt = cpp.value_type(t) or "::niffer::Value"
-            if cond:
-                lines.append(f"    std::optional<{vt}> {acc}() const {{ return b_->GetAt<{vt}>({p}); }}")
-            else:
-                lines.append(f"    {vt} {acc}() const {{ return b_->GetAt<{vt}>({p}).value_or({vt}{{}}); }}")
-            lines.append(f"    bool Set{acc}(const {vt}& v) const {{ return b_->SetAt<{vt}>({p}, v); }}")
+            value_accessor(lines, acc, p, f.type, f.cond is not None)
         return lines
 
     # Struct views, dependencies first (a struct view returns nested ones by value).
     emitted: set[str] = set()
+    by_name = {s.name: s for s in structs}
+
+    def deps(t: Type):
+        if t is None:
+            return
+        if t.kind == "Array":
+            yield from deps(t.elem)
+        elif t.kind == "Struct":
+            yield t.struct.name
+        elif t.kind == "Union":
+            for c in t.cases:
+                yield from deps(c.type)
 
     def emit_struct(s: Struct):
         if s.name in emitted:
             return
         emitted.add(s.name)
         for f in s.fields:
-            t = f.type.elem if f.type.kind == "Array" else f.type
-            if t.kind == "Struct":
-                emit_struct(t.struct)
+            for d in deps(f.type):
+                emit_struct(by_name[d])
         out.append(f"class {s.name} {{")
         out.append("public:")
         out.append(f"    {s.name}(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {{}}")
@@ -788,7 +984,7 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
         out.append("};")
         out.append("")
 
-    for s in sorted(structs, key=lambda s: s.name):
+    for s in structs:
         emit_struct(s)
 
     # Block views, parents first.
@@ -831,16 +1027,24 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
 
 # ── schema.json ───────────────────────────────────────────────────────────────
 
-def type_json(t: Type) -> dict:
+def type_json(t: Type | None) -> dict | None:
+    if t is None:
+        return None
     if t.kind == "Struct":
         return {"kind": "struct", "name": t.struct.name,
                 "fields": [field_json(f) for f in t.struct.fields]}
+    if t.kind == "Union":
+        return {"kind": "union", "cases": [
+            {"name": c.name, **({"when": list(c.when)} if not c.is_default else {"default": True}),
+             "type": type_json(c.type)} for c in t.cases]}
     if t.kind == "Array":
         d = {"kind": "array", "element": type_json(t.elem)}
         if t.len == "Fixed":
             d["count"] = t.count
         elif t.len.startswith("Prefix"):
             d["countPrefix"] = {"Prefix8": "u8", "Prefix16": "u16", "Prefix32": "u32"}[t.len]
+        elif t.len == "Window" and t.count:
+            d["size"] = t.count
         return d
     if t.kind == "Bytes":
         d = {"kind": "bytes"}
@@ -856,8 +1060,10 @@ def type_json(t: Type) -> dict:
 def field_json(f: Field) -> dict:
     d = {"name": f.name, "type": type_json(f.type)}
     if f.len_ref:
-        key = "sizeField" if f.type.kind == "Bytes" else "countField"
+        key = "sizeField" if f.type.kind == "Bytes" or f.type.len == "Window" else "countField"
         d["type"][key] = f.len_ref[2]
+    if f.sel:
+        d["type"]["by"] = {"field": f.sel[3], **({"mask": f.sel[2]} if f.sel[2] else {})}
     if f.cond:
         d["if"] = {"field": f.cond[4], f.cond[5]: f.cond[3]}
     if f.declared_by:
@@ -872,7 +1078,7 @@ def emit_json(schema: Schema, tables: Tables) -> str:
         "schemaVersion": schema.version,
         "languageVersion": LANGUAGE_VERSION,
         "structs": [{"name": s.name, "fields": [field_json(f) for f in s.fields]}
-                    for s in sorted(schema.structs.values(), key=lambda s: s.name)],
+                    for s in schema.view_structs() if s.named],
         "blocks": [],
     }
     for b in tables.blocks:

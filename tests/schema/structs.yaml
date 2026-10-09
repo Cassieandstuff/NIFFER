@@ -11,3 +11,9 @@ doc: A named struct whose array is counted by its own earlier field.
 fields:
   - { name: n, type: u8 }
   - { name: items, type: "u16[count: n]" }
+---
+struct: Probe
+doc: A named struct that reads an enclosing field (kind), resolved per use site.
+fields:
+  - { name: x, type: u8 }
+  - { name: y, type: u16, if: { field: kind, mask: 4 } }

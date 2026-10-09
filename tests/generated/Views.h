@@ -13,11 +13,15 @@ namespace niffer_test::view {
 
 class Counted;
 class Pair;
+class Probe;
 class TAllRows;
+class TNewPickMany;
 class NiObject;
 class TAll;
 class TBase;
 class TLeaf;
+class TNew;
+class TNew2;
 class TRest;
 
 class Counted {
@@ -52,6 +56,22 @@ private:
     ::niffer::RelPath p_;
 };
 
+class Probe {
+public:
+    Probe(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // x
+    uint8_t X() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
+    bool SetX(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
+    // y
+    std::optional<uint16_t> Y() const { return b_->GetAt<uint16_t>(p_.Child(1)); }
+    bool SetY(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
 class TAllRows {
 public:
     TAllRows(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -66,6 +86,21 @@ public:
     // outer
     std::optional<uint16_t> Outer() const { return b_->GetAt<uint16_t>(p_.Child(2)); }
     bool SetOuter(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class TNewPickMany {
+public:
+    TNewPickMany(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // a
+    uint8_t A() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
+    bool SetA(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
+    // b
+    ::niffer_test::view::Probe B() const { return ::niffer_test::view::Probe(*b_, p_.Child(1)); }
 private:
     ::niffer::Block* b_;
     ::niffer::RelPath p_;
@@ -221,9 +256,66 @@ protected:
     explicit TLeaf(::niffer::Block& b) : TBase(b) {}
 };
 
-class TRest : public NiObject {
+class TNew : public NiObject {
 public:
     static constexpr uint16_t kBlock = 4;
+    static std::optional<TNew> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return TNew(b);
+        return std::nullopt;
+    }
+    // kind
+    uint8_t Kind() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
+    bool SetKind(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
+    // h
+    ::niffer::Half H() const { return b_->GetAt<::niffer::Half>(p_.Child(1)).value_or(::niffer::Half{}); }
+    bool SetH(const ::niffer::Half& v) const { return b_->SetAt<::niffer::Half>(p_.Child(1), v); }
+    // pick
+    int PickCase() const { const ::niffer::Value* v = b_->GetValue(p_.Child(2)); return v ? static_cast<int>(v->bits) : -1; }
+    std::optional<float> PickOne() const { return b_->GetAt<float>(p_.Child(2).Child(0)); }
+    bool SetPickOne(const float& v) const { return b_->SetAt<float>(p_.Child(2).Child(0), v); }
+    std::optional<::niffer_test::view::TNewPickMany> PickMany() const { if (!b_->GetValue(p_.Child(2).Child(1))) return std::nullopt; return ::niffer_test::view::TNewPickMany(*b_, p_.Child(2).Child(1)); }
+    bool PickNone() const { return b_->GetValue(p_.Child(2).Child(2)) != nullptr; }
+    // windowSize
+    uint16_t WindowSize() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
+    bool SetWindowSize(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
+    // window
+    std::vector<::niffer_test::view::Probe> Window() const {
+        std::vector<::niffer_test::view::Probe> out;
+        if (const ::niffer::Value* v = b_->GetValue(p_.Child(4)))
+            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(4).Child(e));
+        return out;
+    }
+    // fixedWindow
+    std::vector<uint16_t> FixedWindow() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)).value_or(std::vector<uint16_t>{}); }
+    bool SetFixedWindow(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
+    // tail
+    ::niffer_test::view::Probe Tail() const { return ::niffer_test::view::Probe(*b_, p_.Child(6)); }
+protected:
+    explicit TNew(::niffer::Block& b) : NiObject(b) {}
+};
+
+class TNew2 : public NiObject {
+public:
+    static constexpr uint16_t kBlock = 5;
+    static std::optional<TNew2> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return TNew2(b);
+        return std::nullopt;
+    }
+    // pad
+    uint32_t Pad() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetPad(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // kind
+    uint8_t Kind() const { return b_->GetAt<uint8_t>(p_.Child(1)).value_or(uint8_t{}); }
+    bool SetKind(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(1), v); }
+    // p
+    ::niffer_test::view::Probe P() const { return ::niffer_test::view::Probe(*b_, p_.Child(2)); }
+protected:
+    explicit TNew2(::niffer::Block& b) : NiObject(b) {}
+};
+
+class TRest : public NiObject {
+public:
+    static constexpr uint16_t kBlock = 6;
     static std::optional<TRest> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return TRest(b);
         return std::nullopt;

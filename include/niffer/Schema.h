@@ -36,16 +36,21 @@ namespace niffer {
 // ── Compiled schema tables ────────────────────────────────────────────────────
 // Flat constexpr tables, linked by index, emitted by tools/schemagen:
 //   TypeDef   a value layout: scalar, ref, string, bytes, struct (→ FieldDef
-//             range) or array (→ element TypeDef). Ref/Ptr types carry their
-//             allowed targets (→ links range of BlockDef indices).
-//   FieldDef  one struct field, with its length source and condition, both
-//             as (structs up, field index) from the field's own struct.
+//             range), array (→ element TypeDef) or union (→ CaseDef range).
+//             Ref/Ptr types carry their allowed targets (→ links range of
+//             BlockDef indices).
+//   FieldDef  one struct field, with its length source, condition and union
+//             selector, each as (structs up, field index) from the field's own
+//             struct.
+//   CaseDef   one union case: the selector values that pick it (→ whens
+//             range) and its TypeDef (none for an empty case).
 //   BlockDef  a block class: its parent and its flattened layout (a struct
 //             TypeDef: inherited fields first). Sorted by name.
 namespace schema {
 
 enum class Kind : uint8_t {
     U8, U16, U32, U64, I8, I16, I32, I64, F32,
+    Half,         // IEEE-754 half, carried as raw bits
     Ref,          // i32 block index, -1 = null; owning link
     Ptr,          // i32 block index, -1 = null; non-owning link
     StringRef,    // u32 header string-table index, 0xFFFFFFFF = empty
@@ -53,6 +58,7 @@ enum class Kind : uint8_t {
     Bytes,        // opaque
     Struct,
     Array,
+    Union,        // one of a closed set of layouts, chosen by an earlier field
 };
 
 enum class LenKind : uint8_t {
@@ -63,6 +69,8 @@ enum class LenKind : uint8_t {
     Prefix16,
     Prefix32,
     Field,      // the value of an earlier field (FieldDef::lenUp / lenField)
+    Window,     // Array: elements until exactly N bytes are consumed (`count`,
+                // or the value of an earlier field)
 };
 
 enum class CondOp : uint8_t { None, Eq, Ne, Min, Max, Mask };
@@ -89,6 +97,17 @@ struct FieldDef {
     uint8_t     condUp    = 0;
     uint16_t    condField = kNoField;
     int64_t     condValue = 0;
+    uint8_t     selUp     = 0;         // Union: the selector field…
+    uint16_t    selField  = kNoField;
+    uint64_t    selMask   = 0;         //   …ANDed with this mask when non-zero
+};
+
+struct CaseDef {
+    const char* name      = nullptr;
+    uint16_t    type      = kNoField;  // kNoField: an empty case (zero bytes)
+    uint16_t    whenFirst = 0;         // selector values (whens range)
+    uint16_t    whenCount = 0;
+    bool        isDefault = false;     // taken when no other case matches
 };
 
 struct BlockDef {
@@ -102,6 +121,8 @@ struct BlockDef {
 struct SchemaSet {
     std::span<const TypeDef>  types;
     std::span<const FieldDef> fields;
+    std::span<const CaseDef>  cases;
+    std::span<const int64_t>  whens;
     std::span<const uint16_t> links;
     std::span<const BlockDef> blocks;    // sorted by name
     const char*               schemaVersion   = nullptr;
@@ -132,10 +153,21 @@ const SchemaSet& Main();
 }  // namespace schema
 
 // ── Values ────────────────────────────────────────────────────────────────────
+// An IEEE-754 half (`half` in the schema), kept as its raw bits so every pattern
+// round-trips; convert at the edge.
+struct Half {
+    uint16_t bits = 0;
+    float       ToFloat() const;
+    static Half FromFloat(float f);   // round to nearest even
+    friend bool operator==(Half, Half) = default;
+};
+
 // A decoded value. Integers, f32 bits, block refs and string refs live in `bits`
 // (floats as raw bits, so NaN payloads survive); strings in `str`; opaque bytes
-// in `bytes`; struct fields and array elements in `items`. A conditional field
-// whose condition was false is `present == false`.
+// in `bytes`; struct fields and array elements in `items`. A union holds the
+// chosen case's index in `bits` and its value in `items[0]` (no items for an
+// empty case). A conditional field whose condition was false is
+// `present == false`.
 struct Value {
     uint64_t             bits    = 0;
     std::string          str;
@@ -146,7 +178,8 @@ struct Value {
 };
 
 // A path into a block's value: struct field indices, with an element index after
-// each array field ("bones/2/transform" = { bones, 2, transform }).
+// each array field and a case index after each union field
+// ("bones/2/transform" = { bones, 2, transform }).
 struct RelPath {
     std::array<uint16_t, 8> idx{};
     uint8_t depth = 0;
@@ -284,7 +317,7 @@ template <class T> struct IsVector<std::vector<T>> : std::true_type { using Elem
 inline uint64_t MaskFor(schema::Kind k) {
     switch (k) {
     case schema::Kind::U8:  case schema::Kind::I8:  return 0xFFull;
-    case schema::Kind::U16: case schema::Kind::I16: return 0xFFFFull;
+    case schema::Kind::U16: case schema::Kind::I16: case schema::Kind::Half: return 0xFFFFull;
     case schema::Kind::U64: case schema::Kind::I64: return ~0ull;
     default:                                        return 0xFFFFFFFFull;
     }
@@ -297,6 +330,8 @@ T Block::FromValue(const Value& v, const schema::TypeDef& t, const schema::Schem
         return v;
     } else if constexpr (std::is_same_v<T, float>) {
         return std::bit_cast<float>(static_cast<uint32_t>(v.bits));
+    } else if constexpr (std::is_same_v<T, Half>) {
+        return Half{ static_cast<uint16_t>(v.bits) };
     } else if constexpr (std::is_integral_v<T>) {
         return static_cast<T>(v.bits);
     } else if constexpr (std::is_base_of_v<NiRefBase, T>) {
@@ -330,6 +365,8 @@ Value Block::ToValue(const T& x, const schema::TypeDef& t, const schema::SchemaS
         v = x;
     } else if constexpr (std::is_same_v<T, float>) {
         v.bits = std::bit_cast<uint32_t>(x);
+    } else if constexpr (std::is_same_v<T, Half>) {
+        v.bits = x.bits;
     } else if constexpr (std::is_integral_v<T>) {
         v.bits = static_cast<uint64_t>(x) & schema_detail::MaskFor(t.kind);
     } else if constexpr (std::is_base_of_v<NiRefBase, T>) {

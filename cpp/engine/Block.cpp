@@ -9,6 +9,7 @@
 
 namespace niffer {
 
+using schema::CaseDef;
 using schema::CondOp;
 using schema::FieldDef;
 using schema::Kind;
@@ -16,12 +17,59 @@ using schema::LenKind;
 using schema::SchemaSet;
 using schema::TypeDef;
 
+// ── Half ──────────────────────────────────────────────────────────────────────
+float Half::ToFloat() const {
+    const uint32_t sign = (bits & 0x8000u) << 16;
+    uint32_t exp  = (bits >> 10) & 0x1F;
+    uint32_t mant = bits & 0x3FF;
+    uint32_t out;
+    if (exp == 0) {
+        if (mant == 0) {
+            out = sign;
+        } else {  // subnormal
+            exp = 127 - 15 + 1;
+            while ((mant & 0x400) == 0) { mant <<= 1; --exp; }
+            mant &= 0x3FF;
+            out = sign | (exp << 23) | (mant << 13);
+        }
+    } else if (exp == 0x1F) {
+        out = sign | 0x7F800000u | (mant << 13);  // inf / nan
+    } else {
+        out = sign | ((exp + (127 - 15)) << 23) | (mant << 13);
+    }
+    return std::bit_cast<float>(out);
+}
+
+Half Half::FromFloat(float f) {
+    const uint32_t x    = std::bit_cast<uint32_t>(f);
+    const uint32_t sign = (x >> 16) & 0x8000u;
+    const uint32_t absx = x & 0x7FFFFFFFu;
+    if (absx >= 0x7F800000u)   // inf / nan (keep a quiet nan payload bit)
+        return Half{ static_cast<uint16_t>(sign | 0x7C00u | (absx > 0x7F800000u ? 0x200u : 0u)) };
+    if (absx >= 0x477FF000u)   // rounds past the largest half: inf
+        return Half{ static_cast<uint16_t>(sign | 0x7C00u) };
+    if (absx < 0x38800000u) {  // subnormal or zero
+        const uint32_t shift = 113 - (absx >> 23);
+        if (shift > 24) return Half{ static_cast<uint16_t>(sign) };
+        const uint32_t mant = (absx & 0x7FFFFFu) | 0x800000u;
+        uint32_t h = mant >> (shift + 13);
+        const uint32_t rem = mant & ((1u << (shift + 13)) - 1u);
+        const uint32_t half = 1u << (shift + 12);
+        if (rem > half || (rem == half && (h & 1u))) ++h;
+        return Half{ static_cast<uint16_t>(sign | h) };
+    }
+    uint32_t h = ((absx >> 13) - (112u << 10));
+    const uint32_t rem = absx & 0x1FFFu;
+    if (rem > 0x1000u || (rem == 0x1000u && (h & 1u))) ++h;
+    return Half{ static_cast<uint16_t>(sign | h) };
+}
+
 namespace {
 
 size_t ScalarSize(Kind k) {
     switch (k) {
     case Kind::U8:  case Kind::I8:  return 1;
-    case Kind::U16: case Kind::I16: return 2;
+    case Kind::U16: case Kind::I16: case Kind::Half: return 2;
     case Kind::U32: case Kind::I32: case Kind::F32:
     case Kind::Ref: case Kind::Ptr: case Kind::StringRef: return 4;
     case Kind::U64: case Kind::I64: return 8;
@@ -66,8 +114,8 @@ bool Holds(CondOp op, uint64_t bits, Kind k, int64_t operand) {
     }
 }
 
-// A struct being decoded or encoded: field references (lengths, conditions)
-// resolve against this stack, innermost last.
+// A struct being decoded or encoded: field references (lengths, conditions,
+// union selectors) resolve against this stack, innermost last.
 struct Frame {
     const TypeDef* type;
     const Value*   value;
@@ -89,7 +137,7 @@ public:
         return &f.value->items[field];
     }
 
-    // nullopt when the condition's field can't be read (treated as absent).
+    // An unreadable condition field counts as false (the field is absent).
     bool CondHolds(const FieldDef& fd) const {
         if (fd.cond == CondOp::None) return true;
         Kind k{};
@@ -103,6 +151,28 @@ public:
         const Value* v = Lookup(fd.lenUp, fd.lenField, k);
         if (!v || !v->present) return -1;
         return AsInt(v->bits, k);
+    }
+
+    // The union case the selector picks: a matching case, else the default,
+    // else -1.
+    int SelectCase(const TypeDef& u, const FieldDef& fd) const {
+        Kind k{};
+        const Value* v = Lookup(fd.selUp, fd.selField, k);
+        if (!v || !v->present) return -1;
+        const bool masked = fd.selMask != 0;
+        const uint64_t bits = masked ? (v->bits & fd.selMask) : v->bits;
+        int dflt = -1;
+        for (uint16_t c = 0; c < u.refCount; ++c) {
+            const CaseDef& cd = set_.cases[u.ref + c];
+            if (cd.isDefault) { dflt = c; continue; }
+            for (uint16_t w = 0; w < cd.whenCount; ++w) {
+                const int64_t when = set_.whens[cd.whenFirst + w];
+                const bool hit = (!masked && IsSigned(k)) ? AsInt(bits, k) == when
+                                                          : bits == static_cast<uint64_t>(when);
+                if (hit) return c;
+            }
+        }
+        return dflt;
     }
 
 private:
@@ -120,12 +190,13 @@ public:
     size_t Offset() const { return static_cast<size_t>(cur_ - beg_); }
     const std::string& Error() const { return err_; }
 
-    // `fieldLen` is the length from a LenKind::Field source (-1 when none).
-    bool Decode(const TypeDef& t, Value& v, int64_t fieldLen) {
+    // `fieldLen` is the length from a LenKind::Field source (-1 when none);
+    // `fd` is the field being decoded (unions read their selector through it).
+    bool Decode(const TypeDef& t, Value& v, int64_t fieldLen, const FieldDef* fd) {
         switch (t.kind) {
         case Kind::U8: case Kind::U16: case Kind::U32: case Kind::U64:
         case Kind::I8: case Kind::I16: case Kind::I32: case Kind::I64:
-        case Kind::F32: case Kind::Ref: case Kind::Ptr: case Kind::StringRef: {
+        case Kind::F32: case Kind::Half: case Kind::Ref: case Kind::Ptr: case Kind::StringRef: {
             const size_t n = ScalarSize(t.kind);
             if (Remaining() < n) return Fail("scalar past end of block");
             uint64_t bits = 0;
@@ -164,58 +235,79 @@ public:
             scope_.Push(&t, &v);
             v.items.reserve(t.refCount);
             for (uint16_t i = 0; i < t.refCount; ++i) {
-                const FieldDef& fd = set_.fields[t.ref + i];
+                const FieldDef& f = set_.fields[t.ref + i];
                 v.items.emplace_back();
                 Value& fv = v.items.back();
-                if (!scope_.CondHolds(fd)) { fv.present = false; continue; }
-                const int64_t len = fd.lenField != schema::kNoField ? scope_.Length(fd) : -1;
-                if (!Decode(set_.types[fd.type], fv, len)) { scope_.Pop(); return false; }
+                if (!scope_.CondHolds(f)) { fv.present = false; continue; }
+                const int64_t len = f.lenField != schema::kNoField ? scope_.Length(f) : -1;
+                if (!Decode(set_.types[f.type], fv, len, &f)) { scope_.Pop(); return false; }
             }
             scope_.Pop();
             return true;
         }
-        case Kind::Array: {
-            const TypeDef& et = set_.types[t.ref];
-            if (t.len == LenKind::Rest) {
-                while (Remaining() > 0) {
-                    const uint8_t* before = cur_;
-                    v.items.emplace_back();
-                    if (!Decode(et, v.items.back(), -1)) return false;
-                    if (cur_ == before) return Fail("array element consumed no bytes");
-                }
-                return true;
-            }
-            uint64_t count = 0;
-            switch (t.len) {
-            case LenKind::Fixed: count = t.count; break;
-            case LenKind::Prefix8:
-            case LenKind::Prefix16:
-            case LenKind::Prefix32: {
-                const size_t w = t.len == LenKind::Prefix8 ? 1 : t.len == LenKind::Prefix16 ? 2 : 4;
-                if (Remaining() < w) return Fail("array count past end of block");
-                std::memcpy(&count, cur_, w);
-                cur_ += w;
-                break;
-            }
-            case LenKind::Field:
-                if (fieldLen < 0) return Fail("array: invalid count field");
-                count = static_cast<uint64_t>(fieldLen);
-                break;
-            default: return Fail("array: unsupported length");
-            }
-            // Every element takes at least one byte in practice; a bogus count
-            // (a mis-parsed layout) must refuse, not allocate gigabytes.
-            if (count > Remaining()) return Fail("array count exceeds remaining bytes");
-            v.items.resize(static_cast<size_t>(count));
-            for (Value& item : v.items)
-                if (!Decode(et, item, -1)) return false;
-            return true;
+        case Kind::Union: {
+            const int c = fd ? scope_.SelectCase(t, *fd) : -1;
+            if (c < 0) return Fail("union: no case for the selector's value");
+            v.bits = static_cast<uint64_t>(c);
+            const CaseDef& cd = set_.cases[t.ref + static_cast<uint16_t>(c)];
+            if (cd.type == schema::kNoField) return true;   // empty case
+            v.items.emplace_back();
+            return Decode(set_.types[cd.type], v.items.back(), -1, nullptr);
         }
+        case Kind::Array:
+            return DecodeArray(t, v, fieldLen);
         }
         return Fail("unknown kind");
     }
 
 private:
+    bool DecodeArray(const TypeDef& t, Value& v, int64_t fieldLen) {
+        const TypeDef& et = set_.types[t.ref];
+        if (t.len == LenKind::Rest || t.len == LenKind::Window) {
+            const uint8_t* savedEnd = end_;
+            if (t.len == LenKind::Window) {
+                const int64_t n = fieldLen >= 0 ? fieldLen : static_cast<int64_t>(t.count);
+                if (n < 0 || static_cast<uint64_t>(n) > Remaining())
+                    return Fail("array: byte window exceeds remaining bytes");
+                end_ = cur_ + n;
+            }
+            bool ok = true;
+            while (ok && Remaining() > 0) {
+                const uint8_t* before = cur_;
+                v.items.emplace_back();
+                ok = Decode(et, v.items.back(), -1, nullptr);
+                if (ok && cur_ == before) ok = Fail("array element consumed no bytes");
+            }
+            end_ = savedEnd;
+            return ok;
+        }
+        uint64_t count = 0;
+        switch (t.len) {
+        case LenKind::Fixed: count = t.count; break;
+        case LenKind::Prefix8:
+        case LenKind::Prefix16:
+        case LenKind::Prefix32: {
+            const size_t w = t.len == LenKind::Prefix8 ? 1 : t.len == LenKind::Prefix16 ? 2 : 4;
+            if (Remaining() < w) return Fail("array count past end of block");
+            std::memcpy(&count, cur_, w);
+            cur_ += w;
+            break;
+        }
+        case LenKind::Field:
+            if (fieldLen < 0) return Fail("array: invalid count field");
+            count = static_cast<uint64_t>(fieldLen);
+            break;
+        default: return Fail("array: unsupported length");
+        }
+        // Every element takes at least one byte in practice; a bogus count
+        // (a mis-parsed layout) must refuse, not allocate gigabytes.
+        if (count > Remaining()) return Fail("array count exceeds remaining bytes");
+        v.items.resize(static_cast<size_t>(count));
+        for (Value& item : v.items)
+            if (!Decode(et, item, -1, nullptr)) return false;
+        return true;
+    }
+
     bool Fail(const char* what) {
         if (err_.empty()) err_ = what;
         return false;
@@ -240,6 +332,8 @@ Value ZeroValue(const SchemaSet& s, const TypeDef& t) {
         v.items.assign(t.count, ZeroValue(s, s.types[t.ref]));
     } else if (t.kind == Kind::Bytes && t.len == LenKind::Fixed) {
         v.bytes.assign(t.count, 0);
+    } else if (t.kind == Kind::Union) {
+        v.bits = 0xFFFF;   // no case yet: the encoder writes the selected case's zero
     }
     return v;
 }
@@ -248,11 +342,14 @@ class Encoder {
 public:
     Encoder(const SchemaSet& s, std::vector<uint8_t>& out) : set_(s), scope_(s), out_(out) {}
 
-    void Encode(const TypeDef& t, const Value& v) {
+    // Context for encoding a value below the block root (derived window sizes).
+    void PushFrame(const TypeDef* t, const Value* v) { scope_.Push(t, v); }
+
+    void Encode(const TypeDef& t, const Value& v, const FieldDef* fd) {
         switch (t.kind) {
         case Kind::U8: case Kind::U16: case Kind::U32: case Kind::U64:
         case Kind::I8: case Kind::I16: case Kind::I32: case Kind::I64:
-        case Kind::F32: case Kind::Ref: case Kind::Ptr: case Kind::StringRef:
+        case Kind::F32: case Kind::Half: case Kind::Ref: case Kind::Ptr: case Kind::StringRef:
             Put(v.bits, ScalarSize(t.kind));
             return;
         case Kind::SizedString:
@@ -270,14 +367,26 @@ public:
         case Kind::Struct:
             scope_.Push(&t, &v);
             for (uint16_t i = 0; i < t.refCount; ++i) {
-                const FieldDef& fd = set_.fields[t.ref + i];
-                if (!scope_.CondHolds(fd)) continue;
-                const TypeDef& ft = set_.types[fd.type];
-                if (i < v.items.size() && v.items[i].present) Encode(ft, v.items[i]);
-                else Encode(ft, ZeroValue(set_, ft));
+                const FieldDef& f = set_.fields[t.ref + i];
+                if (!scope_.CondHolds(f)) continue;
+                const TypeDef& ft = set_.types[f.type];
+                if (i < v.items.size() && v.items[i].present) Encode(ft, v.items[i], &f);
+                else Encode(ft, ZeroValue(set_, ft), &f);
             }
             scope_.Pop();
             return;
+        case Kind::Union: {
+            // The selector decides; a value of another case is written as the
+            // selected case's zero value.
+            const int c = fd ? scope_.SelectCase(t, *fd) : -1;
+            if (c < 0) return;
+            const CaseDef& cd = set_.cases[t.ref + static_cast<uint16_t>(c)];
+            if (cd.type == schema::kNoField) return;
+            const TypeDef& ct = set_.types[cd.type];
+            if (v.bits == static_cast<uint64_t>(c) && !v.items.empty()) Encode(ct, v.items[0], nullptr);
+            else Encode(ct, ZeroValue(set_, ct), nullptr);
+            return;
+        }
         case Kind::Array: {
             const TypeDef& et = set_.types[t.ref];
             switch (t.len) {
@@ -288,9 +397,9 @@ public:
             }
             if (t.len == LenKind::Fixed) {
                 for (uint32_t i = 0; i < t.count; ++i)
-                    Encode(et, i < v.items.size() ? v.items[i] : ZeroValue(set_, et));
+                    Encode(et, i < v.items.size() ? v.items[i] : ZeroValue(set_, et), nullptr);
             } else {
-                for (const Value& item : v.items) Encode(et, item);
+                for (const Value& item : v.items) Encode(et, item, nullptr);
             }
             return;
         }
@@ -309,42 +418,27 @@ private:
 };
 
 // ── Tree walks ────────────────────────────────────────────────────────────────
+// Calls fn(type, value) for every present leaf, descending through structs,
+// arrays and the selected case of each union.
 template <class Fn>
-void WalkRefs(const SchemaSet& s, const TypeDef& t, const Value& v, Fn& fn) {
+void WalkLeaves(const SchemaSet& s, const TypeDef& t, const Value& v, Fn& fn) {
     if (!v.present) return;
     switch (t.kind) {
-    case Kind::Ref:
-    case Kind::Ptr:
-        fn(static_cast<int32_t>(static_cast<uint32_t>(v.bits)), t.kind == Kind::Ptr,
-           s.links.subspan(t.linkFirst, t.linkCount));
-        return;
     case Kind::Struct:
         for (uint16_t i = 0; i < t.refCount && i < v.items.size(); ++i)
-            WalkRefs(s, s.types[s.fields[t.ref + i].type], v.items[i], fn);
+            WalkLeaves(s, s.types[s.fields[t.ref + i].type], v.items[i], fn);
         return;
     case Kind::Array:
-        for (const Value& item : v.items) WalkRefs(s, s.types[t.ref], item, fn);
+        for (const Value& item : v.items) WalkLeaves(s, s.types[t.ref], item, fn);
+        return;
+    case Kind::Union:
+        if (v.bits < t.refCount && !v.items.empty()) {
+            const CaseDef& cd = s.cases[t.ref + v.bits];
+            if (cd.type != schema::kNoField) WalkLeaves(s, s.types[cd.type], v.items[0], fn);
+        }
         return;
     default:
-        return;
-    }
-}
-
-template <class Fn>
-void WalkStringRefs(const SchemaSet& s, const TypeDef& t, const Value& v, Fn& fn) {
-    if (!v.present) return;
-    switch (t.kind) {
-    case Kind::StringRef:
-        fn(static_cast<uint32_t>(v.bits));
-        return;
-    case Kind::Struct:
-        for (uint16_t i = 0; i < t.refCount && i < v.items.size(); ++i)
-            WalkStringRefs(s, s.types[s.fields[t.ref + i].type], v.items[i], fn);
-        return;
-    case Kind::Array:
-        for (const Value& item : v.items) WalkStringRefs(s, s.types[t.ref], item, fn);
-        return;
-    default:
+        fn(t, v);
         return;
     }
 }
@@ -365,7 +459,7 @@ Block Block::Load(const SchemaSet& set, std::string_view typeName,
     const uint8_t* beg = b.original_.data();
     Decoder dec(set, beg, beg + b.original_.size());
     Value v;
-    if (!dec.Decode(set.types[def->type], v, -1)) {
+    if (!dec.Decode(set.types[def->type], v, -1, nullptr)) {
         b.refusal_ = dec.Error() + " (at byte " + std::to_string(dec.Offset()) + " of " +
                      std::to_string(b.original_.size()) + ")";
         return b;
@@ -395,7 +489,7 @@ void Block::Encode(std::vector<uint8_t>& out, bool force) const {
         return;
     }
     Encoder enc(*set_, out);
-    enc.Encode(set_->types[def_->type], value_);
+    enc.Encode(set_->types[def_->type], value_, nullptr);
 }
 
 std::vector<uint8_t> Block::Encode(bool force) const {
@@ -405,20 +499,50 @@ std::vector<uint8_t> Block::Encode(bool force) const {
     return out;
 }
 
+// One step down a path: from (t, v) through index i. `v` may be null (type-only
+// walks). Returns false when the step doesn't exist; sets `fd` when the step is
+// a struct field.
+namespace {
+template <class V>
+bool Step(const SchemaSet& s, const TypeDef*& t, V*& v, uint16_t i, const FieldDef*& fd) {
+    fd = nullptr;
+    switch (t->kind) {
+    case Kind::Struct:
+        if (i >= t->refCount || (v && i >= v->items.size())) return false;
+        fd = &s.fields[t->ref + i];
+        t  = &s.types[fd->type];
+        if (v) v = &v->items[i];
+        return true;
+    case Kind::Array:
+        if (v && i >= v->items.size()) return false;
+        t = &s.types[t->ref];
+        if (v) v = &v->items[i];
+        return true;
+    case Kind::Union: {
+        if (i >= t->refCount) return false;
+        if (v && v->bits != i) return false;          // that case isn't selected
+        const CaseDef& cd = s.cases[t->ref + i];
+        if (cd.type == schema::kNoField) return true; // empty case: stays on the union
+        t = &s.types[cd.type];
+        if (v) {
+            if (v->items.empty()) return false;
+            v = &v->items[0];
+        }
+        return true;
+    }
+    default:
+        return false;
+    }
+}
+}  // namespace
+
 const TypeDef* Block::TypeAt(const RelPath& p) const {
     if (!def_) return nullptr;
     const TypeDef* t = &set_->types[def_->type];
-    for (uint8_t d = 0; d < p.depth; ++d) {
-        const uint16_t i = p.idx[d];
-        if (t->kind == Kind::Struct) {
-            if (i >= t->refCount) return nullptr;
-            t = &set_->types[set_->fields[t->ref + i].type];
-        } else if (t->kind == Kind::Array) {
-            t = &set_->types[t->ref];
-        } else {
-            return nullptr;
-        }
-    }
+    const Value*   v = nullptr;
+    const FieldDef* fd = nullptr;
+    for (uint8_t d = 0; d < p.depth; ++d)
+        if (!Step(*set_, t, v, p.idx[d], fd)) return nullptr;
     return t;
 }
 
@@ -426,18 +550,9 @@ const Value* Block::GetValue(const RelPath& p) const {
     if (!def_) return nullptr;
     const TypeDef* t = &set_->types[def_->type];
     const Value*   v = &value_;
+    const FieldDef* fd = nullptr;
     for (uint8_t d = 0; d < p.depth; ++d) {
-        const uint16_t i = p.idx[d];
-        if (t->kind == Kind::Struct) {
-            if (i >= t->refCount || i >= v->items.size()) return nullptr;
-            t = &set_->types[set_->fields[t->ref + i].type];
-        } else if (t->kind == Kind::Array) {
-            if (i >= v->items.size()) return nullptr;
-            t = &set_->types[t->ref];
-        } else {
-            return nullptr;
-        }
-        v = &v->items[i];
+        if (!Step(*set_, t, v, p.idx[d], fd)) return nullptr;
         if (!v->present) return nullptr;
     }
     return v;
@@ -453,31 +568,33 @@ bool Block::StoreValue(const RelPath& p, Value nv) {
     Value*          v  = &value_;
     const FieldDef* fd = nullptr;
     for (uint8_t d = 0; d < p.depth; ++d) {
-        const uint16_t i = p.idx[d];
-        if (t->kind == Kind::Struct) {
-            if (i >= t->refCount || i >= v->items.size()) return false;
-            structs.push_back({t, v});
-            fd = &set_->fields[t->ref + i];
-            t  = &set_->types[fd->type];
-        } else if (t->kind == Kind::Array) {
-            if (i >= v->items.size()) return false;
-            fd = nullptr;
-            t  = &set_->types[t->ref];
-        } else {
-            return false;
-        }
-        v = &v->items[i];
+        if (t->kind == Kind::Struct) structs.push_back({t, v});
+        if (!Step(*set_, t, v, p.idx[d], fd)) return false;
     }
+    if (t->kind == Kind::Union && nv.bits != v->bits) return false;  // the selector chooses
     if (*v == nv) return true;   // no-op: stays verbatim
     *v = std::move(nv);
+    v->present = true;
     dirty_ = true;
 
     // A replaced array / byte run keeps its length field in step (§6).
     if (fd && fd->lenField != schema::kNoField && fd->lenUp < structs.size()) {
         StructStep& owner = structs[structs.size() - 1 - fd->lenUp];
         if (fd->lenField < owner.value->items.size()) {
+            uint64_t n = 0;
+            if (t->kind == Kind::Bytes) {
+                n = v->bytes.size();
+            } else if (t->len == LenKind::Window) {
+                // A byte window's size is the encoded size of its elements.
+                std::vector<uint8_t> tmp;
+                Encoder enc(*set_, tmp);
+                for (const StructStep& st : structs) enc.PushFrame(st.type, st.value);
+                enc.Encode(*t, *v, fd);
+                n = tmp.size();
+            } else {
+                n = v->items.size();
+            }
             const Kind lk = set_->types[set_->fields[owner.type->ref + fd->lenField].type].kind;
-            const uint64_t n = t->kind == Kind::Bytes ? v->bytes.size() : v->items.size();
             Value& lenValue = owner.value->items[fd->lenField];
             lenValue.bits = n & schema_detail::MaskFor(lk);
             lenValue.present = true;
@@ -495,34 +612,45 @@ std::optional<RelPath> Block::Find(std::string_view path) const {
         const std::string_view seg = path.substr(0, slash);
         path = slash == std::string_view::npos ? std::string_view{} : path.substr(slash + 1);
         if (p.depth >= p.idx.size()) return std::nullopt;
+        uint16_t i = 0;
         if (t->kind == Kind::Struct) {
-            uint16_t i = 0;
             for (; i < t->refCount; ++i)
                 if (seg == set_->fields[t->ref + i].name) break;
             if (i == t->refCount) return std::nullopt;
-            p = p.Child(i);
-            t = &set_->types[set_->fields[t->ref + i].type];
+        } else if (t->kind == Kind::Union) {
+            for (; i < t->refCount; ++i)
+                if (seg == set_->cases[t->ref + i].name) break;
+            if (i == t->refCount) return std::nullopt;
         } else if (t->kind == Kind::Array) {
-            uint16_t i = 0;
             auto [ptr, ec] = std::from_chars(seg.data(), seg.data() + seg.size(), i);
             if (ec != std::errc{} || ptr != seg.data() + seg.size()) return std::nullopt;
-            p = p.Child(i);
-            t = &set_->types[t->ref];
         } else {
             return std::nullopt;
         }
+        const Value* none = nullptr;
+        const FieldDef* fd = nullptr;
+        if (!Step(*set_, t, none, i, fd)) return std::nullopt;
+        p = p.Child(i);
     }
     return p;
 }
 
 void Block::ForEachRef(const std::function<void(int32_t, bool, std::span<const uint16_t>)>& fn) const {
     if (!def_) return;
-    WalkRefs(*set_, set_->types[def_->type], value_, fn);
+    auto leaf = [&](const TypeDef& t, const Value& v) {
+        if (t.kind == Kind::Ref || t.kind == Kind::Ptr)
+            fn(static_cast<int32_t>(static_cast<uint32_t>(v.bits)), t.kind == Kind::Ptr,
+               set_->links.subspan(t.linkFirst, t.linkCount));
+    };
+    WalkLeaves(*set_, set_->types[def_->type], value_, leaf);
 }
 
 void Block::ForEachStringRef(const std::function<void(uint32_t)>& fn) const {
     if (!def_) return;
-    WalkStringRefs(*set_, set_->types[def_->type], value_, fn);
+    auto leaf = [&](const TypeDef& t, const Value& v) {
+        if (t.kind == Kind::StringRef) fn(static_cast<uint32_t>(v.bits));
+    };
+    WalkLeaves(*set_, set_->types[def_->type], value_, leaf);
 }
 
 }  // namespace niffer

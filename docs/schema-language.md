@@ -1,6 +1,6 @@
 # NIFFER schema language — specification
 
-**Language version 0.1.** This document is normative. It defines what a descriptor in `schema/`
+**Language version 0.2.** This document is normative. It defines what a descriptor in `schema/`
 means, so that any implementation can decode and encode Skyrim SE NIF blocks exactly as
 NIFFER's engine does. When this document and the code disagree, that is a bug in one of them.
 `tools/schemagen` is the reference validator, and `niffer::Block` is the reference engine. The
@@ -49,6 +49,7 @@ A `type` is a base type, optionally followed by an array suffix.
 | `u8 u16 u32 u64` | unsigned integer of that width | |
 | `i8 i16 i32 i64` | two's-complement integer | |
 | `f32` | IEEE-754 single; carried as raw bits, so every bit pattern round-trips | |
+| `half` | IEEE-754 half (2 bytes); carried as raw bits, converted at the edge | |
 | `ref` | i32 block index; −1 is null. An **owning** link: a parent to its child | `to: [Block, …]` (§8) |
 | `ptr` | i32 block index; −1 is null. A **non-owning** link back or across the graph (a controller's target, a skin's bones) | `to: [Block, …]` (§8) |
 | `stringref` | u32 index into the header's string table; `0xFFFFFFFF` is empty | |
@@ -64,6 +65,7 @@ A `type` is a base type, optionally followed by an array suffix.
 | `T[N]` | exactly N elements |
 | `T[count: u8]`, `T[count: u16]`, `T[count: u32]` | an element count of that width, then the elements |
 | `T[count: <field>]` | the element count is the value of an earlier field (§3.3) |
+| `T[]` with `size: N` or `size: <field>` | elements until exactly that many **bytes** are consumed (a byte window); for formats that store a byte size rather than a count |
 
 The field's options (for example `to:` on `"ref[count: u32]"`) apply to the element type. An
 element that consumes zero bytes is an error at decode time; otherwise a `T[]` array would loop
@@ -71,20 +73,20 @@ forever.
 
 ### 3.3 Field references
 
-`T[count: <field>]`, `bytes` with `size: <field>`, and `if:` (§4.2) name another field. The name
-resolves to the **nearest earlier field**: first among the fields before this one in the same
-struct, then among the fields before the enclosing field in each enclosing struct, outward to
-the block. So an array element can read a count or flag that lives on the block.
+`T[count: <field>]`, `size: <field>`, `if:` (§4.2) and a union's `by:` (§4.3) name another
+field. The name resolves to the **nearest earlier field**: first among the fields before this one
+in the same struct, then among the fields before the enclosing field in each enclosing struct,
+outward to the block. So an array element can read a count or flag that lives on the block.
 
 The referenced field must be an integer scalar (`u8`–`u64`, `i8`–`i64`) and must not itself be
 conditional.
 
-A **named** struct is reusable, so its fields may reference only fields of that same struct.
-Only an **inline** struct (§4) may reference fields of the structs that enclose it, because it
-has exactly one place in the schema and every reference resolves one way.
+A **named** struct may also reference a field of the structs that enclose it, such as a vertex
+layout reading its shape's `vertexDesc`. Such a reference is resolved **at each use site**,
+against that site's fields: a use site where the name resolves to no earlier field is an error.
 
 `T[count: <field>]` and `size: <field>` describe a field's own length, so they appear only on a
-field's top-level type, never on an array's element type.
+field's top-level type, never on an array's element type or a union case's type.
 
 ## 4. Structs
 
@@ -112,10 +114,10 @@ fields:
 | Key | Meaning |
 |---|---|
 | `name` | required |
-| `type` / `fields` | exactly one: a type (§3), or an inline struct |
+| `type` / `fields` / `union` | exactly one: a type (§3), an inline struct, or a union (§4.3) |
 | `array` | with `fields:` only: an array suffix without brackets (`"count: u32"`, `"count: numKeys"`, `"4"`, `""`) |
 | `to` | `ref`/`ptr` (or arrays of them) only: allowed target blocks (§8) |
-| `size` | `bytes` only (§3.1) |
+| `size` | `bytes` (§3.1) and `T[]` byte windows (§3.2) |
 | `if` | a condition (§4.2) |
 | `doc` | free text: what the field means and how it was verified. Ignored by engines. |
 
@@ -137,6 +139,34 @@ fields:
 
 Values compare as signed 64-bit for signed types and unsigned 64-bit otherwise. A field whose
 condition is false is **absent**: it consumes no bytes and has no value.
+
+### 4.3 Unions
+
+```yaml
+  - name: data
+    union:
+      by: { field: interpolation }            # optionally: mask: <integer>
+      cases:
+        - { when: 1, name: linear, fields: [ { name: value, type: f32 } ] }
+        - { when: [2, 6], name: quadratic, type: QuadraticFloat }
+      default: { name: other, type: bytes }   # optional
+```
+
+A union is one of a closed set of layouts, chosen by an earlier integer field, the **selector**.
+
+- The selector's value (ANDed with `mask` when given) is compared with each case's `when`, a
+  value or a list of values; a value may appear in only one case. Signed selectors compare
+  signed, unless masked.
+- No matching case: the `default` case, if any. Otherwise the block is refused.
+- A case has a `name` (camelCase, unique in the union) and `type:` (§3), `fields:` (an inline
+  struct), or neither: an **empty** case consumes no bytes.
+- A case's type can't take its length from a field (`count:` / `size:` a field); use an inline
+  struct case for that.
+- A union whose case consumes the rest of the block must be the last field.
+- A union field may also carry `if:`.
+
+In a value, a union is its selected case. Paths name the case after the union field
+(`data/linear/value`), and a case that isn't selected has no value.
 
 ## 5. Blocks
 
@@ -193,7 +223,8 @@ Refusal is normal, not an error. Raw blocks keep their bytes and their index.
 - **Raw and unmodified blocks** are written from their original bytes.
 - **Modified blocks** are written from their value: each field in layout order, absent
   conditional fields skipped. A conditional field whose condition holds but which has no value is
-  written as its zero value.
+  written as its zero value. A union writes the case its selector picks now: if the value holds
+  another case, the picked case's zero value is written.
 
 An implementation that verifies its layouts must also support a **forced** encode, which writes
 every decoded block from its value. For every SSE file of the vanilla game, this must reproduce
@@ -202,7 +233,10 @@ the original bytes. It is NIFFER's real-data gate.
 ### 7.3 Editing
 
 - **No-op sets:** setting a value equal to the current one doesn't modify anything.
-- **Derived lengths:** see §6.
+- **Derived lengths:** see §6. A byte-window array's size field is set to the encoded size of
+  its elements.
+- **Unions:** the selector field decides the case. Storing a value into a case that isn't
+  selected fails.
 
 ## 8. Block references
 
@@ -223,10 +257,10 @@ consumers never run the generator.
 
 | Output | Content |
 |---|---|
-| `schema.json` | The resolved schema for data consumers: `schemaVersion`, `languageVersion`, `structs[]` and `blocks[]`. Each block has `name`, `parent`, `abstract`, and its full `layout` (inherited fields first; each field names the block that declares it in `declaredBy`), plus `verified` and `doc` when present. Every field has `name` and a resolved `type` (`kind`, and `fields`, `element`, `count`, `countPrefix`, `countField`, `size`, `sizeField`, `to` as applicable), plus `if` when conditional. Named structs appear expanded at each use. |
+| `schema.json` | The resolved schema for data consumers: `schemaVersion`, `languageVersion`, `structs[]` and `blocks[]`. Each block has `name`, `parent`, `abstract`, and its full `layout` (inherited fields first; each field names the block that declares it in `declaredBy`), plus `verified` and `doc` when present. Every field has `name` and a resolved `type` (`kind`, and `fields`, `element`, `count`, `countPrefix`, `countField`, `size`, `sizeField`, `to`, `by` and `cases` as applicable), plus `if` when conditional. Named structs appear expanded at each use. |
 | `hpp/generated/Tables.h` | the engine's constexpr tables (`niffer::schema::SchemaSet`). Private to the library. |
 | `include/niffer/generated/Fields.h` | typed handles: `niffer::fields::<Block>::<field>[::<field>]`; struct fields expose `::self` |
-| `include/niffer/generated/Views.h` | typed views (`niffer::view::<Name>`): accessors only, over the generic engine. Block views inherit as the blocks do. |
+| `include/niffer/generated/Views.h` | typed views (`niffer::view::<Name>`): accessors only, over the generic engine. Block views inherit as the blocks do. A union field gets `<Field>Case()` (the selected case's index, or −1) and one accessor per case, `<Field><Case>()`, which is empty unless that case is selected. |
 
 ## 10. Reserved for later versions
 
@@ -235,8 +269,7 @@ language version rejects them by name.
 
 | Construct | Purpose |
 |---|---|
-| `union:` with selectors `field`, `field` + `mask`, `lookup` | layouts chosen by data (vertex attributes by `vertexDesc`, keys by interpolation type, material scalars by shader type) |
-| `half` | IEEE-754 half-precision, carried as raw bits |
+| `lookup` union selector | a case chosen through a table, keyed by a field |
 | `packed: true` on arrays | fixed-size elements kept as one byte run and read in place, for vertex and triangle data |
 | `enum:`, `flags:`, `unit:` and `enum` descriptors | rendering hints |
 
@@ -251,3 +284,4 @@ language version rejects them by name.
 | Version | Change |
 |---|---|
 | 0.1 | Initial: scalars, `ref`/`ptr`, `stringref`, `sizedstring`, `bytes`, structs, arrays (fixed, rest, count prefix, count field), `if:` conditions, block inheritance, `to:` |
+| 0.2 | adds `half`, `union:` (selector field with optional mask, `when` values, `default`, empty cases), byte-window arrays (`T[]` + `size:`), and named structs that read enclosing fields (resolved per use site) |

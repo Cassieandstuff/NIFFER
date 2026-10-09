@@ -238,6 +238,13 @@ static void WalkNamed(const schema::SchemaSet& s, const schema::TypeDef& t, cons
     case schema::Kind::Array:
         for (const Value& item : v.items) WalkNamed(s, s.types[t.ref], item, name, fn);
         return;
+    case schema::Kind::Union:
+        if (v.bits < t.refCount && !v.items.empty()) {
+            const auto& cd = s.cases[t.ref + v.bits];
+            if (cd.type != schema::kNoField)
+                WalkNamed(s, s.types[cd.type], v.items[0], name + "/" + cd.name, fn);
+        }
+        return;
     default:
         fn(name, t, v);
         return;

@@ -76,13 +76,13 @@ rejects("unknown key", """\
 rejects("reserved construct by name", """\
     block: A
     inherits: NiObject
-    fields: [ { name: x, type: u32, union: {} } ]
-""", "unions")
-rejects("half is reserved", """\
+    fields: [ { name: x, type: "u32[]", packed: true } ]
+""", "packed arrays")
+accepts("half", """\
     block: A
     inherits: NiObject
-    fields: [ { name: x, type: half } ]
-""", "half-precision")
+    fields: [ { name: x, type: half }, { name: y, type: "half[4]" } ]
+""")
 rejects("missing inherits", """\
     block: A
     fields: [ { name: x, type: u32 } ]
@@ -121,14 +121,95 @@ rejects("rest then inherited fields", """\
     inherits: A
     fields: [ { name: b, type: u8 } ]
 """, "only the last field")
-rejects("named struct reaching outward", """\
+accepts("named struct reading an enclosing field at each use site", """\
     struct: S
     fields: [ { name: v, type: u8, if: { field: flag, ne: 0 } } ]
     ---
     block: A
     inherits: NiObject
     fields: [ { name: flag, type: u8 }, { name: s, type: S } ]
+    ---
+    block: B
+    inherits: NiObject
+    fields: [ { name: pad, type: u16 }, { name: flag, type: u32 }, { name: ss, type: "S[2]" } ]
+""")
+rejects("named struct used where its field is missing", """\
+    struct: S
+    fields: [ { name: v, type: u8, if: { field: flag, ne: 0 } } ]
+    ---
+    block: A
+    inherits: NiObject
+    fields: [ { name: s, type: S } ]
 """, "no earlier field 'flag'")
+accepts("union with every kind of case", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: kind, type: u32 }
+      - name: v
+        union:
+          by: { field: kind, mask: 3 }
+          cases:
+            - { when: 1, name: one, type: f32 }
+            - { when: [2, 3], name: many, fields: [ { name: a, type: u8 } ] }
+          default: { name: none }
+""")
+rejects("union value in two cases", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: kind, type: u32 }
+      - { name: v, union: { by: { field: kind }, cases: [ { when: 1, name: a, type: u8 }, { when: [1, 2], name: b, type: u8 } ] } }
+""", "appears in two cases")
+rejects("union case name twice", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: kind, type: u32 }
+      - { name: v, union: { by: { field: kind }, cases: [ { when: 1, name: a, type: u8 }, { when: 2, name: a, type: u8 } ] } }
+""", "duplicate case name")
+rejects("union selector not an integer", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: kind, type: f32 }
+      - { name: v, union: { by: { field: kind }, cases: [ { when: 1, name: a, type: u8 } ] } }
+""", "must be an integer scalar")
+rejects("union without cases", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: kind, type: u32 }
+      - { name: v, union: { by: { field: kind }, cases: [] } }
+""", "non-empty 'cases'")
+rejects("union case counted by a field", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: n, type: u32 }
+      - { name: v, union: { by: { field: n }, cases: [ { when: 1, name: a, type: "u8[count: n]" } ] } }
+""", "inline struct case")
+rejects("rest-consuming union not last", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: n, type: u32 }
+      - { name: v, union: { by: { field: n }, cases: [ { when: 1, name: a, type: bytes } ] } }
+      - { name: after, type: u8 }
+""", "only the last field")
+accepts("byte-window arrays", """\
+    block: A
+    inherits: NiObject
+    fields:
+      - { name: size, type: u32 }
+      - { name: xs, type: "u16[]", size: size }
+      - { name: ys, type: "u8[]", size: 4 }
+""")
+rejects("size on a counted array", """\
+    block: A
+    inherits: NiObject
+    fields: [ { name: xs, type: "u8[4]", size: 4 } ]
+""", "needs the open suffix")
 rejects("forward reference", """\
     block: A
     inherits: NiObject

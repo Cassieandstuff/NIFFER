@@ -9,98 +9,137 @@ namespace niffer_test::tables {
 using namespace ::niffer::schema;
 
 inline constexpr TypeDef kTypes[] = {
-    { Kind::Struct, LenKind::None, 0, 0, 2, 0, 0, "Pair" },  // 0: struct:Pair
+    { Kind::Struct, LenKind::None, 0, 0, 2, 0, 0, "Pair" },  // 0: struct:Pair#0
     { Kind::U16, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 1: u16
-    { Kind::Struct, LenKind::None, 0, 2, 2, 0, 0, "Counted" },  // 2: struct:Counted
+    { Kind::Struct, LenKind::None, 0, 2, 2, 0, 0, "Counted" },  // 2: struct:Counted#1
     { Kind::U8, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 3: u8
     { Kind::Array, LenKind::Field, 0, 1, 0, 0, 0, nullptr },  // 4: u16[field]
-    { Kind::Struct, LenKind::None, 0, 4, 3, 0, 0, "TAllRows" },  // 5: struct:TAllRows
+    { Kind::Struct, LenKind::None, 0, 4, 3, 0, 0, "TAllRows" },  // 5: struct:TAllRows#2
     { Kind::F32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 6: f32
-    { Kind::Struct, LenKind::None, 0, 7, 0, 0, 0, "NiObject" },  // 7: block:NiObject
-    { Kind::Struct, LenKind::None, 0, 7, 31, 0, 0, "TAll" },  // 8: block:TAll
-    { Kind::StringRef, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 9: stringref
-    { Kind::U32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 10: u32
-    { Kind::U64, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 11: u64
-    { Kind::I8, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 12: i8
-    { Kind::I16, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 13: i16
-    { Kind::I32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 14: i32
-    { Kind::I64, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 15: i64
-    { Kind::Ref, LenKind::None, 0, 0, 0, 0, 1, nullptr },  // 16: ref->TBase
-    { Kind::Ptr, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 17: ptr
-    { Kind::SizedString, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 18: sizedstring
-    { Kind::Bytes, LenKind::Fixed, 3, 0, 0, 0, 0, nullptr },  // 19: bytes:3
-    { Kind::Array, LenKind::Fixed, 2, 0, 0, 0, 0, nullptr },  // 20: struct:Pair[2]
-    { Kind::Array, LenKind::Prefix8, 0, 3, 0, 0, 0, nullptr },  // 21: u8[u8]
-    { Kind::Array, LenKind::Prefix16, 0, 1, 0, 0, 0, nullptr },  // 22: u16[u16]
-    { Kind::Ref, LenKind::None, 0, 0, 0, 1, 1, nullptr },  // 23: ref->TLeaf
-    { Kind::Array, LenKind::Prefix32, 0, 23, 0, 0, 0, nullptr },  // 24: ref->TLeaf[u32]
-    { Kind::Array, LenKind::Field, 0, 10, 0, 0, 0, nullptr },  // 25: u32[field]
-    { Kind::Bytes, LenKind::Field, 0, 0, 0, 0, 0, nullptr },  // 26: bytes:field
-    { Kind::Array, LenKind::Prefix8, 0, 5, 0, 0, 0, nullptr },  // 27: struct:TAllRows[u8]
-    { Kind::Array, LenKind::Rest, 0, 3, 0, 0, 0, nullptr },  // 28: u8[]
-    { Kind::Struct, LenKind::None, 0, 38, 2, 0, 0, "TBase" },  // 29: block:TBase
-    { Kind::Struct, LenKind::None, 0, 40, 3, 0, 0, "TLeaf" },  // 30: block:TLeaf
-    { Kind::Struct, LenKind::None, 0, 43, 1, 0, 0, "TRest" },  // 31: block:TRest
-    { Kind::Bytes, LenKind::Rest, 0, 0, 0, 0, 0, nullptr },  // 32: bytes
+    { Kind::Struct, LenKind::None, 0, 7, 2, 0, 0, "Probe" },  // 7: struct:Probe#5
+    { Kind::Struct, LenKind::None, 0, 9, 2, 0, 0, "TNewPickMany" },  // 8: struct:TNewPickMany#3
+    { Kind::Struct, LenKind::None, 0, 11, 2, 0, 0, "Probe" },  // 9: struct:Probe#8
+    { Kind::Struct, LenKind::None, 0, 13, 2, 0, 0, "Probe" },  // 10: struct:Probe#10
+    { Kind::Struct, LenKind::None, 0, 15, 2, 0, 0, "Probe" },  // 11: struct:Probe#12
+    { Kind::Struct, LenKind::None, 0, 17, 0, 0, 0, "NiObject" },  // 12: block:NiObject
+    { Kind::Struct, LenKind::None, 0, 17, 31, 0, 0, "TAll" },  // 13: block:TAll
+    { Kind::StringRef, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 14: stringref
+    { Kind::U32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 15: u32
+    { Kind::U64, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 16: u64
+    { Kind::I8, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 17: i8
+    { Kind::I16, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 18: i16
+    { Kind::I32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 19: i32
+    { Kind::I64, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 20: i64
+    { Kind::Ref, LenKind::None, 0, 0, 0, 0, 1, nullptr },  // 21: ref->TBase
+    { Kind::Ptr, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 22: ptr
+    { Kind::SizedString, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 23: sizedstring
+    { Kind::Bytes, LenKind::Fixed, 3, 0, 0, 0, 0, nullptr },  // 24: bytes:3
+    { Kind::Array, LenKind::Fixed, 2, 0, 0, 0, 0, nullptr },  // 25: struct:Pair#0[2]
+    { Kind::Array, LenKind::Prefix8, 0, 3, 0, 0, 0, nullptr },  // 26: u8[u8]
+    { Kind::Array, LenKind::Prefix16, 0, 1, 0, 0, 0, nullptr },  // 27: u16[u16]
+    { Kind::Array, LenKind::Prefix32, 0, 29, 0, 0, 0, nullptr },  // 28: ref->TLeaf[u32]
+    { Kind::Ref, LenKind::None, 0, 0, 0, 1, 1, nullptr },  // 29: ref->TLeaf
+    { Kind::Array, LenKind::Field, 0, 15, 0, 0, 0, nullptr },  // 30: u32[field]
+    { Kind::Bytes, LenKind::Field, 0, 0, 0, 0, 0, nullptr },  // 31: bytes:field
+    { Kind::Array, LenKind::Prefix8, 0, 5, 0, 0, 0, nullptr },  // 32: struct:TAllRows#2[u8]
+    { Kind::Array, LenKind::Rest, 0, 3, 0, 0, 0, nullptr },  // 33: u8[]
+    { Kind::Struct, LenKind::None, 0, 48, 2, 0, 0, "TBase" },  // 34: block:TBase
+    { Kind::Struct, LenKind::None, 0, 50, 3, 0, 0, "TLeaf" },  // 35: block:TLeaf
+    { Kind::Struct, LenKind::None, 0, 53, 7, 0, 0, "TNew" },  // 36: block:TNew
+    { Kind::Half, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 37: half
+    { Kind::Union, LenKind::None, 0, 0, 3, 0, 0, nullptr },  // 38: union#6
+    { Kind::Array, LenKind::Window, 0, 9, 0, 0, 0, nullptr },  // 39: struct:Probe#8[window]
+    { Kind::Array, LenKind::Window, 4, 1, 0, 0, 0, nullptr },  // 40: u16[window:4]
+    { Kind::Struct, LenKind::None, 0, 60, 3, 0, 0, "TNew2" },  // 41: block:TNew2
+    { Kind::Struct, LenKind::None, 0, 63, 1, 0, 0, "TRest" },  // 42: block:TRest
+    { Kind::Bytes, LenKind::Rest, 0, 0, 0, 0, 0, nullptr },  // 43: bytes
 };
 
 inline constexpr FieldDef kFields[] = {
-    { "a", 1, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 0
-    { "b", 1, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 1
-    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 2
-    { "items", 4, 0, 0, CondOp::None, 0, kNoField, 0 },  // 3
-    { "mask", 3, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 4
-    { "value", 6, 0, kNoField, CondOp::Mask, 0, 0, 1 },  // 5
-    { "outer", 1, 0, kNoField, CondOp::Mask, 1, 1, 16 },  // 6
-    { "name", 9, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 7
-    { "flags", 10, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 8
-    { "u8v", 3, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 9
-    { "u16v", 1, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 10
-    { "u32v", 10, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 11
-    { "u64v", 11, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 12
-    { "i8v", 12, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 13
-    { "i16v", 13, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 14
-    { "i32v", 14, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 15
-    { "i64v", 15, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 16
-    { "f32v", 6, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 17
-    { "child", 16, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 18
-    { "back", 17, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 19
-    { "label", 18, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 20
-    { "fixedBytes", 19, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 21
-    { "pairs", 20, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 22
-    { "small", 21, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 23
-    { "medium", 22, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 24
-    { "leaves", 24, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 25
-    { "count", 1, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 26
-    { "byCount", 25, 0, 19, CondOp::None, 0, kNoField, 0 },  // 27
-    { "blobSize", 10, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 28
-    { "blob", 26, 0, 21, CondOp::None, 0, kNoField, 0 },  // 29
-    { "counted", 2, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 30
-    { "rows", 27, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 31
-    { "sel", 12, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 32
-    { "negOnly", 3, 0, kNoField, CondOp::Max, 0, 25, -1 },  // 33
-    { "eqTwo", 3, 0, kNoField, CondOp::Eq, 0, 25, 2 },  // 34
-    { "neTwo", 3, 0, kNoField, CondOp::Ne, 0, 25, 2 },  // 35
-    { "minOne", 3, 0, kNoField, CondOp::Min, 0, 25, 1 },  // 36
-    { "tail", 28, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 37
-    { "name", 9, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 38
-    { "flags", 10, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 39
-    { "name", 9, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 40
-    { "flags", 10, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 41
-    { "value", 10, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 42
-    { "data", 32, 0, kNoField, CondOp::None, 0, kNoField, 0 },  // 43
+    { "a", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 0
+    { "b", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 1
+    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 2
+    { "items", 4, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 3
+    { "mask", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 4
+    { "value", 6, 0, kNoField, CondOp::Mask, 0, 0, 1ll, 0, kNoField, 0ull },  // 5
+    { "outer", 1, 0, kNoField, CondOp::Mask, 1, 1, 16ll, 0, kNoField, 0ull },  // 6
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 7
+    { "y", 1, 0, kNoField, CondOp::Mask, 2, 0, 4ll, 0, kNoField, 0ull },  // 8
+    { "a", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 9
+    { "b", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 10
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 11
+    { "y", 1, 0, kNoField, CondOp::Mask, 1, 0, 4ll, 0, kNoField, 0ull },  // 12
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 13
+    { "y", 1, 0, kNoField, CondOp::Mask, 1, 0, 4ll, 0, kNoField, 0ull },  // 14
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 15
+    { "y", 1, 0, kNoField, CondOp::Mask, 1, 1, 4ll, 0, kNoField, 0ull },  // 16
+    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 17
+    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 18
+    { "u8v", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 19
+    { "u16v", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 20
+    { "u32v", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 21
+    { "u64v", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 22
+    { "i8v", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 23
+    { "i16v", 18, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 24
+    { "i32v", 19, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 25
+    { "i64v", 20, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 26
+    { "f32v", 6, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 27
+    { "child", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 28
+    { "back", 22, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 29
+    { "label", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 30
+    { "fixedBytes", 24, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 31
+    { "pairs", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 32
+    { "small", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 33
+    { "medium", 27, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 34
+    { "leaves", 28, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 35
+    { "count", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 36
+    { "byCount", 30, 0, 19, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 37
+    { "blobSize", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 38
+    { "blob", 31, 0, 21, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 39
+    { "counted", 2, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 40
+    { "rows", 32, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 41
+    { "sel", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 42
+    { "negOnly", 3, 0, kNoField, CondOp::Max, 0, 25, (-1ll), 0, kNoField, 0ull },  // 43
+    { "eqTwo", 3, 0, kNoField, CondOp::Eq, 0, 25, 2ll, 0, kNoField, 0ull },  // 44
+    { "neTwo", 3, 0, kNoField, CondOp::Ne, 0, 25, 2ll, 0, kNoField, 0ull },  // 45
+    { "minOne", 3, 0, kNoField, CondOp::Min, 0, 25, 1ll, 0, kNoField, 0ull },  // 46
+    { "tail", 33, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 47
+    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 48
+    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 49
+    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 50
+    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 51
+    { "value", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 52
+    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 53
+    { "h", 37, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 54
+    { "pick", 38, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, 0, 3ull },  // 55
+    { "windowSize", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 56
+    { "window", 39, 0, 3, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 57
+    { "fixedWindow", 40, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 58
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 59
+    { "pad", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 60
+    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 61
+    { "p", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 62
+    { "data", 43, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 63
 };
 
+inline constexpr CaseDef kCases[] = {
+    { "one", 6, 0, 1, false },  // 0
+    { "many", 8, 1, 2, false },  // 1
+    { "none", kNoField, 3, 0, true },  // 2
+};
+inline constexpr int64_t kWhens[] = { 1ll, 2ll, 3ll };
 inline constexpr uint16_t kLinks[] = { 2, 3 };
 
 inline constexpr BlockDef kBlocks[] = {
-    { "NiObject", -1, 7, 0, true },  // 0
-    { "TAll", 2, 8, 2, false },  // 1
-    { "TBase", 0, 29, 0, true },  // 2
-    { "TLeaf", 2, 30, 2, false },  // 3
-    { "TRest", 0, 31, 0, false },  // 4
+    { "NiObject", -1, 12, 0, true },  // 0
+    { "TAll", 2, 13, 2, false },  // 1
+    { "TBase", 0, 34, 0, true },  // 2
+    { "TLeaf", 2, 35, 2, false },  // 3
+    { "TNew", 0, 36, 0, false },  // 4
+    { "TNew2", 0, 41, 0, false },  // 5
+    { "TRest", 0, 42, 0, false },  // 6
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kLinks, kBlocks, "0.0.1", "0.1" };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kBlocks, "0.0.1", "0.2" };
 
 }  // namespace niffer_test::tables

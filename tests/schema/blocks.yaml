@@ -56,3 +56,28 @@ fields:
   - { name: neTwo, type: u8, if: { field: sel, ne: 2 } }
   - { name: minOne, type: u8, if: { field: sel, min: 1 } }
   - { name: tail, type: "u8[]" }
+---
+block: TNew
+inherits: NiObject
+doc: Language 0.2 constructs.
+fields:
+  - { name: kind, type: u8 }
+  - { name: h, type: half }
+  - name: pick
+    union:
+      by: { field: kind, mask: 3 }
+      cases:
+        - { when: 1, name: one, type: f32 }
+        - { when: [2, 3], name: many, fields: [ { name: a, type: u8 }, { name: b, type: Probe } ] }
+      default: { name: none }
+  - { name: windowSize, type: u16 }
+  - { name: window, type: "Probe[]", size: windowSize }
+  - { name: fixedWindow, type: "u16[]", size: 4 }
+  - { name: tail, type: Probe }
+---
+block: TNew2
+inherits: NiObject
+fields:
+  - { name: pad, type: u32 }
+  - { name: kind, type: u8 }
+  - { name: p, type: Probe }

@@ -13,6 +13,8 @@ class NiObject;
 class TAll;
 class TBase;
 class TLeaf;
+class TNew;
+class TNew2;
 class TRest;
 }  // namespace niffer_test::view
 
@@ -66,9 +68,47 @@ namespace TLeaf {
     inline constexpr ::niffer::FieldRef<uint32_t> value{ 3, { { 2 }, 1 } };
 }
 
+// TNew : NiObject
+namespace TNew {
+    inline constexpr ::niffer::FieldRef<uint8_t> kind{ 4, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Half> h{ 4, { { 1 }, 1 } };
+    namespace pick {
+        inline constexpr ::niffer::FieldRef<float> one{ 4, { { 2, 0 }, 2 } };
+        namespace many {
+            inline constexpr ::niffer::StructRef self{ 4, { { 2, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<uint8_t> a{ 4, { { 2, 1, 0 }, 3 } };
+            namespace b {
+                inline constexpr ::niffer::StructRef self{ 4, { { 2, 1, 1 }, 3 } };
+                inline constexpr ::niffer::FieldRef<uint8_t> x{ 4, { { 2, 1, 1, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<uint16_t> y{ 4, { { 2, 1, 1, 1 }, 4 } };
+            }
+        }
+        inline constexpr ::niffer::StructRef none{ 4, { { 2, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<uint16_t> windowSize{ 4, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> window{ 4, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint16_t>> fixedWindow{ 4, { { 5 }, 1 } };
+    namespace tail {
+        inline constexpr ::niffer::StructRef self{ 4, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> x{ 4, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> y{ 4, { { 6, 1 }, 2 } };
+    }
+}
+
+// TNew2 : NiObject
+namespace TNew2 {
+    inline constexpr ::niffer::FieldRef<uint32_t> pad{ 5, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> kind{ 5, { { 1 }, 1 } };
+    namespace p {
+        inline constexpr ::niffer::StructRef self{ 5, { { 2 }, 1 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> x{ 5, { { 2, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> y{ 5, { { 2, 1 }, 2 } };
+    }
+}
+
 // TRest : NiObject
 namespace TRest {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 4, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 6, { { 0 }, 1 } };
 }
 
 }  // namespace niffer_test::fields

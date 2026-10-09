@@ -1,6 +1,6 @@
 {
  "schemaVersion": "0.1.0",
- "languageVersion": "0.1",
+ "languageVersion": "0.2",
  "structs": [
   {
    "name": "AvTransform",

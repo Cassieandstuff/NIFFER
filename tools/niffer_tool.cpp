@@ -8,13 +8,22 @@
 //                          instances → 0. LE/other-version files are reported
 //                          as unsupported, never as failures.
 //   dump <file.nif>        header + per-block index/type/size; unknowns flagged.
+//   collision-validate [--sweep] <dir>
+//                          ExtractCollision against the corpus: compressed-mesh
+//                          vertices inside their stored bounds, and the
+//                          root-space collision AABB against the render
+//                          (BSTriShape) AABB. --sweep re-measures each
+//                          convention in collision::Options against the default.
 //
 // Build: -DNIFFER_BUILD_TOOLS=ON  →  niffer-tool.exe
+#include "Collision.h"
 #include "Stream.h"
 
 #include <niffer/Niffer.h>
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <execution>
@@ -650,6 +659,204 @@ static int CmdDecode(const fs::path& file) {
     return 1;
 }
 
+// ── collision-validate ────────────────────────────────────────────────────────
+// Per file: the root-space AABB of ExtractCollision's output against the
+// root-space AABB of the render geometry (every BSTriShape with its own
+// vertices, through its node chain). `err` is the largest distance between
+// corresponding AABB faces, relative to the render AABB's diagonal.
+namespace {
+struct Aabb {
+    float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f };
+    bool  empty = true;
+    void Add(const float* p) {
+        for (int k = 0; k < 3; ++k) { lo[k] = std::min(lo[k], p[k]); hi[k] = std::max(hi[k], p[k]); }
+        empty = false;
+    }
+};
+Aabb CollisionAabb(const CollisionGeometry& g) {
+    Aabb a;
+    for (size_t i = 0; i + 2 < g.triVerts.size(); i += 3) a.Add(&g.triVerts[i]);
+    for (auto& h : g.hulls)
+        for (size_t i = 0; i + 2 < h.size(); i += 3) a.Add(&h[i]);
+    return a;
+}
+double AabbErr(const Aabb& c, const Aabb& r) {
+    double d2 = 0, worst = 0;
+    for (int k = 0; k < 3; ++k) d2 += double(r.hi[k] - r.lo[k]) * double(r.hi[k] - r.lo[k]);
+    const double diag = std::sqrt(d2);
+    for (int k = 0; k < 3; ++k)
+        worst = std::max({ worst, std::fabs(double(c.lo[k] - r.lo[k])), std::fabs(double(c.hi[k] - r.hi[k])) });
+    return diag > 0 ? worst / diag : 1e9;
+}
+struct Variant { const char* name; collision::Options opt; };
+std::vector<Variant> Variants(bool sweep) {
+    std::vector<Variant> v{ { "default", {} } };
+    if (!sweep) return v;
+    collision::Options o;
+    o = {}; o.niRowMajor = !o.niRowMajor;         v.push_back({ "NiAVObject matrix transposed", o });
+    o = {}; o.havokColumns = !o.havokColumns;     v.push_back({ "HavokTransform basis as the other axis", o });
+    o = {}; o.quatConjugate = !o.quatConjugate;   v.push_back({ "rigid-body quaternion conjugated", o });
+    o = {}; o.bodyTransform = 0;                  v.push_back({ "rigid-body transform never applied", o });
+    o = {}; o.bodyTransform = 2;                  v.push_back({ "rigid-body transform always applied", o });
+    o = {}; o.nodeTransform = !o.nodeTransform;   v.push_back({ "node placement toggled", o });
+    o = {}; o.expandByRadius = !o.expandByRadius; v.push_back({ "box/convex radius expansion toggled", o });
+    o = {}; o.cylinderRadius = 28;                v.push_back({ "cylinders decoded, radius word 28", o });
+    o = {}; o.cylinderRadius = 48;                v.push_back({ "cylinders decoded, radius word 48", o });
+    return v;
+}
+struct ValidateResult {
+    bool loaded = false, hasCollision = false;
+    std::vector<double> err;                 // per variant; -1 when not comparable
+    double sizeRatio = -1;                   // default variant: collision / render AABB size, mean over axes
+    collision::Diagnostics diag;             // default variant
+    int decoded = 0, skipped = 0;
+    std::string topClass;                    // "<body class>/<shape class>" of the first body
+};
+}  // namespace
+
+static ValidateResult ValidateOne(const fs::path& p, const std::vector<Variant>& variants) {
+    ValidateResult r;
+    auto bytes = ReadFile(p);
+    auto typed = NifFile::Load(bytes);
+    auto nif = Nif::Load(bytes);
+    if (!typed || !nif) return r;
+    r.loaded = true;
+
+    std::vector<std::pair<size_t, DecodedMesh>> meshes;
+    for (size_t i = 0; i < typed->blocks.size(); ++i)
+        if (auto* s = dynamic_cast<BSTriShape*>(typed->blocks[i].get())) {
+            DecodedMesh m = DecodeMesh(*s);
+            if (!m.positions.empty()) meshes.emplace_back(i, std::move(m));
+        }
+    for (size_t vi = 0; vi < variants.size(); ++vi) {
+        const auto& opt = variants[vi].opt;
+        collision::Diagnostics d;
+        CollisionGeometry g = collision::Extract(*nif, opt, vi == 0 ? &d : nullptr);
+        if (vi == 0) {
+            r.diag = d;
+            r.decoded = g.shapesDecoded;
+            r.skipped = g.shapesSkipped;
+            r.hasCollision = !g.triIndices.empty() || !g.hulls.empty();
+        }
+        const auto wt = collision::ComputeWorldTransforms(*nif, opt);
+        Aabb ra;
+        for (auto& [bi, m] : meshes) {
+            if (!wt.valid[bi]) continue;
+            for (size_t k = 0; k + 2 < m.positions.size(); k += 3) {
+                const auto q = collision::Apply(wt.world[bi], { m.positions[k], m.positions[k + 1], m.positions[k + 2] });
+                ra.Add(q.data());
+            }
+        }
+        const Aabb ca = CollisionAabb(g);
+        r.err.push_back(!ca.empty && !ra.empty ? AabbErr(ca, ra) : -1.0);
+        if (vi == 0 && !ca.empty && !ra.empty) {
+            double sum = 0; int n = 0;
+            for (int k = 0; k < 3; ++k)
+                if (ra.hi[k] - ra.lo[k] > 1.f) { sum += double(ca.hi[k] - ca.lo[k]) / double(ra.hi[k] - ra.lo[k]); ++n; }
+            if (n) r.sizeRatio = sum / n;
+        }
+    }
+    for (auto& b : nif->blocks) {
+        auto rb = view::bhkRigidBody::From(b);
+        if (!rb) continue;
+        const Block* s = nif->GetBlock(rb->Shape().index);
+        r.topClass = std::string(b.TypeName()) + "/" + (s ? std::string(s->TypeName()) : "?");
+        break;
+    }
+    return r;
+}
+
+static int CmdCollisionValidate(const fs::path& root, bool sweep) {
+    auto files = CollectNifs(root);
+    const auto variants = Variants(sweep);
+    std::printf("collision-validate: %zu .nif files under %s (%zu variant%s)\n", files.size(),
+                root.string().c_str(), variants.size(), variants.size() == 1 ? "" : "s");
+    std::vector<ValidateResult> results(files.size());
+    std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
+                   [&](const fs::path& p) { return ValidateOne(p, variants); });
+
+    uint64_t withCollision = 0, compared = 0, decoded = 0, skipped = 0, phantoms = 0;
+    uint64_t cmsChecked = 0, cmsOutside = 0, moppChecked = 0, moppOutside = 0;
+    std::map<std::string, uint64_t> decodedBy, skippedBy;
+    std::map<std::string, std::array<uint64_t, 4>> byClass;   // n, <=5%, <=10%, <=25%
+    std::map<std::string, std::vector<double>> ratioByClass;
+    std::vector<double> errs;
+    std::vector<std::array<uint64_t, 3>> pair(variants.size());   // changed, better, worse
+    std::vector<std::array<uint64_t, 3>> pairMesh(variants.size());   // the same, compressed-mesh files only
+    for (auto& r : results) {
+        if (!r.loaded) continue;
+        decoded += static_cast<uint64_t>(r.decoded);
+        skipped += static_cast<uint64_t>(r.skipped);
+        phantoms += static_cast<uint64_t>(r.diag.phantomsIgnored);
+        cmsChecked += static_cast<uint64_t>(r.diag.cmsVerticesChecked);
+        cmsOutside += static_cast<uint64_t>(r.diag.cmsVerticesOutside);
+        moppChecked += static_cast<uint64_t>(r.diag.moppChecked);
+        moppOutside += static_cast<uint64_t>(r.diag.moppOutside);
+        for (auto& [k, n] : r.diag.decoded) decodedBy[k] += static_cast<uint64_t>(n);
+        for (auto& [k, n] : r.diag.skipped) skippedBy[k] += static_cast<uint64_t>(n);
+        if (!r.hasCollision) continue;
+        ++withCollision;
+        if (r.err.empty() || r.err[0] < 0) continue;
+        ++compared;
+        const double e = r.err[0];
+        errs.push_back(e);
+        auto& c = byClass[r.topClass];
+        ++c[0]; c[1] += e <= 0.05; c[2] += e <= 0.10; c[3] += e <= 0.25;
+        if (r.sizeRatio > 0) ratioByClass[r.topClass].push_back(r.sizeRatio);
+        for (size_t v = 1; v < variants.size(); ++v) {
+            if (r.err[v] < 0 || std::fabs(r.err[v] - e) < 1e-4) continue;
+            ++pair[v][0];
+            if (r.err[v] < e) ++pair[v][1]; else ++pair[v][2];
+            if (r.topClass.find("bhkMoppBvTreeShape") != std::string::npos) {
+                ++pairMesh[v][0];
+                if (r.err[v] < e) ++pairMesh[v][1]; else ++pairMesh[v][2];
+            }
+        }
+    }
+    std::sort(errs.begin(), errs.end());
+    auto rate = [&](double t) {
+        size_t n = 0;
+        for (double e : errs) n += e <= t;
+        return errs.empty() ? 0.0 : 100.0 * double(n) / double(errs.size());
+    };
+    std::printf("\nShapes decoded by class:\n");
+    for (auto& [k, n] : decodedBy) std::printf("  %8llu  %s\n", (unsigned long long)n, k.c_str());
+    std::printf("Shapes skipped by reason:\n");
+    for (auto& [k, n] : skippedBy) std::printf("  %8llu  %s\n", (unsigned long long)n, k.c_str());
+    std::printf("\nAgreement with render bounds by first body/shape (n, <=5%%, <=10%%, <=25%% of the render diagonal,"
+                " median collision/render AABB size ratio):\n");
+    for (auto& [k, c] : byClass) {
+        auto& rv = ratioByClass[k];
+        std::sort(rv.begin(), rv.end());
+        std::printf("  %6llu  %5.1f%%  %5.1f%%  %5.1f%%  %5.2f  %s\n", (unsigned long long)c[0],
+                    100.0 * double(c[1]) / double(c[0]), 100.0 * double(c[2]) / double(c[0]),
+                    100.0 * double(c[3]) / double(c[0]), rv.empty() ? 0.0 : rv[rv.size() / 2], k.c_str());
+    }
+    if (variants.size() > 1) {
+        std::printf("\nConvention sweep (files whose AABB error changes: variant better / worse than default):\n");
+        for (size_t v = 1; v < variants.size(); ++v)
+            std::printf("  %6llu changed  %6llu better  %6llu worse   %s\n", (unsigned long long)pair[v][0],
+                        (unsigned long long)pair[v][1], (unsigned long long)pair[v][2], variants[v].name);
+        std::printf("\n  ...restricted to files whose first body holds a bhkMoppBvTreeShape (mesh collision, which\n"
+                    "  should follow the render geometry closely):\n");
+        for (size_t v = 1; v < variants.size(); ++v)
+            std::printf("  %6llu changed  %6llu better  %6llu worse   %s\n", (unsigned long long)pairMesh[v][0],
+                        (unsigned long long)pairMesh[v][1], (unsigned long long)pairMesh[v][2], variants[v].name);
+    }
+    std::printf("\n── collision-validate summary ──\n");
+    std::printf("  shapes            %llu decoded, %llu skipped; %llu phantom bodies ignored\n",
+                (unsigned long long)decoded, (unsigned long long)skipped, (unsigned long long)phantoms);
+    std::printf("  bounds            %llu compressed-mesh vertices checked, %llu outside their data bounds\n",
+                (unsigned long long)cmsChecked, (unsigned long long)cmsOutside);
+    std::printf("  mopp grid         %llu checked, %llu with data bounds outside origin..origin+254*65536/scale\n",
+                (unsigned long long)moppChecked, (unsigned long long)moppOutside);
+    std::printf("  files             %llu with collision, %llu also with render geometry\n",
+                (unsigned long long)withCollision, (unsigned long long)compared);
+    std::printf("  render agreement  <=5%%: %.1f%%  <=10%%: %.1f%%  <=25%%: %.1f%%  median err %.3f\n",
+                rate(0.05), rate(0.10), rate(0.25), errs.empty() ? 0.0 : errs[errs.size() / 2]);
+    return 0;
+}
+
 static int CmdCollision(const fs::path& file) {
     auto nif = niffer::NifFile::LoadFile(file.string());
     if (!nif) { std::printf("load failed\n"); return 1; }
@@ -679,7 +886,8 @@ int main(int argc, char** argv) {
                     "  niffer-tool tri-roundtrip <dir>\n"
                     "  niffer-tool dump <file.nif> [blockIdx]\n"
                     "  niffer-tool decode <file.nif>\n"
-                    "  niffer-tool collision <file.nif>\n");
+                    "  niffer-tool collision <file.nif>\n"
+                    "  niffer-tool collision-validate [--sweep] <dir>\n");
         return 2;
     }
     if (std::string(argv[1]) == "decode") return CmdDecode(argv[2]);
@@ -687,6 +895,10 @@ int main(int argc, char** argv) {
         bool refs = argc >= 5 && std::string(argv[3]) == "--refs";
         if (argc < (refs ? 5 : 4)) { std::printf("roundtrip --schema needs a directory\n"); return 2; }
         return CmdSchemaRoundtrip(argv[refs ? 4 : 3], refs);
+    }
+    if (std::string(argv[1]) == "collision-validate") {
+        bool sweep = argc >= 4 && std::string(argv[2]) == "--sweep";
+        return CmdCollisionValidate(argv[sweep ? 3 : 2], sweep);
     }
     std::string cmd = argv[1];
     fs::path arg = argv[2];

@@ -1,4 +1,6 @@
 block: bhkHingeConstraint
-inherits: NiObject
+inherits: bhkConstraint
+doc: 144 bytes in all 8 SSE blocks.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: frameA, type: HavokFrame }
+  - { name: frameB, type: HavokFrame }

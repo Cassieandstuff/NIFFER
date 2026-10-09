@@ -1,2 +1,8 @@
 block: bhkConvexVerticesShape
 inherits: bhkPrimitiveShape
+doc: >-
+  The size is 40 + 16 * (vertex count + plane count) in all 3,628 SSE blocks.
+fields:
+  - { name: unknown8, type: "u32[6]", doc: "Always 0, 0, 0x80000000, 0, 0, 0x80000000." }
+  - { name: vertices, type: "Vec4[count: u32]", packed: true, doc: "w is always 0." }
+  - { name: planes, type: "Vec4[count: u32]", packed: true, doc: "xyz is a unit normal (|n| - 1 < 3e-7), w an offset: for 89% of the 106,180 planes every vertex has n.v + w <= 0, and the gap is the radius in 59%." }

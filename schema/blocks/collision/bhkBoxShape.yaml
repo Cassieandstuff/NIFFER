@@ -1,2 +1,7 @@
 block: bhkBoxShape
 inherits: bhkPrimitiveShape
+doc: 32 bytes in all 3,038 SSE blocks.
+fields:
+  - { name: unknown8, type: "u32[2]", doc: "Unstructured (uninitialized-looking)." }
+  - { name: halfExtents, type: Vec3, doc: "Positive. The box spans -halfExtents..+halfExtents; see docs/collision-provenance.md for the render-bounds check." }
+  - { name: unknownW, type: f32, doc: "Always equal to one of the three halfExtents (to radius in 2,308)." }

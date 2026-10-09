@@ -1,6 +1,6 @@
 # NIFFER — schema-first design
 
-Status: **steps 1–2 implemented** (2026-10-09). The normative spec is
+Status: **steps 1–3 implemented** (2026-10-09). The normative spec is
 [schema-language.md](schema-language.md). The model follows ESPER's
 (github.com/Cassieandstuff/ESPER, `docs/schema-design.md`), which settled the same questions for
 plugin records; this document records where NIF differs.
@@ -165,10 +165,21 @@ until step 6.
    decodes field by field** (opaque `bytes` 4.06%, mostly Havok). Field names come from
    first-party code (SCT's NifDocument, NIFFER's decode helpers) or from layout; words whose
    meaning isn't established are `unknownN`.
-3. **Close the remaining tails,** largest first by `roundtrip --schema --refs`: Havok
-   (`bhkCompressedMeshShapeData`, the `bhkShapeWrapper` and `bhkPrimitiveShape` payloads),
-   legacy `NiTriShapeData`, `NiControllerSequence`, `BSEffectShaderProperty`, then particles,
-   each as far as real data verifies.
+3. **Done (2026-10-09). Close the remaining tails,** largest first by
+   `roundtrip --schema --refs`, each layout measured on the corpus first.
+   - **Havok:** every bhk class is decoded field by field except the MOPP byte code, by a session
+     that never saw the old, nifly-derived `CollisionExtract.cpp`
+     ([collision-provenance.md](collision-provenance.md)). `ExtractCollision` (step 4's
+     collision part) now reads through the schema.
+   - **Legacy geometry** (`NiTriShapeData`, `NiTriStripsData`), **`NiControllerSequence`**,
+     **`BSEffectShaderProperty`**, **`NiDefaultAVObjectPalette`**, particle data and particle
+     systems, and the scale and color modifiers: decoded field by field.
+   - **Every remaining ref** in the long tail of particle controllers, modifiers, emitters,
+     colliders and legacy shapes is typed. What's still opaque there holds no refs.
+
+   Result: `roundtrip --schema` stays GREEN at **98.67%** decoded (opaque `bytes` 1.33%, mostly
+   MOPP byte code), with 1,098,425 refs checked against `to:` and 728,961 string refs in range.
+   `schemaVersion` is 0.2.0: steps 2–3 renamed and re-parented fields.
 4. **Decode helpers on views:** `DecodeMesh`, `ExtractCollision` and the morph helpers read
    through the schema.
 5. **Port SCT** (sct-assets, sct-pipeline, Scene Editor v2) to `niffer::Nif` and the views, and

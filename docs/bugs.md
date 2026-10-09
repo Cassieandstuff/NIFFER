@@ -5,21 +5,6 @@ Keep in sync in the SAME change as the code.
 
 ## Open
 
-### CollisionExtract.cpp is not clean-room — OPEN
-- **Symptom:** `cpp/blocks/CollisionExtract.cpp` (`ExtractCollision`, used by SCT's
-  ViewportPanel for cell collision) documents its Havok wire layouts as taken from nifly
-  (GPL-3.0), and its compressed-mesh vertex decompression from the Havok SDK headers. It came
-  into NIFFER with the extraction from SCT (SCT commit 8658f1474).
-- **Why it matters:** NIFFER is dual-licensed, which needs the copyright holder to own every
-  line. Layouts derived from nifly break the clean-room rule (CLAUDE.md, CONTRIBUTING.md).
-- **Plan:** rewrite clean-room with the same API (`CollisionGeometry`, `ExtractCollision`), with
-  Havok layouts reverse-engineered from the SSE corpus (the Havok SDK headers may be used as a
-  reference; nifly, `nif.xml` and the old file may not). It's done by a session that has never
-  read the old file. The schema's bhk descriptors come from the same work. Until then the old
-  file stays so SCT keeps working, and nothing else may take layouts from it.
-- **Related:** step 1 named `bhkCompressedMeshShape`'s first field `target` partly from this
-  file. It's now `unknown0` (data alone: always 0).
-
 ### Typed path: BSLightingShaderProperty's leading fields are mislabeled — OPEN (typed path only)
 - **Symptom:** the typed struct calls the first u32 `name` (a string ref) and the next three
   `headerA/B/C` ("observed -1/0/-1"). As a string index, `name` is out of range in 4,310 SSE
@@ -42,13 +27,13 @@ Keep in sync in the SAME change as the code.
 - **Symptom:** treating the first field as an owning `ref` makes the block graph cyclic in
   7,918 SSE files: the shape "owns" the root node. In one `bhkNiTriStripsShape` it is out of
   range.
-- **Root cause:** in `bhkCompressedMeshShape` it is the target node, a back pointer; it is always
-  0, the root, in the corpus. `cpp/blocks/CollisionExtract.cpp` already reads it that way. In
-  `bhkNiTriStripsShape` it isn't a block reference at all: it is 0 in 26 blocks and
-  `-455893853` in one.
+- **Root cause:** in `bhkCompressedMeshShape` it is always 0, the root, in the corpus, so it
+  isn't an owning link; whether it is a back pointer or a plain integer isn't established from
+  the data alone. In `bhkNiTriStripsShape` it isn't a block reference at all: it is 0 in 26
+  blocks and `-455893853` in one.
 - **Where:** `cpp/blocks/Collision.cpp` (both registered as `bhkShapeWrapper`).
-- **Status:** fixed in the schema (`target: ptr` and `unknown0: u32`). The typed path is left
-  as-is until step 6.
+- **Status:** fixed in the schema (`unknown0: u32` in both). The typed path is left as-is until
+  step 6.
 
 ### Typed path: BSFurnitureMarkerNode / BSDecalPlacementVectorExtraData typed as plain raw — OPEN (typed path only)
 - **Root cause:** both are extra data. They are referenced from `NiObjectNET.extraData` in 304
@@ -56,6 +41,28 @@ Keep in sync in the SAME change as the code.
 - **Status:** fixed in the schema (both inherit `NiExtraData`).
 
 ## Fixed
+
+### CollisionExtract.cpp is not clean-room — FIXED
+- **Symptom:** `cpp/blocks/CollisionExtract.cpp` (`ExtractCollision`, used by SCT's
+  ViewportPanel for cell collision) documented its Havok wire layouts as taken from nifly
+  (GPL-3.0), and its compressed-mesh vertex decompression from the Havok SDK headers. It came
+  into NIFFER with the extraction from SCT (SCT commit 8658f1474).
+- **Why it mattered:** NIFFER is dual-licensed, which needs the copyright holder to own every
+  line. Layouts derived from nifly break the clean-room rule (CLAUDE.md, CONTRIBUTING.md).
+- **Fix:** the old file is deleted. A session that never read it reverse-engineered the bhk
+  payloads from the SSE corpus alone (no nif.xml, nifly or other NIF library; no Havok SDK
+  headers either) and described them in `schema/blocks/collision/` (every bhk class but the
+  MOPP byte code is now decoded field by field; `roundtrip --schema` GREEN). The new
+  `ExtractCollision` (same API: `CollisionGeometry`, `kHavokToSkyrim`) is
+  `cpp/collision/Collision.cpp` over the schema engine, with its internals in
+  `hpp/Collision.h`. Every convention it applies was selected by corpus measurement
+  (`niffer-tool collision-validate --sweep`), and `tests/test_collision.cpp` covers it on a
+  hand-built file. Evidence for every field and convention: `docs/collision-provenance.md`.
+- **Behaviour vs the old file (not compared: it was never read):** phantom bodies are ignored;
+  cylinders, planes and NiTriStrips-backed shapes are skipped and counted; convex shapes are
+  grown by their radius.
+- **Related:** step 1 named `bhkCompressedMeshShape`'s first field `target` partly from the old
+  file. It's `unknown0` (data alone: always 0).
 
 ### EnsureBlocksRegistered raced on first use — FIXED
 - **Symptom:** under parallel loads, the typed path's modeled-block count varied between runs

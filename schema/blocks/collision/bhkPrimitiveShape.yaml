@@ -2,8 +2,8 @@ block: bhkPrimitiveShape
 inherits: NiObject
 abstract: true
 doc: >-
-  A structural grouping, not a game class: convex leaf shapes (Havok material and radius). Typed structurally: the links that keep the block graph walkable are decoded and the Havok payload is kept raw.
+  A structural grouping, not a game class: convex leaf shapes that start with a material and a
+  radius.
 fields:
-  - { name: material, type: u32 }
-  - { name: radius, type: f32 }
-  - { name: data, type: bytes, doc: "Dimensions, vertices or parameters, raw." }
+  - { name: material, type: u32, doc: "A hash-like ID (68 distinct values over the corpus's primitive shapes)." }
+  - { name: radius, type: f32, doc: "For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value." }

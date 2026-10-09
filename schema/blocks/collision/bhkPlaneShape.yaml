@@ -1,4 +1,11 @@
 block: bhkPlaneShape
 inherits: NiObject
+doc: >-
+  One block in the SSE corpus (64 bytes), so nothing beyond word shapes is established: a material
+  like the primitive shapes', then float words.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: material, type: u32 }
+  - { name: unknown4, type: "f32[3]" }
+  - { name: unknown16, type: Vec4, doc: "(0, 0, 1, 0.0084) in the only block: a unit vector and an offset." }
+  - { name: unknown32, type: Vec4 }
+  - { name: unknown48, type: Vec4 }

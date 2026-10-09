@@ -1,4 +1,7 @@
 block: bhkBlendCollisionObject
-inherits: NiObject
+inherits: bhkCollisionObject
+doc: >-
+  bhkCollisionObject's 10 bytes plus two f32 (18 bytes in all 1,193 SSE blocks).
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: unknown10, type: f32, doc: Always 1.0. }
+  - { name: unknown14, type: f32, doc: Always 1.0. }

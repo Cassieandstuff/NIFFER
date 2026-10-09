@@ -1,2 +1,9 @@
 block: bhkConvexTransformShape
 inherits: bhkShapeWrapper
+doc: 84 bytes in all 1,681 SSE blocks.
+fields:
+  - { name: material, type: u32, doc: Always equal to the child shape's material. }
+  - { name: radius, type: f32, doc: Always equal to the child shape's radius. }
+  - { name: unknown12, type: u32, doc: "Varies per block like a 32-bit address." }
+  - { name: unknown16, type: u32, doc: "Unstructured." }
+  - { name: transform, type: HavokTransform }

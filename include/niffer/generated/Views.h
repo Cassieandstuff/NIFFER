@@ -18,6 +18,10 @@ class BSVertex;
 class BoolKey;
 class BoolKeyDataConstant;
 class BoolKeyGroup;
+class CompressedMeshBigTriangle;
+class CompressedMeshChunk;
+class CompressedMeshMaterial;
+class CompressedMeshTransform;
 class FloatKey;
 class FloatKeyDataConstant;
 class FloatKeyDataLinear;
@@ -26,6 +30,8 @@ class FloatKeyDataTbc;
 class FloatKeyGroup;
 class GeometryData;
 class GeometryDataUvSets;
+class HavokFrame;
+class HavokTransform;
 class KeyGroup;
 class Matrix33;
 class NiControllerSequenceControlledBlocks;
@@ -54,6 +60,8 @@ class Vec3KeyDataQuadratic;
 class Vec3KeyDataTbc;
 class Vec3KeyGroup;
 class Vec4;
+class bhkBreakableConstraintWrappedBallAndSocket;
+class bhkBreakableConstraintWrappedStiffSpring;
 class BSBehaviorGraphExtraData;
 class BSBlastNode;
 class BSBoneLODExtraData;
@@ -189,6 +197,7 @@ class bhkCapsuleShape;
 class bhkCollisionObject;
 class bhkCompressedMeshShape;
 class bhkCompressedMeshShapeData;
+class bhkConstraint;
 class bhkConvexTransformShape;
 class bhkConvexVerticesShape;
 class bhkCylinderShape;
@@ -400,6 +409,131 @@ private:
     ::niffer::RelPath p_;
 };
 
+class Triangle {
+public:
+    Triangle(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // a
+    uint16_t A() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
+    bool SetA(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
+    // b
+    uint16_t B() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetB(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // c
+    uint16_t C() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetC(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class CompressedMeshBigTriangle {
+public:
+    CompressedMeshBigTriangle(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // triangle
+    ::niffer::view::Triangle Triangle() const { return ::niffer::view::Triangle(*b_, p_.Child(0)); }
+    // material — Index into the block's materials.
+    uint16_t Material() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetMaterial(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // unknown — Always 0.
+    uint16_t Unknown() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetUnknown(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+    // unknownB
+    uint16_t UnknownB() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
+    bool SetUnknownB(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec4 {
+public:
+    Vec4(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // x
+    float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // y
+    float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // z
+    float Z() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetZ(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+    // w
+    float W() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
+    bool SetW(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class CompressedMeshChunk {
+public:
+    CompressedMeshChunk(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // offset — Added to each dequantized vertex; w = 0.
+    ::niffer::view::Vec4 Offset() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
+    // material — Index into the block's materials.
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown — Always 0xFFFF.
+    uint16_t Unknown() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetUnknown(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+    // transformIndex — Always below the transform-table length; every referenced transform is the identity in the corpus.
+    uint16_t TransformIndex() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
+    bool SetTransformIndex(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
+    // vertices — x, y, z per vertex; the count is the number of u16s (3 per vertex).
+    std::vector<uint16_t> Vertices() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(4)).value_or(std::vector<uint16_t>{}); }
+    bool SetVertices(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(4), v); }
+    // indices — Strip indices first, then a triangle list.
+    std::vector<uint16_t> Indices() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)).value_or(std::vector<uint16_t>{}); }
+    bool SetIndices(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
+    // stripLengths
+    std::vector<uint16_t> StripLengths() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(6)).value_or(std::vector<uint16_t>{}); }
+    bool SetStripLengths(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(6), v); }
+    // unknownIndexData — One u16 per index (the count always equals the index count).
+    std::vector<uint16_t> UnknownIndexData() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(7)).value_or(std::vector<uint16_t>{}); }
+    bool SetUnknownIndexData(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(7), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class CompressedMeshMaterial {
+public:
+    CompressedMeshMaterial(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // material — A hash-like ID; 24 of its 34 distinct values also occur as the material of a primitive shape.
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // unknown — 1 in 11,425 entries; also 2, 13, 3, 0.
+    uint32_t Unknown() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetUnknown(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class CompressedMeshTransform {
+public:
+    CompressedMeshTransform(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // translation
+    ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
+    // rotation — Unit quaternion, x, y, z, w (|q| = 1 within 1e-4 in every entry).
+    ::niffer::view::Vec4 Rotation() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
 class FloatKeyDataLinear {
 public:
     FloatKeyDataLinear(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -505,28 +639,6 @@ public:
         for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(2).Child(static_cast<uint16_t>(e)));
         return out;
     }
-private:
-    ::niffer::Block* b_;
-    ::niffer::RelPath p_;
-};
-
-class Vec4 {
-public:
-    Vec4(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
-    ::niffer::Block& block() const { return *b_; }
-    ::niffer::RelPath path() const { return p_; }
-    // x
-    float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
-    bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
-    // y
-    float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
-    bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
-    // z
-    float Z() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
-    bool SetZ(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
-    // w
-    float W() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
-    bool SetW(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
 private:
     ::niffer::Block* b_;
     ::niffer::RelPath p_;
@@ -657,6 +769,46 @@ public:
     // unknown4 — Always -1 in the corpus.
     int32_t Unknown4() const { return b_->GetAt<int32_t>(p_.Child(18)).value_or(int32_t{}); }
     bool SetUnknown4(const int32_t& v) const { return b_->SetAt<int32_t>(p_.Child(18), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class HavokFrame {
+public:
+    HavokFrame(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // axes
+    std::vector<::niffer::view::Vec4> Axes() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(0));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(0).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // point
+    ::niffer::view::Vec4 Point() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class HavokTransform {
+public:
+    HavokTransform(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // rotation — Orthonormal basis vectors (xyz), w = 0.
+    std::vector<::niffer::view::Vec4> Rotation() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(0));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(0).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // translation
+    ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
 private:
     ::niffer::Block* b_;
     ::niffer::RelPath p_;
@@ -931,25 +1083,6 @@ private:
     ::niffer::RelPath p_;
 };
 
-class Triangle {
-public:
-    Triangle(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
-    ::niffer::Block& block() const { return *b_; }
-    ::niffer::RelPath path() const { return p_; }
-    // a
-    uint16_t A() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
-    bool SetA(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
-    // b
-    uint16_t B() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
-    bool SetB(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
-    // c
-    uint16_t C() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
-    bool SetC(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
-private:
-    ::niffer::Block* b_;
-    ::niffer::RelPath p_;
-};
-
 class SkinPartitionBoneIndices {
 public:
     SkinPartitionBoneIndices(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -1151,6 +1284,37 @@ private:
     ::niffer::RelPath p_;
 };
 
+class bhkBreakableConstraintWrappedBallAndSocket {
+public:
+    bhkBreakableConstraintWrappedBallAndSocket(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // pointA
+    ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
+    // pointB
+    ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class bhkBreakableConstraintWrappedStiffSpring {
+public:
+    bhkBreakableConstraintWrappedStiffSpring(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // pointA
+    ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
+    // pointB
+    ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
+    // unknown
+    float Unknown() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetUnknown(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
 class NiObject {
 public:
     static constexpr uint16_t kBlock = 77;
@@ -1229,8 +1393,8 @@ public:
     // transform
     ::niffer::view::AvTransform Transform() const { return ::niffer::view::AvTransform(*b_, p_.Child(4)); }
     // collisionObject
-    ::niffer::NiRef<::niffer::view::NiObject> CollisionObject() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
-    bool SetCollisionObject(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(5), v); }
+    ::niffer::NiRef<::niffer::view::bhkCollisionObject> CollisionObject() const { return b_->GetAt<::niffer::NiRef<::niffer::view::bhkCollisionObject>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::bhkCollisionObject>{}); }
+    bool SetCollisionObject(const ::niffer::NiRef<::niffer::view::bhkCollisionObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::bhkCollisionObject>>(p_.Child(5), v); }
 protected:
     explicit NiAVObject(::niffer::Block& b) : NiObjectNET(b) {}
 };
@@ -3541,18 +3705,36 @@ protected:
     explicit NiVisController(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class bhkBallAndSocketConstraint : public NiObject {
+class bhkConstraint : public NiObject {
+public:
+    static constexpr uint16_t kBlock = 135;
+    static std::optional<bhkConstraint> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return bhkConstraint(b);
+        return std::nullopt;
+    }
+    // entities — Always 2 entries.
+    std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>> Entities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(0)).value_or(std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>{}); }
+    bool SetEntities(const std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(0), v); }
+    // unknown — Always 1.
+    uint32_t Unknown() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetUnknown(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+protected:
+    explicit bhkConstraint(::niffer::Block& b) : NiObject(b) {}
+};
+
+class bhkBallAndSocketConstraint : public bhkConstraint {
 public:
     static constexpr uint16_t kBlock = 126;
     static std::optional<bhkBallAndSocketConstraint> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkBallAndSocketConstraint(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // pointA
+    ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(2)); }
+    // pointB
+    ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(3)); }
 protected:
-    explicit bhkBallAndSocketConstraint(::niffer::Block& b) : NiObject(b) {}
+    explicit bhkBallAndSocketConstraint(::niffer::Block& b) : bhkConstraint(b) {}
 };
 
 class bhkBallSocketConstraintChain : public NiObject {
@@ -3562,81 +3744,28 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return bhkBallSocketConstraintChain(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // points
+    std::vector<::niffer::view::Vec4> Points() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(0));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(0).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // unknown — 1.0, 0.6, 1.19e-8, 0.1 in every block.
+    std::vector<float> Unknown() const { return b_->GetAt<std::vector<float>>(p_.Child(1)).value_or(std::vector<float>{}); }
+    bool SetUnknown(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(1), v); }
+    // chainEntities
+    std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>> ChainEntities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(2)).value_or(std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>{}); }
+    bool SetChainEntities(const std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(2), v); }
+    // entities — Always 2 entries: the first two chainEntities.
+    std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>> Entities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(3)).value_or(std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>{}); }
+    bool SetEntities(const std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(3), v); }
+    // unknownTail — Always 1.
+    uint32_t UnknownTail() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetUnknownTail(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
 protected:
     explicit bhkBallSocketConstraintChain(::niffer::Block& b) : NiObject(b) {}
-};
-
-class bhkBlendCollisionObject : public NiObject {
-public:
-    static constexpr uint16_t kBlock = 128;
-    static std::optional<bhkBlendCollisionObject> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return bhkBlendCollisionObject(b);
-        return std::nullopt;
-    }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
-protected:
-    explicit bhkBlendCollisionObject(::niffer::Block& b) : NiObject(b) {}
-};
-
-class bhkPrimitiveShape : public NiObject {
-public:
-    static constexpr uint16_t kBlock = 144;
-    static std::optional<bhkPrimitiveShape> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return bhkPrimitiveShape(b);
-        return std::nullopt;
-    }
-    // material
-    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
-    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
-    // radius
-    float Radius() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
-    bool SetRadius(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
-    // data — Dimensions, vertices or parameters, raw.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
-protected:
-    explicit bhkPrimitiveShape(::niffer::Block& b) : NiObject(b) {}
-};
-
-class bhkBoxShape : public bhkPrimitiveShape {
-public:
-    static constexpr uint16_t kBlock = 129;
-    static std::optional<bhkBoxShape> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return bhkBoxShape(b);
-        return std::nullopt;
-    }
-protected:
-    explicit bhkBoxShape(::niffer::Block& b) : bhkPrimitiveShape(b) {}
-};
-
-class bhkBreakableConstraint : public NiObject {
-public:
-    static constexpr uint16_t kBlock = 130;
-    static std::optional<bhkBreakableConstraint> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return bhkBreakableConstraint(b);
-        return std::nullopt;
-    }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
-protected:
-    explicit bhkBreakableConstraint(::niffer::Block& b) : NiObject(b) {}
-};
-
-class bhkCapsuleShape : public bhkPrimitiveShape {
-public:
-    static constexpr uint16_t kBlock = 131;
-    static std::optional<bhkCapsuleShape> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return bhkCapsuleShape(b);
-        return std::nullopt;
-    }
-protected:
-    explicit bhkCapsuleShape(::niffer::Block& b) : bhkPrimitiveShape(b) {}
 };
 
 class bhkCollisionObject : public NiObject {
@@ -3653,10 +3782,117 @@ public:
     uint16_t Flags() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetFlags(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // body
-    ::niffer::NiRef<::niffer::view::NiObject> Body() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
-    bool SetBody(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(2), v); }
+    ::niffer::NiRef<::niffer::view::bhkShapeWrapper> Body() const { return b_->GetAt<::niffer::NiRef<::niffer::view::bhkShapeWrapper>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::bhkShapeWrapper>{}); }
+    bool SetBody(const ::niffer::NiRef<::niffer::view::bhkShapeWrapper>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::bhkShapeWrapper>>(p_.Child(2), v); }
 protected:
     explicit bhkCollisionObject(::niffer::Block& b) : NiObject(b) {}
+};
+
+class bhkBlendCollisionObject : public bhkCollisionObject {
+public:
+    static constexpr uint16_t kBlock = 128;
+    static std::optional<bhkBlendCollisionObject> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return bhkBlendCollisionObject(b);
+        return std::nullopt;
+    }
+    // unknown10 — Always 1.0.
+    float Unknown10() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
+    bool SetUnknown10(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
+    // unknown14 — Always 1.0.
+    float Unknown14() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetUnknown14(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+protected:
+    explicit bhkBlendCollisionObject(::niffer::Block& b) : bhkCollisionObject(b) {}
+};
+
+class bhkPrimitiveShape : public NiObject {
+public:
+    static constexpr uint16_t kBlock = 145;
+    static std::optional<bhkPrimitiveShape> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return bhkPrimitiveShape(b);
+        return std::nullopt;
+    }
+    // material — A hash-like ID (68 distinct values over the corpus's primitive shapes).
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // radius — For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value.
+    float Radius() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetRadius(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+protected:
+    explicit bhkPrimitiveShape(::niffer::Block& b) : NiObject(b) {}
+};
+
+class bhkBoxShape : public bhkPrimitiveShape {
+public:
+    static constexpr uint16_t kBlock = 129;
+    static std::optional<bhkBoxShape> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return bhkBoxShape(b);
+        return std::nullopt;
+    }
+    // unknown8 — Unstructured (uninitialized-looking).
+    std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
+    // halfExtents — Positive. The box spans -halfExtents..+halfExtents; see docs/collision-provenance.md for the render-bounds check.
+    ::niffer::view::Vec3 HalfExtents() const { return ::niffer::view::Vec3(*b_, p_.Child(3)); }
+    // unknownW — Always equal to one of the three halfExtents (to radius in 2,308).
+    float UnknownW() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetUnknownW(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+protected:
+    explicit bhkBoxShape(::niffer::Block& b) : bhkPrimitiveShape(b) {}
+};
+
+class bhkBreakableConstraint : public bhkConstraint {
+public:
+    static constexpr uint16_t kBlock = 130;
+    static std::optional<bhkBreakableConstraint> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return bhkBreakableConstraint(b);
+        return std::nullopt;
+    }
+    // wrappedType
+    uint32_t WrappedType() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetWrappedType(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // wrappedEntities — Always 2 null entries.
+    std::vector<::niffer::NiRef<::niffer::view::NiObject>> WrappedEntities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(3)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
+    bool SetWrappedEntities(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(3), v); }
+    // wrappedUnknown — Always 1.
+    uint32_t WrappedUnknown() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetWrappedUnknown(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
+    // wrapped
+    int WrappedCase() const { return b_->CaseAt(p_.Child(5)); }
+    std::optional<::niffer::view::bhkBreakableConstraintWrappedBallAndSocket> WrappedBallAndSocket() const { if (!b_->Has(p_.Child(5).Child(0))) return std::nullopt; return ::niffer::view::bhkBreakableConstraintWrappedBallAndSocket(*b_, p_.Child(5).Child(0)); }
+    std::optional<::niffer::view::bhkBreakableConstraintWrappedStiffSpring> WrappedStiffSpring() const { if (!b_->Has(p_.Child(5).Child(1))) return std::nullopt; return ::niffer::view::bhkBreakableConstraintWrappedStiffSpring(*b_, p_.Child(5).Child(1)); }
+    // unknownFloat — 10, 20, 30 or 10000.
+    float UnknownFloat() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
+    bool SetUnknownFloat(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
+    // unknownTail — Always 0.
+    uint8_t UnknownTail() const { return b_->GetAt<uint8_t>(p_.Child(7)).value_or(uint8_t{}); }
+    bool SetUnknownTail(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(7), v); }
+protected:
+    explicit bhkBreakableConstraint(::niffer::Block& b) : bhkConstraint(b) {}
+};
+
+class bhkCapsuleShape : public bhkPrimitiveShape {
+public:
+    static constexpr uint16_t kBlock = 131;
+    static std::optional<bhkCapsuleShape> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return bhkCapsuleShape(b);
+        return std::nullopt;
+    }
+    // unknown8 — Unstructured (uninitialized-looking).
+    std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
+    // point1
+    ::niffer::view::Vec3 Point1() const { return ::niffer::view::Vec3(*b_, p_.Child(3)); }
+    // radius1 — Always equal to radius.
+    float Radius1() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetRadius1(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+    // point2 — A body's centerOfMass is the midpoint of point1 and point2 (1,465 of 1,468).
+    ::niffer::view::Vec3 Point2() const { return ::niffer::view::Vec3(*b_, p_.Child(5)); }
+    // radius2 — Always equal to radius.
+    float Radius2() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
+    bool SetRadius2(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
+protected:
+    explicit bhkCapsuleShape(::niffer::Block& b) : bhkPrimitiveShape(b) {}
 };
 
 class bhkCompressedMeshShape : public NiObject {
@@ -3669,9 +3905,25 @@ public:
     // unknown0
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
-    // data — The remaining Havok fields, raw.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
+    // unknown4 — Varies per block like a 32-bit address (low nibble 0).
+    uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // radius — Always 0.005. A parent bhkMoppBvTreeShape's origin is the data's boundsMin minus this value (8,066 of 8,214).
+    float Radius() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetRadius(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+    // unknown12
+    float Unknown12() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
+    bool SetUnknown12(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
+    // unknown16 — Always (1, 1, 1, 0).
+    ::niffer::view::Vec4 Unknown16() const { return ::niffer::view::Vec4(*b_, p_.Child(4)); }
+    // unknown32 — Always 0.005.
+    float Unknown32() const { return b_->GetAt<float>(p_.Child(5)).value_or(float{}); }
+    bool SetUnknown32(const float& v) const { return b_->SetAt<float>(p_.Child(5), v); }
+    // unknown36 — Always (1, 1, 1, 0).
+    ::niffer::view::Vec4 Unknown36() const { return ::niffer::view::Vec4(*b_, p_.Child(6)); }
+    // data — The geometry block.
+    ::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>>(p_.Child(7)).value_or(::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>{}); }
+    bool SetData(const ::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>>(p_.Child(7), v); }
 protected:
     explicit bhkCompressedMeshShape(::niffer::Block& b) : NiObject(b) {}
 };
@@ -3683,16 +3935,93 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return bhkCompressedMeshShapeData(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // unknown0 — Always 17.
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // unknown4 — Always 18.
+    uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown8 — Always 0x3FFFF.
+    uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // unknown12 — Always 0x1FFFF.
+    uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
+    bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
+    // quantization — Always 0.001: the step of the chunk vertices (vertex = chunk offset + q * quantization), which then lie inside boundsMin..boundsMax.
+    float Quantization() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetQuantization(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+    // boundsMin — w is 0 except in 10 blocks.
+    ::niffer::view::Vec4 BoundsMin() const { return ::niffer::view::Vec4(*b_, p_.Child(5)); }
+    // boundsMax — w is 1.0 exactly when bigVertices is non-empty (309 blocks), else 0.
+    ::niffer::view::Vec4 BoundsMax() const { return ::niffer::view::Vec4(*b_, p_.Child(6)); }
+    // unknown52 — Always 0.
+    uint8_t Unknown52() const { return b_->GetAt<uint8_t>(p_.Child(7)).value_or(uint8_t{}); }
+    bool SetUnknown52(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(7), v); }
+    // unknown53 — Always 1.
+    uint8_t Unknown53() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
+    bool SetUnknown53(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
+    // unknown54 — Always 0.
+    uint32_t Unknown54() const { return b_->GetAt<uint32_t>(p_.Child(9)).value_or(uint32_t{}); }
+    bool SetUnknown54(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(9), v); }
+    // unknown58 — Always 0.
+    uint32_t Unknown58() const { return b_->GetAt<uint32_t>(p_.Child(10)).value_or(uint32_t{}); }
+    bool SetUnknown58(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(10), v); }
+    // unknown62 — Always 0.
+    uint32_t Unknown62() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
+    bool SetUnknown62(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
+    // materials
+    std::vector<::niffer::view::CompressedMeshMaterial> Materials() const {
+        std::vector<::niffer::view::CompressedMeshMaterial> out;
+        const size_t n = b_->Count(p_.Child(12));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(12).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // unknownCount — Always 0; the layout of whatever it would count is unknown.
+    uint32_t UnknownCount() const { return b_->GetAt<uint32_t>(p_.Child(13)).value_or(uint32_t{}); }
+    bool SetUnknownCount(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(13), v); }
+    // transforms
+    std::vector<::niffer::view::CompressedMeshTransform> Transforms() const {
+        std::vector<::niffer::view::CompressedMeshTransform> out;
+        const size_t n = b_->Count(p_.Child(14));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(14).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // bigVertices — Unquantized vertices (w = 999.99994 where seen); all inside the bounds.
+    std::vector<::niffer::view::Vec4> BigVertices() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(15));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(15).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // bigTriangles
+    std::vector<::niffer::view::CompressedMeshBigTriangle> BigTriangles() const {
+        std::vector<::niffer::view::CompressedMeshBigTriangle> out;
+        const size_t n = b_->Count(p_.Child(16));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(16).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // chunks
+    std::vector<::niffer::view::CompressedMeshChunk> Chunks() const {
+        std::vector<::niffer::view::CompressedMeshChunk> out;
+        const size_t n = b_->Count(p_.Child(17));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(17).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // unknownTail — Always 0.
+    uint32_t UnknownTail() const { return b_->GetAt<uint32_t>(p_.Child(18)).value_or(uint32_t{}); }
+    bool SetUnknownTail(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(18), v); }
 protected:
     explicit bhkCompressedMeshShapeData(::niffer::Block& b) : NiObject(b) {}
 };
 
 class bhkShapeWrapper : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 149;
+    static constexpr uint16_t kBlock = 150;
     static std::optional<bhkShapeWrapper> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkShapeWrapper(b);
         return std::nullopt;
@@ -3700,30 +4029,60 @@ public:
     // shape
     ::niffer::NiRef<::niffer::view::NiObject> Shape() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetShape(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0), v); }
-    // data — The remaining Havok fields, raw.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
 protected:
     explicit bhkShapeWrapper(::niffer::Block& b) : NiObject(b) {}
 };
 
 class bhkConvexTransformShape : public bhkShapeWrapper {
 public:
-    static constexpr uint16_t kBlock = 135;
+    static constexpr uint16_t kBlock = 136;
     static std::optional<bhkConvexTransformShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkConvexTransformShape(b);
         return std::nullopt;
     }
+    // material — Always equal to the child shape's material.
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // radius — Always equal to the child shape's radius.
+    float Radius() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetRadius(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+    // unknown12 — Varies per block like a 32-bit address.
+    uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
+    bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
+    // unknown16 — Unstructured.
+    uint32_t Unknown16() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetUnknown16(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
+    // transform
+    ::niffer::view::HavokTransform Transform() const { return ::niffer::view::HavokTransform(*b_, p_.Child(5)); }
 protected:
     explicit bhkConvexTransformShape(::niffer::Block& b) : bhkShapeWrapper(b) {}
 };
 
 class bhkConvexVerticesShape : public bhkPrimitiveShape {
 public:
-    static constexpr uint16_t kBlock = 136;
+    static constexpr uint16_t kBlock = 137;
     static std::optional<bhkConvexVerticesShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkConvexVerticesShape(b);
         return std::nullopt;
+    }
+    // unknown8 — Always 0, 0, 0x80000000, 0, 0, 0x80000000.
+    std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
+    // vertices — w is always 0.
+    std::vector<::niffer::view::Vec4> Vertices() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(3));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(3).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // planes — xyz is a unit normal (|n| - 1 < 3e-7), w an offset: for 89% of the 106,180 planes every vertex has n.v + w <= 0, and the gap is the radius in 59%.
+    std::vector<::niffer::view::Vec4> Planes() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(4));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(4).Child(static_cast<uint16_t>(e)));
+        return out;
     }
 protected:
     explicit bhkConvexVerticesShape(::niffer::Block& b) : bhkPrimitiveShape(b) {}
@@ -3731,46 +4090,79 @@ protected:
 
 class bhkCylinderShape : public bhkPrimitiveShape {
 public:
-    static constexpr uint16_t kBlock = 137;
+    static constexpr uint16_t kBlock = 138;
     static std::optional<bhkCylinderShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkCylinderShape(b);
         return std::nullopt;
     }
+    // unknown8 — Unstructured (uninitialized-looking).
+    std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
+    // point1
+    ::niffer::view::Vec3 Point1() const { return ::niffer::view::Vec3(*b_, p_.Child(3)); }
+    // unknown28 — Always equal to unknown44; unknown48 + radius.
+    float Unknown28() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetUnknown28(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+    // point2
+    ::niffer::view::Vec3 Point2() const { return ::niffer::view::Vec3(*b_, p_.Child(5)); }
+    // unknown44
+    float Unknown44() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
+    bool SetUnknown44(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
+    // unknown48 — Always unknown28 - radius.
+    float Unknown48() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
+    bool SetUnknown48(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
+    // unknown52 — Unstructured (uninitialized-looking).
+    std::vector<uint32_t> Unknown52() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(8)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown52(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(8), v); }
 protected:
     explicit bhkCylinderShape(::niffer::Block& b) : bhkPrimitiveShape(b) {}
 };
 
-class bhkHingeConstraint : public NiObject {
+class bhkHingeConstraint : public bhkConstraint {
 public:
-    static constexpr uint16_t kBlock = 138;
+    static constexpr uint16_t kBlock = 139;
     static std::optional<bhkHingeConstraint> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkHingeConstraint(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // frameA
+    ::niffer::view::HavokFrame FrameA() const { return ::niffer::view::HavokFrame(*b_, p_.Child(2)); }
+    // frameB
+    ::niffer::view::HavokFrame FrameB() const { return ::niffer::view::HavokFrame(*b_, p_.Child(3)); }
 protected:
-    explicit bhkHingeConstraint(::niffer::Block& b) : NiObject(b) {}
+    explicit bhkHingeConstraint(::niffer::Block& b) : bhkConstraint(b) {}
 };
 
-class bhkLimitedHingeConstraint : public NiObject {
+class bhkLimitedHingeConstraint : public bhkConstraint {
 public:
-    static constexpr uint16_t kBlock = 139;
+    static constexpr uint16_t kBlock = 140;
     static std::optional<bhkLimitedHingeConstraint> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkLimitedHingeConstraint(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // frameA
+    ::niffer::view::HavokFrame FrameA() const { return ::niffer::view::HavokFrame(*b_, p_.Child(2)); }
+    // frameB
+    ::niffer::view::HavokFrame FrameB() const { return ::niffer::view::HavokFrame(*b_, p_.Child(3)); }
+    // unknown144 — Not positive in 819 of 823.
+    float Unknown144() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetUnknown144(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+    // unknown148 — Not negative in 819 of 823.
+    float Unknown148() const { return b_->GetAt<float>(p_.Child(5)).value_or(float{}); }
+    bool SetUnknown148(const float& v) const { return b_->SetAt<float>(p_.Child(5), v); }
+    // unknown152 — 0.01 in 814 blocks.
+    float Unknown152() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
+    bool SetUnknown152(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
+    // unknown156 — Always 0.
+    uint8_t Unknown156() const { return b_->GetAt<uint8_t>(p_.Child(7)).value_or(uint8_t{}); }
+    bool SetUnknown156(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(7), v); }
 protected:
-    explicit bhkLimitedHingeConstraint(::niffer::Block& b) : NiObject(b) {}
+    explicit bhkLimitedHingeConstraint(::niffer::Block& b) : bhkConstraint(b) {}
 };
 
 class bhkListShape : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 140;
+    static constexpr uint16_t kBlock = 141;
     static std::optional<bhkListShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkListShape(b);
         return std::nullopt;
@@ -3778,27 +4170,59 @@ public:
     // subShapes
     std::vector<::niffer::NiRef<::niffer::view::NiObject>> SubShapes() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(0)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
     bool SetSubShapes(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(0), v); }
-    // data — The material and filter tail, raw.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
+    // material — Always a value that also occurs as a primitive shape's material.
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown — Always 0, 0, 0x80000000, 0, 0, 0x80000000.
+    std::vector<uint32_t> Unknown() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
+    // unknownList — Always as long as subShapes; 0 in all but one entry (1).
+    std::vector<uint32_t> UnknownList() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(3)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknownList(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(3), v); }
 protected:
     explicit bhkListShape(::niffer::Block& b) : NiObject(b) {}
 };
 
 class bhkMoppBvTreeShape : public bhkShapeWrapper {
 public:
-    static constexpr uint16_t kBlock = 141;
+    static constexpr uint16_t kBlock = 142;
     static std::optional<bhkMoppBvTreeShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkMoppBvTreeShape(b);
         return std::nullopt;
     }
+    // material — 0 in 8,336 blocks; otherwise a value that also occurs as a primitive shape's material.
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown8
+    uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // unknown12
+    uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
+    bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
+    // unknown16 — Always 1.0.
+    float Unknown16() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetUnknown16(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+    // dataSize
+    uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(5)).value_or(uint32_t{}); }
+    bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(5), v); }
+    // origin
+    ::niffer::view::Vec3 Origin() const { return ::niffer::view::Vec3(*b_, p_.Child(6)); }
+    // scale
+    float Scale() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
+    bool SetScale(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
+    // unknown40 — 1 in 8,279 blocks; 0xCD (an uninitialized-memory fill) in 78.
+    uint8_t Unknown40() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
+    bool SetUnknown40(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
+    // moppData — The tree's byte code, not decoded.
+    std::vector<uint8_t> MoppData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(9)).value_or(std::vector<uint8_t>{}); }
+    bool SetMoppData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(9), v); }
 protected:
     explicit bhkMoppBvTreeShape(::niffer::Block& b) : bhkShapeWrapper(b) {}
 };
 
 class bhkNiTriStripsShape : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 142;
+    static constexpr uint16_t kBlock = 143;
     static std::optional<bhkNiTriStripsShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkNiTriStripsShape(b);
         return std::nullopt;
@@ -3806,66 +4230,219 @@ public:
     // unknown0
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
-    // data — The remaining Havok fields, raw.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
+    // unknown4 — Always 0.005.
+    float Unknown4() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetUnknown4(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // unknown8 — Always 0x1036084C.
+    uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // unknown12 — Always zero.
+    std::vector<uint32_t> Unknown12() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(3)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown12(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(3), v); }
+    // unknown28 — Always 1.
+    uint32_t Unknown28() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetUnknown28(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
+    // unknown32 — Always (1, 1, 1, 0).
+    ::niffer::view::Vec4 Unknown32() const { return ::niffer::view::Vec4(*b_, p_.Child(5)); }
+    // strips
+    std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>> Strips() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>>(p_.Child(6)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>{}); }
+    bool SetStrips(const std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>>(p_.Child(6), v); }
+    // unknownList — Always as long as strips.
+    std::vector<uint32_t> UnknownList() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(7)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknownList(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(7), v); }
 protected:
     explicit bhkNiTriStripsShape(::niffer::Block& b) : NiObject(b) {}
 };
 
 class bhkPlaneShape : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 143;
+    static constexpr uint16_t kBlock = 144;
     static std::optional<bhkPlaneShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkPlaneShape(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // material
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // unknown4
+    std::vector<float> Unknown4() const { return b_->GetAt<std::vector<float>>(p_.Child(1)).value_or(std::vector<float>{}); }
+    bool SetUnknown4(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(1), v); }
+    // unknown16 — (0, 0, 1, 0.0084) in the only block: a unit vector and an offset.
+    ::niffer::view::Vec4 Unknown16() const { return ::niffer::view::Vec4(*b_, p_.Child(2)); }
+    // unknown32
+    ::niffer::view::Vec4 Unknown32() const { return ::niffer::view::Vec4(*b_, p_.Child(3)); }
+    // unknown48
+    ::niffer::view::Vec4 Unknown48() const { return ::niffer::view::Vec4(*b_, p_.Child(4)); }
 protected:
     explicit bhkPlaneShape(::niffer::Block& b) : NiObject(b) {}
 };
 
-class bhkRagdollConstraint : public NiObject {
+class bhkRagdollConstraint : public bhkConstraint {
 public:
-    static constexpr uint16_t kBlock = 145;
+    static constexpr uint16_t kBlock = 146;
     static std::optional<bhkRagdollConstraint> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkRagdollConstraint(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // frameA
+    ::niffer::view::HavokFrame FrameA() const { return ::niffer::view::HavokFrame(*b_, p_.Child(2)); }
+    // frameB
+    ::niffer::view::HavokFrame FrameB() const { return ::niffer::view::HavokFrame(*b_, p_.Child(3)); }
+    // unknown144 — All five are whole or half degrees in radians in 418 of 752 blocks (e.g. 0.0873, 0.5236, 1.5708).
+    std::vector<float> Unknown144() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
+    bool SetUnknown144(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
+    // unknown164 — 10.0 in 748 blocks.
+    float Unknown164() const { return b_->GetAt<float>(p_.Child(5)).value_or(float{}); }
+    bool SetUnknown164(const float& v) const { return b_->SetAt<float>(p_.Child(5), v); }
+    // unknown168 — Always 0.
+    uint8_t Unknown168() const { return b_->GetAt<uint8_t>(p_.Child(6)).value_or(uint8_t{}); }
+    bool SetUnknown168(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
 protected:
-    explicit bhkRagdollConstraint(::niffer::Block& b) : NiObject(b) {}
+    explicit bhkRagdollConstraint(::niffer::Block& b) : bhkConstraint(b) {}
 };
 
 class bhkRigidBody : public bhkShapeWrapper {
 public:
-    static constexpr uint16_t kBlock = 146;
+    static constexpr uint16_t kBlock = 147;
     static std::optional<bhkRigidBody> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkRigidBody(b);
         return std::nullopt;
     }
+    // unknown4 — Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36.
+    uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown8 — Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40.
+    uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // unknown12 — Always 1 (2 in bhkSimpleShapePhantom).
+    uint8_t Unknown12() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
+    bool SetUnknown12(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
+    // unknown13 — Unstructured (uninitialized-looking).
+    std::vector<uint8_t> Unknown13() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown13(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // unknown16 — Always 0, 0, 0x80000000.
+    std::vector<uint32_t> Unknown16() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(5)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown16(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(5), v); }
+    // unknown28 — Byte 0 is always 1 and bytes 2-3 always 0xFFFF.
+    uint32_t Unknown28() const { return b_->GetAt<uint32_t>(p_.Child(6)).value_or(uint32_t{}); }
+    bool SetUnknown28(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(6), v); }
+    // unknown32
+    uint32_t Unknown32() const { return b_->GetAt<uint32_t>(p_.Child(7)).value_or(uint32_t{}); }
+    bool SetUnknown32(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(7), v); }
+    // unknown36
+    uint32_t Unknown36() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
+    bool SetUnknown36(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
+    // unknown40
+    uint32_t Unknown40() const { return b_->GetAt<uint32_t>(p_.Child(9)).value_or(uint32_t{}); }
+    bool SetUnknown40(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(9), v); }
+    // unknown44 — Always 0.
+    uint32_t Unknown44() const { return b_->GetAt<uint32_t>(p_.Child(10)).value_or(uint32_t{}); }
+    bool SetUnknown44(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(10), v); }
+    // unknown48 — Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks.
+    uint32_t Unknown48() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
+    bool SetUnknown48(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
+    // translation — w = 0 in 14,871 of 14,880.
+    ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(12)); }
+    // rotation — Unit quaternion x, y, z, w (|q| = 1 in every block).
+    ::niffer::view::Vec4 Rotation() const { return ::niffer::view::Vec4(*b_, p_.Child(13)); }
+    // unknown84 — Always zero.
+    ::niffer::view::Vec4 Unknown84() const { return ::niffer::view::Vec4(*b_, p_.Child(14)); }
+    // unknown100 — Always zero.
+    ::niffer::view::Vec4 Unknown100() const { return ::niffer::view::Vec4(*b_, p_.Child(15)); }
+    // inertia — A symmetric 3x3 matrix (w = 0). For bodies with a bhkSphereShape it is diag(0.4 m r^2) in most of them.
+    std::vector<::niffer::view::Vec4> Inertia() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(16));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(16).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // centerOfMass
+    ::niffer::view::Vec4 CenterOfMass() const { return ::niffer::view::Vec4(*b_, p_.Child(17)); }
+    // mass — 0 exactly when inertia is all zero (14,868 of 14,880).
+    float Mass() const { return b_->GetAt<float>(p_.Child(18)).value_or(float{}); }
+    bool SetMass(const float& v) const { return b_->SetAt<float>(p_.Child(18), v); }
+    // unknown184
+    float Unknown184() const { return b_->GetAt<float>(p_.Child(19)).value_or(float{}); }
+    bool SetUnknown184(const float& v) const { return b_->SetAt<float>(p_.Child(19), v); }
+    // unknown188
+    float Unknown188() const { return b_->GetAt<float>(p_.Child(20)).value_or(float{}); }
+    bool SetUnknown188(const float& v) const { return b_->SetAt<float>(p_.Child(20), v); }
+    // unknown192 — Always 1.0.
+    float Unknown192() const { return b_->GetAt<float>(p_.Child(21)).value_or(float{}); }
+    bool SetUnknown192(const float& v) const { return b_->SetAt<float>(p_.Child(21), v); }
+    // unknown196 — Always 1.0.
+    float Unknown196() const { return b_->GetAt<float>(p_.Child(22)).value_or(float{}); }
+    bool SetUnknown196(const float& v) const { return b_->SetAt<float>(p_.Child(22), v); }
+    // unknown200
+    float Unknown200() const { return b_->GetAt<float>(p_.Child(23)).value_or(float{}); }
+    bool SetUnknown200(const float& v) const { return b_->SetAt<float>(p_.Child(23), v); }
+    // unknown204 — Always 0.
+    float Unknown204() const { return b_->GetAt<float>(p_.Child(24)).value_or(float{}); }
+    bool SetUnknown204(const float& v) const { return b_->SetAt<float>(p_.Child(24), v); }
+    // unknown208
+    float Unknown208() const { return b_->GetAt<float>(p_.Child(25)).value_or(float{}); }
+    bool SetUnknown208(const float& v) const { return b_->SetAt<float>(p_.Child(25), v); }
+    // unknown212
+    float Unknown212() const { return b_->GetAt<float>(p_.Child(26)).value_or(float{}); }
+    bool SetUnknown212(const float& v) const { return b_->SetAt<float>(p_.Child(26), v); }
+    // unknown216
+    float Unknown216() const { return b_->GetAt<float>(p_.Child(27)).value_or(float{}); }
+    bool SetUnknown216(const float& v) const { return b_->SetAt<float>(p_.Child(27), v); }
+    // unknown220
+    float Unknown220() const { return b_->GetAt<float>(p_.Child(28)).value_or(float{}); }
+    bool SetUnknown220(const float& v) const { return b_->SetAt<float>(p_.Child(28), v); }
+    // unknown224 — 2-5.
+    uint8_t Unknown224() const { return b_->GetAt<uint8_t>(p_.Child(29)).value_or(uint8_t{}); }
+    bool SetUnknown224(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(29), v); }
+    // unknown225 — Always 1.
+    uint8_t Unknown225() const { return b_->GetAt<uint8_t>(p_.Child(30)).value_or(uint8_t{}); }
+    bool SetUnknown225(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(30), v); }
+    // unknown226 — 1 or 2.
+    uint8_t Unknown226() const { return b_->GetAt<uint8_t>(p_.Child(31)).value_or(uint8_t{}); }
+    bool SetUnknown226(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(31), v); }
+    // unknown227 — 0, 1, 2 or 4.
+    uint8_t Unknown227() const { return b_->GetAt<uint8_t>(p_.Child(32)).value_or(uint8_t{}); }
+    bool SetUnknown227(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(32), v); }
+    // unknown228 — Always 0.
+    uint8_t Unknown228() const { return b_->GetAt<uint8_t>(p_.Child(33)).value_or(uint8_t{}); }
+    bool SetUnknown228(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(33), v); }
+    // unknown229 — Always 0.
+    uint8_t Unknown229() const { return b_->GetAt<uint8_t>(p_.Child(34)).value_or(uint8_t{}); }
+    bool SetUnknown229(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(34), v); }
+    // unknown230 — Always 3.
+    uint8_t Unknown230() const { return b_->GetAt<uint8_t>(p_.Child(35)).value_or(uint8_t{}); }
+    bool SetUnknown230(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(35), v); }
+    // unknown231 — Always 0.
+    uint8_t Unknown231() const { return b_->GetAt<uint8_t>(p_.Child(36)).value_or(uint8_t{}); }
+    bool SetUnknown231(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(36), v); }
+    // unknown232 — Unstructured (uninitialized-looking).
+    std::vector<uint32_t> Unknown232() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(37)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown232(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(37), v); }
+    // constraints — Every constraint block in the corpus is referenced from exactly one rigid body's list.
+    std::vector<::niffer::NiRef<::niffer::view::NiObject>> Constraints() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(38)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
+    bool SetConstraints(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(38), v); }
+    // unknownTail — 0 except in one block (1).
+    uint16_t UnknownTail() const { return b_->GetAt<uint16_t>(p_.Child(39)).value_or(uint16_t{}); }
+    bool SetUnknownTail(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(39), v); }
 protected:
     explicit bhkRigidBody(::niffer::Block& b) : bhkShapeWrapper(b) {}
 };
 
-class bhkRigidBodyT : public bhkShapeWrapper {
+class bhkRigidBodyT : public bhkRigidBody {
 public:
-    static constexpr uint16_t kBlock = 147;
+    static constexpr uint16_t kBlock = 148;
     static std::optional<bhkRigidBodyT> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkRigidBodyT(b);
         return std::nullopt;
     }
 protected:
-    explicit bhkRigidBodyT(::niffer::Block& b) : bhkShapeWrapper(b) {}
+    explicit bhkRigidBodyT(::niffer::Block& b) : bhkRigidBody(b) {}
 };
 
 class bhkSPCollisionObject : public bhkCollisionObject {
 public:
-    static constexpr uint16_t kBlock = 148;
+    static constexpr uint16_t kBlock = 149;
     static std::optional<bhkSPCollisionObject> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkSPCollisionObject(b);
         return std::nullopt;
@@ -3874,23 +4451,40 @@ protected:
     explicit bhkSPCollisionObject(::niffer::Block& b) : bhkCollisionObject(b) {}
 };
 
-class bhkSimpleShapePhantom : public NiObject {
+class bhkSimpleShapePhantom : public bhkShapeWrapper {
 public:
-    static constexpr uint16_t kBlock = 150;
+    static constexpr uint16_t kBlock = 151;
     static std::optional<bhkSimpleShapePhantom> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkSimpleShapePhantom(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // unknown4
+    uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown8 — Varies per block like a 32-bit address.
+    uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // unknown12 — Always 2.
+    uint8_t Unknown12() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
+    bool SetUnknown12(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
+    // unknown13
+    std::vector<uint8_t> Unknown13() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown13(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // unknown16 — Always 0, 0, 0x80000000.
+    std::vector<uint32_t> Unknown16() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(5)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown16(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(5), v); }
+    // unknown28 — Unstructured.
+    std::vector<uint32_t> Unknown28() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(6)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown28(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(6), v); }
+    // transform
+    ::niffer::view::HavokTransform Transform() const { return ::niffer::view::HavokTransform(*b_, p_.Child(7)); }
 protected:
-    explicit bhkSimpleShapePhantom(::niffer::Block& b) : NiObject(b) {}
+    explicit bhkSimpleShapePhantom(::niffer::Block& b) : bhkShapeWrapper(b) {}
 };
 
 class bhkSphereShape : public bhkPrimitiveShape {
 public:
-    static constexpr uint16_t kBlock = 151;
+    static constexpr uint16_t kBlock = 152;
     static std::optional<bhkSphereShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkSphereShape(b);
         return std::nullopt;
@@ -3899,27 +4493,45 @@ protected:
     explicit bhkSphereShape(::niffer::Block& b) : bhkPrimitiveShape(b) {}
 };
 
-class bhkStiffSpringConstraint : public NiObject {
+class bhkStiffSpringConstraint : public bhkConstraint {
 public:
-    static constexpr uint16_t kBlock = 152;
+    static constexpr uint16_t kBlock = 153;
     static std::optional<bhkStiffSpringConstraint> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkStiffSpringConstraint(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // pointA
+    ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(2)); }
+    // pointB
+    ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(3)); }
+    // unknown48
+    float Unknown48() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetUnknown48(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
 protected:
-    explicit bhkStiffSpringConstraint(::niffer::Block& b) : NiObject(b) {}
+    explicit bhkStiffSpringConstraint(::niffer::Block& b) : bhkConstraint(b) {}
 };
 
 class bhkTransformShape : public bhkShapeWrapper {
 public:
-    static constexpr uint16_t kBlock = 153;
+    static constexpr uint16_t kBlock = 154;
     static std::optional<bhkTransformShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return bhkTransformShape(b);
         return std::nullopt;
     }
+    // material — Equal to the child's material whenever the child is a primitive shape (79 of 79).
+    uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown8 — Always 0.
+    float Unknown8() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetUnknown8(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+    // unknown12
+    uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
+    bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
+    // unknown16
+    uint32_t Unknown16() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetUnknown16(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
+    // transform
+    ::niffer::view::HavokTransform Transform() const { return ::niffer::view::HavokTransform(*b_, p_.Child(5)); }
 protected:
     explicit bhkTransformShape(::niffer::Block& b) : bhkShapeWrapper(b) {}
 };

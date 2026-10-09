@@ -1,2 +1,5 @@
 block: bhkRigidBodyT
-inherits: bhkShapeWrapper
+inherits: bhkRigidBody
+doc: >-
+  The same layout as bhkRigidBody (all 3,546 SSE blocks decode with it). Its translation and
+  rotation place the shape in its node's space; see docs/collision-provenance.md.

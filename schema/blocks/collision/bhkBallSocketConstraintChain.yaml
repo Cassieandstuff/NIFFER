@@ -1,4 +1,11 @@
 block: bhkBallSocketConstraintChain
 inherits: NiObject
+doc: >-
+  The 6 SSE blocks all decode with this layout. The point count is always 2 * (chain entity count
+  - 1): two points per link.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: points, type: "Vec4[count: u32]", packed: true }
+  - { name: unknown, type: "f32[4]", doc: "1.0, 0.6, 1.19e-8, 0.1 in every block." }
+  - { name: chainEntities, type: "ptr[count: u32]", to: [bhkRigidBody] }
+  - { name: entities, type: "ptr[count: u32]", to: [bhkRigidBody], doc: "Always 2 entries: the first two chainEntities." }
+  - { name: unknownTail, type: u32, doc: Always 1. }

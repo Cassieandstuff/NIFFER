@@ -2,7 +2,6 @@ block: bhkShapeWrapper
 inherits: NiObject
 abstract: true
 doc: >-
-  A structural grouping, not a game class: the blocks that start with a shape link. Typed structurally: the links that keep the block graph walkable are decoded and the Havok payload is kept raw.
+  A structural grouping, not a game class: the blocks whose first field is a shape link.
 fields:
   - { name: shape, type: ref, to: [bhkBoxShape, bhkCapsuleShape, bhkCompressedMeshShape, bhkConvexTransformShape, bhkConvexVerticesShape, bhkCylinderShape, bhkListShape, bhkMoppBvTreeShape, bhkNiTriStripsShape, bhkPlaneShape, bhkSphereShape, bhkTransformShape] }
-  - { name: data, type: bytes, doc: "The remaining Havok fields, raw." }

@@ -819,6 +819,14 @@ float GlossinessToRoughness(float glossiness);
 // shape. Empty when the NIF has no collision. Shapes that can't be decoded with
 // confidence are skipped and counted in shapesSkipped (garbage collision is
 // worse than none).
+//
+// Read through the schema (schema/blocks/collision): every bhkRigidBody /
+// bhkRigidBodyT reached from a bhkCollisionObject, placed at the collision
+// object's target node. Phantom bodies (trigger volumes) are not collision and
+// are ignored. Decoded: compressed meshes (triangles), convex vertex sets,
+// boxes, spheres and capsules (hulls; convex shapes grown by their radius).
+// Skipped: cylinders, planes and NiTriStrips-backed shapes. The conventions and
+// their corpus evidence: docs/collision-provenance.md.
 struct CollisionGeometry {
     std::vector<float>              triVerts;     // 3 * N, root space (Skyrim units)
     std::vector<uint32_t>           triIndices;   // 3 per triangle

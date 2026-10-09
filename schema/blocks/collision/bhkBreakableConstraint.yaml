@@ -1,4 +1,18 @@
 block: bhkBreakableConstraint
-inherits: NiObject
+inherits: bhkConstraint
+doc: >-
+  A constraint wrapping another one's data (73 or 77 bytes in the 8 SSE blocks). The wrapped data
+  has exactly the layout of bhkBallAndSocketConstraint's own fields when wrappedType is 0, and of
+  bhkStiffSpringConstraint's when it is 8.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: wrappedType, type: u32 }
+  - { name: wrappedEntities, type: "ptr[count: u32]", doc: "Always 2 null entries." }
+  - { name: wrappedUnknown, type: u32, doc: Always 1. }
+  - name: wrapped
+    union:
+      by: { field: wrappedType }
+      cases:
+        - { when: 0, name: ballAndSocket, fields: [ { name: pointA, type: Vec4 }, { name: pointB, type: Vec4 } ] }
+        - { when: 8, name: stiffSpring, fields: [ { name: pointA, type: Vec4 }, { name: pointB, type: Vec4 }, { name: unknown, type: f32 } ] }
+  - { name: unknownFloat, type: f32, doc: "10, 20, 30 or 10000." }
+  - { name: unknownTail, type: u8, doc: Always 0. }

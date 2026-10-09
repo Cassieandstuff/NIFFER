@@ -1,0 +1,10 @@
+struct: CompressedMeshBigTriangle
+size: 12
+doc: >-
+  A triangle over bhkCompressedMeshShapeData's bigVertices: every index is below the bigVertices
+  count, and material is below the material-table length (67,450 triangles in the SSE corpus).
+fields:
+  - { name: triangle, type: Triangle }
+  - { name: material, type: u16, doc: "Index into the block's materials." }
+  - { name: unknown, type: u16, doc: Always 0. }
+  - { name: unknownB, type: u16 }

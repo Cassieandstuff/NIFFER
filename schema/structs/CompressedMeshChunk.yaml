@@ -1,0 +1,18 @@
+struct: CompressedMeshChunk
+doc: >-
+  One chunk of bhkCompressedMeshShapeData: quantized vertices around an offset, and triangles as
+  strips followed by a list. Measured on all 24,457 chunks in the SSE corpus: the vertex u16
+  count is a multiple of 3; every index is below the vertex count; the strip lengths sum to at
+  most the index count and leave a multiple of 3; every vertex offset + q * quantization lies
+  inside the block's bounds (worst excess 6.1e-5, under one quantization step); decoding the
+  strips first (alternating winding) and then the list gives no degenerate triangles, while the
+  reverse order gives 13,209 and 80x more doubled directed edges.
+fields:
+  - { name: offset, type: Vec4, doc: "Added to each dequantized vertex; w = 0." }
+  - { name: material, type: u32, doc: "Index into the block's materials." }
+  - { name: unknown, type: u16, doc: "Always 0xFFFF." }
+  - { name: transformIndex, type: u16, doc: "Always below the transform-table length; every referenced transform is the identity in the corpus." }
+  - { name: vertices, type: "u16[count: u32]", packed: true, doc: "x, y, z per vertex; the count is the number of u16s (3 per vertex)." }
+  - { name: indices, type: "u16[count: u32]", packed: true, doc: "Strip indices first, then a triangle list." }
+  - { name: stripLengths, type: "u16[count: u32]", packed: true }
+  - { name: unknownIndexData, type: "u16[count: u32]", packed: true, doc: "One u16 per index (the count always equals the index count)." }

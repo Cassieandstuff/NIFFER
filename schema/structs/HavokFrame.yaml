@@ -1,0 +1,11 @@
+struct: HavokFrame
+size: 64
+doc: >-
+  A constraint frame: three Vec4s whose xyz form an orthonormal, right-handed basis, then a point
+  (w = 0). Verified on every bhkLimitedHingeConstraint (823), bhkRagdollConstraint (752) and
+  bhkHingeConstraint (8): pairwise dot products 0, determinant +1. The w words of the first two
+  axes are not padding: in every limited-hinge and ragdoll frame axis0.w equals axis2.y and
+  axis1.w equals axis2.x (not in the hinge frames).
+fields:
+  - { name: axes, type: "Vec4[3]" }
+  - { name: point, type: Vec4 }

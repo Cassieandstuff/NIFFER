@@ -1,8 +1,14 @@
 block: bhkNiTriStripsShape
 inherits: NiObject
 doc: >-
-  The first u32 is not a block reference: across the SSE corpus it is
-  0 in 26 blocks and an unrelated value in one.
+  The size is 56 + 8 * strips count in all 27 SSE blocks. The first u32 is not a block reference:
+  it is 0 in 26 blocks and an unrelated value in one.
 fields:
   - { name: unknown0, type: u32 }
-  - { name: data, type: bytes, doc: "The remaining Havok fields, raw." }
+  - { name: unknown4, type: f32, doc: Always 0.005. }
+  - { name: unknown8, type: u32, doc: Always 0x1036084C. }
+  - { name: unknown12, type: "u32[4]", doc: Always zero. }
+  - { name: unknown28, type: u32, doc: Always 1. }
+  - { name: unknown32, type: Vec4, doc: "Always (1, 1, 1, 0)." }
+  - { name: strips, type: "ref[count: u32]", to: [NiTriStripsData] }
+  - { name: unknownList, type: "u32[count: u32]", doc: "Always as long as strips." }

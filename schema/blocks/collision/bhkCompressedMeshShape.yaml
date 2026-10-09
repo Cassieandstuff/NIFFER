@@ -1,9 +1,16 @@
 block: bhkCompressedMeshShape
 inherits: NiObject
 doc: >-
-  The first u32 is always 0 across the SSE corpus. Treated as an owning ref it made the block graph
-  cyclic (block 0 is the root node), so it isn't one; whether it is a back pointer or a plain
-  integer isn't established from the data alone.
+  56 bytes in all 8,214 SSE blocks. The first u32 is always 0; treated as an owning ref it made the
+  block graph cyclic (block 0 is the root node), so it isn't one, and whether it is a back pointer
+  or a plain integer isn't established from the data alone.
+verified: ["clutter/barrel01.nif#3"]
 fields:
   - { name: unknown0, type: u32 }
-  - { name: data, type: bytes, doc: "The remaining Havok fields, raw." }
+  - { name: unknown4, type: u32, doc: "Varies per block like a 32-bit address (low nibble 0)." }
+  - { name: radius, type: f32, doc: "Always 0.005. A parent bhkMoppBvTreeShape's origin is the data's boundsMin minus this value (8,066 of 8,214)." }
+  - { name: unknown12, type: f32 }
+  - { name: unknown16, type: Vec4, doc: "Always (1, 1, 1, 0)." }
+  - { name: unknown32, type: f32, doc: Always 0.005. }
+  - { name: unknown36, type: Vec4, doc: "Always (1, 1, 1, 0)." }
+  - { name: data, type: ref, to: [bhkCompressedMeshShapeData], doc: "The geometry block." }

@@ -1,0 +1,11 @@
+struct: HavokTransform
+size: 64
+doc: >-
+  A rigid transform as four Vec4s. The first three are an orthonormal basis with determinant +1
+  and w = 0 (checked on every bhkConvexTransformShape, bhkTransformShape and
+  bhkSimpleShapePhantom in the SSE corpus: 1,965 blocks); the fourth holds the translation (w = 0
+  except in 4 bhkConvexTransformShapes, where it is 1). See docs/collision-provenance.md for how
+  ExtractCollision applies it.
+fields:
+  - { name: rotation, type: "Vec4[3]", doc: "Orthonormal basis vectors (xyz), w = 0." }
+  - { name: translation, type: Vec4 }

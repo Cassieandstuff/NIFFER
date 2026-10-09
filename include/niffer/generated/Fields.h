@@ -144,6 +144,7 @@ class bhkCapsuleShape;
 class bhkCollisionObject;
 class bhkCompressedMeshShape;
 class bhkCompressedMeshShapeData;
+class bhkConstraint;
 class bhkConvexTransformShape;
 class bhkConvexVerticesShape;
 class bhkCylinderShape;
@@ -539,7 +540,7 @@ namespace NiAVObject {
         }
         inline constexpr ::niffer::FieldRef<float> scale{ 48, { { 4, 2 }, 2 } };
     }
-    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> collisionObject{ 48, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::bhkCollisionObject>> collisionObject{ 48, { { 5 }, 1 } };
 }
 
 // NiAlphaProperty : NiObjectNET
@@ -1189,97 +1190,532 @@ namespace NiTriStripsData {
     inline constexpr ::niffer::FieldRef<std::vector<uint16_t>> points{ 124, { { 5 }, 1 } };
 }
 
-// bhkBallAndSocketConstraint : NiObject
+// bhkBallAndSocketConstraint : bhkConstraint
 namespace bhkBallAndSocketConstraint {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 126, { { 0 }, 1 } };
+    namespace pointA {
+        inline constexpr ::niffer::StructRef self{ 126, { { 2 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 126, { { 2, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 126, { { 2, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 126, { { 2, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 126, { { 2, 3 }, 2 } };
+    }
+    namespace pointB {
+        inline constexpr ::niffer::StructRef self{ 126, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 126, { { 3, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 126, { { 3, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 126, { { 3, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 126, { { 3, 3 }, 2 } };
+    }
 }
 
 // bhkBallSocketConstraintChain : NiObject
 namespace bhkBallSocketConstraintChain {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 127, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> points{ 127, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<float>> unknown{ 127, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>> chainEntities{ 127, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>> entities{ 127, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknownTail{ 127, { { 4 }, 1 } };
 }
 
-// bhkBlendCollisionObject : NiObject
+// bhkBlendCollisionObject : bhkCollisionObject
 namespace bhkBlendCollisionObject {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 128, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown10{ 128, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown14{ 128, { { 4 }, 1 } };
 }
 
-// bhkBreakableConstraint : NiObject
+// bhkBoxShape : bhkPrimitiveShape
+namespace bhkBoxShape {
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown8{ 129, { { 2 }, 1 } };
+    namespace halfExtents {
+        inline constexpr ::niffer::StructRef self{ 129, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 129, { { 3, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 129, { { 3, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 129, { { 3, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> unknownW{ 129, { { 4 }, 1 } };
+}
+
+// bhkBreakableConstraint : bhkConstraint
 namespace bhkBreakableConstraint {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 130, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> wrappedType{ 130, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiObject>>> wrappedEntities{ 130, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> wrappedUnknown{ 130, { { 4 }, 1 } };
+    namespace wrapped {
+        namespace ballAndSocket {
+            inline constexpr ::niffer::StructRef self{ 130, { { 5, 0 }, 2 } };
+            namespace pointA {
+                inline constexpr ::niffer::StructRef self{ 130, { { 5, 0, 0 }, 3 } };
+                inline constexpr ::niffer::FieldRef<float> x{ 130, { { 5, 0, 0, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> y{ 130, { { 5, 0, 0, 1 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> z{ 130, { { 5, 0, 0, 2 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> w{ 130, { { 5, 0, 0, 3 }, 4 } };
+            }
+            namespace pointB {
+                inline constexpr ::niffer::StructRef self{ 130, { { 5, 0, 1 }, 3 } };
+                inline constexpr ::niffer::FieldRef<float> x{ 130, { { 5, 0, 1, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> y{ 130, { { 5, 0, 1, 1 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> z{ 130, { { 5, 0, 1, 2 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> w{ 130, { { 5, 0, 1, 3 }, 4 } };
+            }
+        }
+        namespace stiffSpring {
+            inline constexpr ::niffer::StructRef self{ 130, { { 5, 1 }, 2 } };
+            namespace pointA {
+                inline constexpr ::niffer::StructRef self{ 130, { { 5, 1, 0 }, 3 } };
+                inline constexpr ::niffer::FieldRef<float> x{ 130, { { 5, 1, 0, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> y{ 130, { { 5, 1, 0, 1 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> z{ 130, { { 5, 1, 0, 2 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> w{ 130, { { 5, 1, 0, 3 }, 4 } };
+            }
+            namespace pointB {
+                inline constexpr ::niffer::StructRef self{ 130, { { 5, 1, 1 }, 3 } };
+                inline constexpr ::niffer::FieldRef<float> x{ 130, { { 5, 1, 1, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> y{ 130, { { 5, 1, 1, 1 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> z{ 130, { { 5, 1, 1, 2 }, 4 } };
+                inline constexpr ::niffer::FieldRef<float> w{ 130, { { 5, 1, 1, 3 }, 4 } };
+            }
+            inline constexpr ::niffer::FieldRef<float> unknown{ 130, { { 5, 1, 2 }, 3 } };
+        }
+    }
+    inline constexpr ::niffer::FieldRef<float> unknownFloat{ 130, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknownTail{ 130, { { 7 }, 1 } };
+}
+
+// bhkCapsuleShape : bhkPrimitiveShape
+namespace bhkCapsuleShape {
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown8{ 131, { { 2 }, 1 } };
+    namespace point1 {
+        inline constexpr ::niffer::StructRef self{ 131, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 131, { { 3, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 131, { { 3, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 131, { { 3, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> radius1{ 131, { { 4 }, 1 } };
+    namespace point2 {
+        inline constexpr ::niffer::StructRef self{ 131, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 131, { { 5, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 131, { { 5, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 131, { { 5, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> radius2{ 131, { { 6 }, 1 } };
 }
 
 // bhkCollisionObject : NiObject
 namespace bhkCollisionObject {
     inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> target{ 132, { { 0 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint16_t> flags{ 132, { { 1 }, 1 } };
-    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> body{ 132, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::bhkShapeWrapper>> body{ 132, { { 2 }, 1 } };
 }
 
 // bhkCompressedMeshShape : NiObject
 namespace bhkCompressedMeshShape {
     inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 133, { { 0 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 133, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown4{ 133, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> radius{ 133, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown12{ 133, { { 3 }, 1 } };
+    namespace unknown16 {
+        inline constexpr ::niffer::StructRef self{ 133, { { 4 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 133, { { 4, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 133, { { 4, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 133, { { 4, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 133, { { 4, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> unknown32{ 133, { { 5 }, 1 } };
+    namespace unknown36 {
+        inline constexpr ::niffer::StructRef self{ 133, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 133, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 133, { { 6, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 133, { { 6, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 133, { { 6, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>> data{ 133, { { 7 }, 1 } };
 }
 
 // bhkCompressedMeshShapeData : NiObject
 namespace bhkCompressedMeshShapeData {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 134, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 134, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown4{ 134, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown8{ 134, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown12{ 134, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> quantization{ 134, { { 4 }, 1 } };
+    namespace boundsMin {
+        inline constexpr ::niffer::StructRef self{ 134, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 134, { { 5, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 134, { { 5, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 134, { { 5, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 134, { { 5, 3 }, 2 } };
+    }
+    namespace boundsMax {
+        inline constexpr ::niffer::StructRef self{ 134, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 134, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 134, { { 6, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 134, { { 6, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 134, { { 6, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown52{ 134, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown53{ 134, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown54{ 134, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown58{ 134, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown62{ 134, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> materials{ 134, { { 12 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknownCount{ 134, { { 13 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> transforms{ 134, { { 14 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> bigVertices{ 134, { { 15 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> bigTriangles{ 134, { { 16 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> chunks{ 134, { { 17 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknownTail{ 134, { { 18 }, 1 } };
 }
 
-// bhkHingeConstraint : NiObject
+// bhkConstraint : NiObject
+namespace bhkConstraint {
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>> entities{ 135, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown{ 135, { { 1 }, 1 } };
+}
+
+// bhkConvexTransformShape : bhkShapeWrapper
+namespace bhkConvexTransformShape {
+    inline constexpr ::niffer::FieldRef<uint32_t> material{ 136, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> radius{ 136, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown12{ 136, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown16{ 136, { { 4 }, 1 } };
+    namespace transform {
+        inline constexpr ::niffer::StructRef self{ 136, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> rotation{ 136, { { 5, 0 }, 2 } };
+        namespace translation {
+            inline constexpr ::niffer::StructRef self{ 136, { { 5, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 136, { { 5, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 136, { { 5, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 136, { { 5, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 136, { { 5, 1, 3 }, 3 } };
+        }
+    }
+}
+
+// bhkConvexVerticesShape : bhkPrimitiveShape
+namespace bhkConvexVerticesShape {
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown8{ 137, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> vertices{ 137, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> planes{ 137, { { 4 }, 1 } };
+}
+
+// bhkCylinderShape : bhkPrimitiveShape
+namespace bhkCylinderShape {
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown8{ 138, { { 2 }, 1 } };
+    namespace point1 {
+        inline constexpr ::niffer::StructRef self{ 138, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 138, { { 3, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 138, { { 3, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 138, { { 3, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> unknown28{ 138, { { 4 }, 1 } };
+    namespace point2 {
+        inline constexpr ::niffer::StructRef self{ 138, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 138, { { 5, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 138, { { 5, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 138, { { 5, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> unknown44{ 138, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown48{ 138, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown52{ 138, { { 8 }, 1 } };
+}
+
+// bhkHingeConstraint : bhkConstraint
 namespace bhkHingeConstraint {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 138, { { 0 }, 1 } };
+    namespace frameA {
+        inline constexpr ::niffer::StructRef self{ 139, { { 2 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> axes{ 139, { { 2, 0 }, 2 } };
+        namespace point {
+            inline constexpr ::niffer::StructRef self{ 139, { { 2, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 139, { { 2, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 139, { { 2, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 139, { { 2, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 139, { { 2, 1, 3 }, 3 } };
+        }
+    }
+    namespace frameB {
+        inline constexpr ::niffer::StructRef self{ 139, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> axes{ 139, { { 3, 0 }, 2 } };
+        namespace point {
+            inline constexpr ::niffer::StructRef self{ 139, { { 3, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 139, { { 3, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 139, { { 3, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 139, { { 3, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 139, { { 3, 1, 3 }, 3 } };
+        }
+    }
 }
 
-// bhkLimitedHingeConstraint : NiObject
+// bhkLimitedHingeConstraint : bhkConstraint
 namespace bhkLimitedHingeConstraint {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 139, { { 0 }, 1 } };
+    namespace frameA {
+        inline constexpr ::niffer::StructRef self{ 140, { { 2 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> axes{ 140, { { 2, 0 }, 2 } };
+        namespace point {
+            inline constexpr ::niffer::StructRef self{ 140, { { 2, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 140, { { 2, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 140, { { 2, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 140, { { 2, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 140, { { 2, 1, 3 }, 3 } };
+        }
+    }
+    namespace frameB {
+        inline constexpr ::niffer::StructRef self{ 140, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> axes{ 140, { { 3, 0 }, 2 } };
+        namespace point {
+            inline constexpr ::niffer::StructRef self{ 140, { { 3, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 140, { { 3, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 140, { { 3, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 140, { { 3, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 140, { { 3, 1, 3 }, 3 } };
+        }
+    }
+    inline constexpr ::niffer::FieldRef<float> unknown144{ 140, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown148{ 140, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown152{ 140, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown156{ 140, { { 7 }, 1 } };
 }
 
 // bhkListShape : NiObject
 namespace bhkListShape {
-    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiObject>>> subShapes{ 140, { { 0 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 140, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiObject>>> subShapes{ 141, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> material{ 141, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown{ 141, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknownList{ 141, { { 3 }, 1 } };
+}
+
+// bhkMoppBvTreeShape : bhkShapeWrapper
+namespace bhkMoppBvTreeShape {
+    inline constexpr ::niffer::FieldRef<uint32_t> material{ 142, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown8{ 142, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown12{ 142, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown16{ 142, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> dataSize{ 142, { { 5 }, 1 } };
+    namespace origin {
+        inline constexpr ::niffer::StructRef self{ 142, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 142, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 142, { { 6, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 142, { { 6, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> scale{ 142, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown40{ 142, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> moppData{ 142, { { 9 }, 1 } };
 }
 
 // bhkNiTriStripsShape : NiObject
 namespace bhkNiTriStripsShape {
-    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 142, { { 0 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 142, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 143, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown4{ 143, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown8{ 143, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown12{ 143, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown28{ 143, { { 4 }, 1 } };
+    namespace unknown32 {
+        inline constexpr ::niffer::StructRef self{ 143, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 143, { { 5, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 143, { { 5, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 143, { { 5, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 143, { { 5, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>> strips{ 143, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknownList{ 143, { { 7 }, 1 } };
 }
 
 // bhkPlaneShape : NiObject
 namespace bhkPlaneShape {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 143, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> material{ 144, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<float>> unknown4{ 144, { { 1 }, 1 } };
+    namespace unknown16 {
+        inline constexpr ::niffer::StructRef self{ 144, { { 2 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 144, { { 2, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 144, { { 2, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 144, { { 2, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 144, { { 2, 3 }, 2 } };
+    }
+    namespace unknown32 {
+        inline constexpr ::niffer::StructRef self{ 144, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 144, { { 3, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 144, { { 3, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 144, { { 3, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 144, { { 3, 3 }, 2 } };
+    }
+    namespace unknown48 {
+        inline constexpr ::niffer::StructRef self{ 144, { { 4 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 144, { { 4, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 144, { { 4, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 144, { { 4, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 144, { { 4, 3 }, 2 } };
+    }
 }
 
 // bhkPrimitiveShape : NiObject
 namespace bhkPrimitiveShape {
-    inline constexpr ::niffer::FieldRef<uint32_t> material{ 144, { { 0 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> radius{ 144, { { 1 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 144, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> material{ 145, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> radius{ 145, { { 1 }, 1 } };
 }
 
-// bhkRagdollConstraint : NiObject
+// bhkRagdollConstraint : bhkConstraint
 namespace bhkRagdollConstraint {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 145, { { 0 }, 1 } };
+    namespace frameA {
+        inline constexpr ::niffer::StructRef self{ 146, { { 2 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> axes{ 146, { { 2, 0 }, 2 } };
+        namespace point {
+            inline constexpr ::niffer::StructRef self{ 146, { { 2, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 146, { { 2, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 146, { { 2, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 146, { { 2, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 146, { { 2, 1, 3 }, 3 } };
+        }
+    }
+    namespace frameB {
+        inline constexpr ::niffer::StructRef self{ 146, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> axes{ 146, { { 3, 0 }, 2 } };
+        namespace point {
+            inline constexpr ::niffer::StructRef self{ 146, { { 3, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 146, { { 3, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 146, { { 3, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 146, { { 3, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 146, { { 3, 1, 3 }, 3 } };
+        }
+    }
+    inline constexpr ::niffer::FieldRef<std::vector<float>> unknown144{ 146, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown164{ 146, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown168{ 146, { { 6 }, 1 } };
+}
+
+// bhkRigidBody : bhkShapeWrapper
+namespace bhkRigidBody {
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown4{ 147, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown8{ 147, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown12{ 147, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown13{ 147, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown16{ 147, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown28{ 147, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown32{ 147, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown36{ 147, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown40{ 147, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown44{ 147, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown48{ 147, { { 11 }, 1 } };
+    namespace translation {
+        inline constexpr ::niffer::StructRef self{ 147, { { 12 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 12, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 12, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 12, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 12, 3 }, 2 } };
+    }
+    namespace rotation {
+        inline constexpr ::niffer::StructRef self{ 147, { { 13 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 13, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 13, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 13, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 13, 3 }, 2 } };
+    }
+    namespace unknown84 {
+        inline constexpr ::niffer::StructRef self{ 147, { { 14 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 14, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 14, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 14, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 14, 3 }, 2 } };
+    }
+    namespace unknown100 {
+        inline constexpr ::niffer::StructRef self{ 147, { { 15 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 15, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 15, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 15, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 15, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<::niffer::Value> inertia{ 147, { { 16 }, 1 } };
+    namespace centerOfMass {
+        inline constexpr ::niffer::StructRef self{ 147, { { 17 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 17, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 17, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 17, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 17, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> mass{ 147, { { 18 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown184{ 147, { { 19 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown188{ 147, { { 20 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown192{ 147, { { 21 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown196{ 147, { { 22 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown200{ 147, { { 23 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown204{ 147, { { 24 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown208{ 147, { { 25 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown212{ 147, { { 26 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown216{ 147, { { 27 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown220{ 147, { { 28 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown224{ 147, { { 29 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown225{ 147, { { 30 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown226{ 147, { { 31 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown227{ 147, { { 32 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown228{ 147, { { 33 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown229{ 147, { { 34 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown230{ 147, { { 35 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown231{ 147, { { 36 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown232{ 147, { { 37 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiObject>>> constraints{ 147, { { 38 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknownTail{ 147, { { 39 }, 1 } };
 }
 
 // bhkShapeWrapper : NiObject
 namespace bhkShapeWrapper {
-    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> shape{ 149, { { 0 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 149, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> shape{ 150, { { 0 }, 1 } };
 }
 
-// bhkSimpleShapePhantom : NiObject
+// bhkSimpleShapePhantom : bhkShapeWrapper
 namespace bhkSimpleShapePhantom {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 150, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown4{ 151, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown8{ 151, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown12{ 151, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown13{ 151, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown16{ 151, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown28{ 151, { { 6 }, 1 } };
+    namespace transform {
+        inline constexpr ::niffer::StructRef self{ 151, { { 7 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> rotation{ 151, { { 7, 0 }, 2 } };
+        namespace translation {
+            inline constexpr ::niffer::StructRef self{ 151, { { 7, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 151, { { 7, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 151, { { 7, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 151, { { 7, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 151, { { 7, 1, 3 }, 3 } };
+        }
+    }
 }
 
-// bhkStiffSpringConstraint : NiObject
+// bhkStiffSpringConstraint : bhkConstraint
 namespace bhkStiffSpringConstraint {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 152, { { 0 }, 1 } };
+    namespace pointA {
+        inline constexpr ::niffer::StructRef self{ 153, { { 2 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 153, { { 2, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 153, { { 2, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 153, { { 2, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 153, { { 2, 3 }, 2 } };
+    }
+    namespace pointB {
+        inline constexpr ::niffer::StructRef self{ 153, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 153, { { 3, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 153, { { 3, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 153, { { 3, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 153, { { 3, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> unknown48{ 153, { { 4 }, 1 } };
+}
+
+// bhkTransformShape : bhkShapeWrapper
+namespace bhkTransformShape {
+    inline constexpr ::niffer::FieldRef<uint32_t> material{ 154, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown8{ 154, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown12{ 154, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown16{ 154, { { 4 }, 1 } };
+    namespace transform {
+        inline constexpr ::niffer::StructRef self{ 154, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> rotation{ 154, { { 5, 0 }, 2 } };
+        namespace translation {
+            inline constexpr ::niffer::StructRef self{ 154, { { 5, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 154, { { 5, 1, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 154, { { 5, 1, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 154, { { 5, 1, 2 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> w{ 154, { { 5, 1, 3 }, 3 } };
+        }
+    }
 }
 
 }  // namespace niffer::fields

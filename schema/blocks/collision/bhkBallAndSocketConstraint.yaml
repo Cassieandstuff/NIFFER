@@ -1,4 +1,6 @@
 block: bhkBallAndSocketConstraint
-inherits: NiObject
+inherits: bhkConstraint
+doc: 48 bytes in all 30 SSE blocks.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: pointA, type: Vec4 }
+  - { name: pointB, type: Vec4 }

@@ -1,5 +1,9 @@
 block: bhkListShape
 inherits: NiObject
+doc: >-
+  The size is 36 + 8 * subShape count in all 592 SSE blocks.
 fields:
   - { name: subShapes, type: "ref[count: u32]", to: [bhkBoxShape, bhkCapsuleShape, bhkCompressedMeshShape, bhkConvexTransformShape, bhkConvexVerticesShape, bhkCylinderShape, bhkListShape, bhkMoppBvTreeShape, bhkNiTriStripsShape, bhkPlaneShape, bhkSphereShape, bhkTransformShape] }
-  - { name: data, type: bytes, doc: "The material and filter tail, raw." }
+  - { name: material, type: u32, doc: "Always a value that also occurs as a primitive shape's material." }
+  - { name: unknown, type: "u32[6]", doc: "Always 0, 0, 0x80000000, 0, 0, 0x80000000." }
+  - { name: unknownList, type: "u32[count: u32]", doc: "Always as long as subShapes; 0 in all but one entry (1)." }

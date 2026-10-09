@@ -1,4 +1,6 @@
 block: BSPSysRecycleBoundModifier
 inherits: NiPSysModifier
+doc: "Six floats, then a scene-node pointer (null in 6 of 45 SSE instances)."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknownFloats, type: "f32[6]" }
+  - { name: node, type: ptr, to: [NiNode] }

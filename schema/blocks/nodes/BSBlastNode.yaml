@@ -1,6 +1,5 @@
 block: BSBlastNode
-inherits: NiAVObject
-doc: >-
-  Typed structurally: the NiAVObject fields are decoded and the rest is kept raw.
+inherits: NiNode
+doc: "A NiNode plus 3 bytes: all 31 SSE instances parse as NiNode's child and effect lists followed by 3 bytes."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: "u8[3]" }

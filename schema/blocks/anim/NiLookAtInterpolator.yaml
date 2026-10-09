@@ -1,4 +1,7 @@
 block: NiLookAtInterpolator
 inherits: NiObject
+doc: "A u16, a pointer to the node looked at, then 48 bytes. All 5 SSE instances."
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: u16 }
+  - { name: lookAt, type: ptr, to: [NiNode] }
+  - { name: tail, type: bytes, size: 48, doc: "Not yet decoded." }

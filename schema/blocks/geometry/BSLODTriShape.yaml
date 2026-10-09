@@ -1,6 +1,5 @@
 block: BSLODTriShape
-inherits: NiAVObject
-doc: >-
-  Legacy geometry, typed structurally: the NiAVObject fields are decoded and the rest is kept raw.
+inherits: NiTriShape
+doc: "NiTriShape's layout plus three u32s. All 43 SSE instances."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknown1, type: "u32[3]" }

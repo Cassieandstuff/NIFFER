@@ -1,4 +1,7 @@
 block: BSPSysHavokUpdateModifier
 inherits: NiPSysModifier
+doc: "A u32 (always 1), a scene-node pointer and a rotation-modifier pointer. All 3 SSE instances."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: u32 }
+  - { name: node, type: ptr, to: [NiNode] }
+  - { name: modifier, type: ptr, to: [NiPSysRotationModifier] }

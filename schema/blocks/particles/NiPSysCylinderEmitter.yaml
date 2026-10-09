@@ -1,4 +1,7 @@
 block: NiPSysCylinderEmitter
 inherits: NiPSysModifier
+doc: "56 bytes, a scene-node pointer, then 8 bytes. All 373 SSE instances."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: bytes, size: 56, doc: "Not yet decoded." }
+  - { name: node, type: ptr, to: [NiNode] }
+  - { name: tail, type: bytes, size: 8, doc: "Not yet decoded." }

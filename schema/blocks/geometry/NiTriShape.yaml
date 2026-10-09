@@ -1,6 +1,11 @@
 block: NiTriShape
 inherits: NiAVObject
 doc: >-
-  Legacy geometry, typed structurally: the NiAVObject fields are decoded and the rest is kept raw.
+  A legacy shape: its data, a skin ref (always null in the corpus), 9 bytes, then shader and alpha
+  properties. All 243 SSE instances (and BSLODTriShape's 43).
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: data, type: ref, to: [NiTriShapeData] }
+  - { name: skin, type: ref }
+  - { name: unknown0, type: bytes, size: 9, doc: "Always zero in the corpus." }
+  - { name: shaderProperty, type: ref, to: [BSLightingShaderProperty, BSEffectShaderProperty] }
+  - { name: alphaProperty, type: ref, to: [NiAlphaProperty] }

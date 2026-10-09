@@ -1,4 +1,6 @@
 block: NiPSysDragModifier
 inherits: NiPSysModifier
+doc: "A pointer to a scene node, then 24 bytes not yet decoded. All 2,293 SSE instances."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: node, type: ptr, to: [NiNode] }
+  - { name: tail, type: bytes, size: 24, doc: "Not yet decoded." }

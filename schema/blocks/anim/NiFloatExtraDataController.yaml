@@ -1,6 +1,5 @@
 block: NiFloatExtraDataController
-inherits: NiTimeController
-doc: >-
-  Typed structurally: the NiTimeController fields are decoded and the rest is kept raw.
+inherits: NiSingleInterpController
+doc: "The interpolator, then the name of an extra-data block in the same file (188 of 188)."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: extraDataName, type: stringref }

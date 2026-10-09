@@ -1,4 +1,5 @@
 block: BSMultiBound
 inherits: NiObject
+doc: "Its bound volume. All 246 SSE instances."
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: data, type: ref, to: [BSMultiBoundOBB, BSMultiBoundAABB] }

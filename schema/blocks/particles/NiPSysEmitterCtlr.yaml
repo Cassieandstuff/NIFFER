@@ -1,6 +1,8 @@
 block: NiPSysEmitterCtlr
-inherits: NiTimeController
+inherits: NiSingleInterpController
 doc: >-
-  Typed structurally: the NiTimeController fields are decoded and the rest is kept raw.
+  A float interpolator, the driven modifier's name, then a second (bool) interpolator. All 1,587
+  SSE instances.
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: modifierName, type: stringref }
+  - { name: boolInterpolator, type: ref, to: [NiBoolInterpolator, NiBlendInterpolator] }

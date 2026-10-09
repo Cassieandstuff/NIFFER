@@ -1,4 +1,5 @@
 block: NiPSysColliderManager
 inherits: NiPSysModifier
+doc: "The first collider of the chain. All 77 SSE instances."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: collider, type: ref, to: [NiPSysPlanarCollider, NiPSysSphericalCollider] }

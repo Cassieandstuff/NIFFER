@@ -1,4 +1,7 @@
 block: NiPSysMeshEmitter
 inherits: NiPSysModifier
+doc: "56 bytes, a counted list of BSTriShape pointers, then 20 bytes. All 644 SSE instances."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: bytes, size: 56, doc: "Not yet decoded." }
+  - { name: meshes, type: "ptr[count: u32]", to: [BSTriShape] }
+  - { name: tail, type: bytes, size: 20, doc: "Not yet decoded." }

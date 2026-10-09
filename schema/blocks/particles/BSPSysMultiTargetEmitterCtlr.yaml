@@ -1,6 +1,8 @@
 block: BSPSysMultiTargetEmitterCtlr
-inherits: NiTimeController
-doc: >-
-  Typed structurally: the NiTimeController fields are decoded and the rest is kept raw.
+inherits: NiSingleInterpController
+doc: "Like NiPSysEmitterCtlr plus 6 bytes. All 142 SSE instances."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: modifierName, type: stringref }
+  - { name: boolInterpolator, type: ref, to: [NiBoolInterpolator] }
+  - { name: unknown0, type: u16, doc: "15 in the corpus." }
+  - { name: unknown1, type: u32, doc: "Always 0 in the corpus." }

@@ -1,4 +1,7 @@
 block: NiPathInterpolator
 inherits: NiObject
+doc: "16 bytes, then a NiPosData and a NiFloatData. All 73 SSE instances."
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: bytes, size: 16, doc: "Not yet decoded." }
+  - { name: posData, type: ref, to: [NiPosData] }
+  - { name: floatData, type: ref, to: [NiFloatData] }

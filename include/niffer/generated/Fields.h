@@ -173,9 +173,9 @@ namespace BSBehaviorGraphExtraData {
     inline constexpr ::niffer::FieldRef<uint8_t> controlsBaseSkeleton{ 0, { { 2 }, 1 } };
 }
 
-// BSBlastNode : NiAVObject
+// BSBlastNode : NiNode
 namespace BSBlastNode {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 1, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 1, { { 8 }, 1 } };
 }
 
 // BSBoneLODExtraData : NiExtraData
@@ -199,9 +199,9 @@ namespace BSBound {
     }
 }
 
-// BSDamageStage : NiAVObject
+// BSDamageStage : NiNode
 namespace BSDamageStage {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 4, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 4, { { 8 }, 1 } };
 }
 
 // BSDecalPlacementVectorExtraData : NiExtraData
@@ -253,11 +253,6 @@ namespace BSEffectShaderPropertyFloatController {
     inline constexpr ::niffer::FieldRef<uint32_t> targetVariable{ 10, { { 8 }, 1 } };
 }
 
-// BSFrustumFOVController : NiTimeController
-namespace BSFrustumFOVController {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 12, { { 7 }, 1 } };
-}
-
 // BSFurnitureMarkerNode : NiExtraData
 namespace BSFurnitureMarkerNode {
     inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 13, { { 1 }, 1 } };
@@ -271,9 +266,9 @@ namespace BSInvMarker {
     inline constexpr ::niffer::FieldRef<float> zoom{ 14, { { 4 }, 1 } };
 }
 
-// BSLODTriShape : NiAVObject
+// BSLODTriShape : NiTriShape
 namespace BSLODTriShape {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 15, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown1{ 15, { { 11 }, 1 } };
 }
 
 // BSLagBoneController : NiTimeController
@@ -350,7 +345,7 @@ namespace BSMasterParticleSystem {
 
 // BSMultiBound : NiObject
 namespace BSMultiBound {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 22, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> data{ 22, { { 0 }, 1 } };
 }
 
 // BSMultiBoundAABB : NiObject
@@ -383,12 +378,15 @@ namespace BSOrderedNode {
 
 // BSPSysHavokUpdateModifier : NiPSysModifier
 namespace BSPSysHavokUpdateModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 28, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 28, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 28, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiPSysRotationModifier>> modifier{ 28, { { 6 }, 1 } };
 }
 
 // BSPSysInheritVelocityModifier : NiPSysModifier
 namespace BSPSysInheritVelocityModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 29, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 29, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 29, { { 5 }, 1 } };
 }
 
 // BSPSysLODModifier : NiPSysModifier
@@ -396,14 +394,18 @@ namespace BSPSysLODModifier {
     inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 30, { { 4 }, 1 } };
 }
 
-// BSPSysMultiTargetEmitterCtlr : NiTimeController
+// BSPSysMultiTargetEmitterCtlr : NiSingleInterpController
 namespace BSPSysMultiTargetEmitterCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 31, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 31, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiBoolInterpolator>> boolInterpolator{ 31, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknown0{ 31, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown1{ 31, { { 11 }, 1 } };
 }
 
 // BSPSysRecycleBoundModifier : NiPSysModifier
 namespace BSPSysRecycleBoundModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 32, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<float>> unknownFloats{ 32, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 32, { { 5 }, 1 } };
 }
 
 // BSPSysScaleModifier : NiPSysModifier
@@ -449,7 +451,8 @@ namespace BSPSysSubTexModifier {
 
 // BSProceduralLightningController : NiTimeController
 namespace BSProceduralLightningController {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 37, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiObject>>> interpolators{ 37, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 37, { { 8 }, 1 } };
 }
 
 // BSShaderTextureSet : NiObject
@@ -681,9 +684,9 @@ namespace NiFloatExtraData {
     inline constexpr ::niffer::FieldRef<float> floatData{ 68, { { 1 }, 1 } };
 }
 
-// NiFloatExtraDataController : NiTimeController
+// NiFloatExtraDataController : NiSingleInterpController
 namespace NiFloatExtraDataController {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 69, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> extraDataName{ 69, { { 8 }, 1 } };
 }
 
 // NiFloatInterpolator : NiObject
@@ -699,12 +702,15 @@ namespace NiIntegerExtraData {
 
 // NiLookAtInterpolator : NiObject
 namespace NiLookAtInterpolator {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 72, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknown0{ 72, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> lookAt{ 72, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 72, { { 2 }, 1 } };
 }
 
 // NiMeshPSysData : NiObject
 namespace NiMeshPSysData {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 73, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 73, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 73, { { 1 }, 1 } };
 }
 
 // NiMultiTargetTransformController : NiTimeController
@@ -727,12 +733,14 @@ namespace NiObjectNET {
 
 // NiPSysAgeDeathModifier : NiPSysModifier
 namespace NiPSysAgeDeathModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 79, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown0{ 79, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>> spawnModifier{ 79, { { 5 }, 1 } };
 }
 
 // NiPSysBombModifier : NiPSysModifier
 namespace NiPSysBombModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 80, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 80, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 80, { { 5 }, 1 } };
 }
 
 // NiPSysBoundUpdateModifier : NiPSysModifier
@@ -742,17 +750,21 @@ namespace NiPSysBoundUpdateModifier {
 
 // NiPSysBoxEmitter : NiPSysModifier
 namespace NiPSysBoxEmitter {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 82, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 82, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 82, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 82, { { 6 }, 1 } };
 }
 
 // NiPSysColliderManager : NiPSysModifier
 namespace NiPSysColliderManager {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 83, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> collider{ 83, { { 4 }, 1 } };
 }
 
 // NiPSysCylinderEmitter : NiPSysModifier
 namespace NiPSysCylinderEmitter {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 84, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 84, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 84, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 84, { { 6 }, 1 } };
 }
 
 // NiPSysData : NiObject
@@ -787,57 +799,62 @@ namespace NiPSysData {
 
 // NiPSysDragModifier : NiPSysModifier
 namespace NiPSysDragModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 86, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 86, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 86, { { 5 }, 1 } };
 }
 
-// NiPSysEmitterCtlr : NiTimeController
+// NiPSysEmitterCtlr : NiSingleInterpController
 namespace NiPSysEmitterCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 87, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 87, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> boolInterpolator{ 87, { { 9 }, 1 } };
 }
 
-// NiPSysEmitterDeclinationCtlr : NiTimeController
+// NiPSysEmitterDeclinationCtlr : NiSingleInterpController
 namespace NiPSysEmitterDeclinationCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 88, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 88, { { 8 }, 1 } };
 }
 
-// NiPSysEmitterInitialRadiusCtlr : NiTimeController
+// NiPSysEmitterInitialRadiusCtlr : NiSingleInterpController
 namespace NiPSysEmitterInitialRadiusCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 89, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 89, { { 8 }, 1 } };
 }
 
-// NiPSysEmitterLifeSpanCtlr : NiTimeController
+// NiPSysEmitterLifeSpanCtlr : NiSingleInterpController
 namespace NiPSysEmitterLifeSpanCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 90, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 90, { { 8 }, 1 } };
 }
 
-// NiPSysEmitterPlanarAngleCtlr : NiTimeController
+// NiPSysEmitterPlanarAngleCtlr : NiSingleInterpController
 namespace NiPSysEmitterPlanarAngleCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 91, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 91, { { 8 }, 1 } };
 }
 
-// NiPSysEmitterSpeedCtlr : NiTimeController
+// NiPSysEmitterSpeedCtlr : NiSingleInterpController
 namespace NiPSysEmitterSpeedCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 92, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 92, { { 8 }, 1 } };
 }
 
 // NiPSysGravityModifier : NiPSysModifier
 namespace NiPSysGravityModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 93, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 93, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 93, { { 5 }, 1 } };
 }
 
-// NiPSysGravityStrengthCtlr : NiTimeController
+// NiPSysGravityStrengthCtlr : NiSingleInterpController
 namespace NiPSysGravityStrengthCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 94, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 94, { { 8 }, 1 } };
 }
 
-// NiPSysInitialRotSpeedCtlr : NiTimeController
+// NiPSysInitialRotSpeedCtlr : NiSingleInterpController
 namespace NiPSysInitialRotSpeedCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 95, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 95, { { 8 }, 1 } };
 }
 
 // NiPSysMeshEmitter : NiPSysModifier
 namespace NiPSysMeshEmitter {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 96, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 96, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>> meshes{ 96, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 96, { { 6 }, 1 } };
 }
 
 // NiPSysModifier : NiObject
@@ -848,14 +865,20 @@ namespace NiPSysModifier {
     inline constexpr ::niffer::FieldRef<uint8_t> active{ 97, { { 3 }, 1 } };
 }
 
-// NiPSysModifierActiveCtlr : NiTimeController
+// NiPSysModifierActiveCtlr : NiSingleInterpController
 namespace NiPSysModifierActiveCtlr {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 98, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> modifierName{ 98, { { 8 }, 1 } };
 }
 
 // NiPSysPlanarCollider : NiObject
 namespace NiPSysPlanarCollider {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 99, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown0{ 99, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown1{ 99, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>> spawnModifier{ 99, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiPSysColliderManager>> manager{ 99, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> nextCollider{ 99, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 99, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> shapeData{ 99, { { 6 }, 1 } };
 }
 
 // NiPSysPositionModifier : NiPSysModifier
@@ -875,12 +898,20 @@ namespace NiPSysSpawnModifier {
 
 // NiPSysSphereEmitter : NiPSysModifier
 namespace NiPSysSphereEmitter {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 103, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 103, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 103, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 103, { { 6 }, 1 } };
 }
 
 // NiPSysSphericalCollider : NiObject
 namespace NiPSysSphericalCollider {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 104, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown0{ 104, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown1{ 104, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>> spawnModifier{ 104, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiPSysColliderManager>> manager{ 104, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> nextCollider{ 104, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> node{ 104, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> shapeData{ 104, { { 6 }, 1 } };
 }
 
 // NiPSysUpdateCtlr : NiTimeController
@@ -910,7 +941,9 @@ namespace NiParticleSystem {
 
 // NiPathInterpolator : NiObject
 namespace NiPathInterpolator {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 107, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 107, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiPosData>> posData{ 107, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiFloatData>> floatData{ 107, { { 2 }, 1 } };
 }
 
 // NiPoint3Interpolator : NiObject
@@ -1076,7 +1109,11 @@ namespace NiTransformInterpolator {
 
 // NiTriShape : NiAVObject
 namespace NiTriShape {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 122, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiTriShapeData>> data{ 122, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> skin{ 122, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown0{ 122, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> shaderProperty{ 122, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiAlphaProperty>> alphaProperty{ 122, { { 10 }, 1 } };
 }
 
 // NiTriShapeData : NiObject

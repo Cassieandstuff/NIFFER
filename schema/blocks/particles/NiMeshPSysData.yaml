@@ -1,4 +1,6 @@
 block: NiMeshPSysData
 inherits: NiObject
+doc: "83 bytes, then a scene-node pointer. All 3 SSE instances."
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: bytes, size: 83, doc: "Not yet decoded." }
+  - { name: node, type: ptr, to: [NiNode] }

@@ -1235,18 +1235,35 @@ protected:
     explicit NiAVObject(::niffer::Block& b) : NiObjectNET(b) {}
 };
 
-class BSBlastNode : public NiAVObject {
+class NiNode : public NiAVObject {
+public:
+    static constexpr uint16_t kBlock = 76;
+    static std::optional<NiNode> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return NiNode(b);
+        return std::nullopt;
+    }
+    // children
+    std::vector<::niffer::NiRef<::niffer::view::NiAVObject>> Children() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>>(p_.Child(6)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>{}); }
+    bool SetChildren(const std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>>(p_.Child(6), v); }
+    // effects
+    std::vector<::niffer::NiRef<::niffer::view::NiObject>> Effects() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
+    bool SetEffects(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7), v); }
+protected:
+    explicit NiNode(::niffer::Block& b) : NiAVObject(b) {}
+};
+
+class BSBlastNode : public NiNode {
 public:
     static constexpr uint16_t kBlock = 1;
     static std::optional<BSBlastNode> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSBlastNode(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
+    // unknown0
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
 protected:
-    explicit BSBlastNode(::niffer::Block& b) : NiAVObject(b) {}
+    explicit BSBlastNode(::niffer::Block& b) : NiNode(b) {}
 };
 
 class BSBoneLODExtraData : public NiExtraData {
@@ -1283,18 +1300,18 @@ protected:
     explicit BSBound(::niffer::Block& b) : NiExtraData(b) {}
 };
 
-class BSDamageStage : public NiAVObject {
+class BSDamageStage : public NiNode {
 public:
     static constexpr uint16_t kBlock = 4;
     static std::optional<BSDamageStage> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSDamageStage(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
+    // unknown0
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
 protected:
-    explicit BSDamageStage(::niffer::Block& b) : NiAVObject(b) {}
+    explicit BSDamageStage(::niffer::Block& b) : NiNode(b) {}
 };
 
 class BSDecalPlacementVectorExtraData : public NiExtraData {
@@ -1550,23 +1567,6 @@ protected:
     explicit BSEffectShaderPropertyFloatController(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class NiNode : public NiAVObject {
-public:
-    static constexpr uint16_t kBlock = 76;
-    static std::optional<NiNode> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return NiNode(b);
-        return std::nullopt;
-    }
-    // children
-    std::vector<::niffer::NiRef<::niffer::view::NiAVObject>> Children() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>>(p_.Child(6)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>{}); }
-    bool SetChildren(const std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>>(p_.Child(6), v); }
-    // effects
-    std::vector<::niffer::NiRef<::niffer::view::NiObject>> Effects() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
-    bool SetEffects(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7), v); }
-protected:
-    explicit NiNode(::niffer::Block& b) : NiAVObject(b) {}
-};
-
 class BSFadeNode : public NiNode {
 public:
     static constexpr uint16_t kBlock = 11;
@@ -1578,18 +1578,15 @@ protected:
     explicit BSFadeNode(::niffer::Block& b) : NiNode(b) {}
 };
 
-class BSFrustumFOVController : public NiTimeController {
+class BSFrustumFOVController : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 12;
     static std::optional<BSFrustumFOVController> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSFrustumFOVController(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
 protected:
-    explicit BSFrustumFOVController(::niffer::Block& b) : NiTimeController(b) {}
+    explicit BSFrustumFOVController(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
 class BSFurnitureMarkerNode : public NiExtraData {
@@ -1629,18 +1626,44 @@ protected:
     explicit BSInvMarker(::niffer::Block& b) : NiExtraData(b) {}
 };
 
-class BSLODTriShape : public NiAVObject {
+class NiTriShape : public NiAVObject {
+public:
+    static constexpr uint16_t kBlock = 122;
+    static std::optional<NiTriShape> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return NiTriShape(b);
+        return std::nullopt;
+    }
+    // data
+    ::niffer::NiRef<::niffer::view::NiTriShapeData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTriShapeData>>(p_.Child(6)).value_or(::niffer::NiRef<::niffer::view::NiTriShapeData>{}); }
+    bool SetData(const ::niffer::NiRef<::niffer::view::NiTriShapeData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTriShapeData>>(p_.Child(6), v); }
+    // skin
+    ::niffer::NiRef<::niffer::view::NiObject> Skin() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(7)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetSkin(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(7), v); }
+    // unknown0 — Always zero in the corpus.
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
+    // shaderProperty
+    ::niffer::NiRef<::niffer::view::NiObject> ShaderProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetShaderProperty(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9), v); }
+    // alphaProperty
+    ::niffer::NiRef<::niffer::view::NiAlphaProperty> AlphaProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10)).value_or(::niffer::NiRef<::niffer::view::NiAlphaProperty>{}); }
+    bool SetAlphaProperty(const ::niffer::NiRef<::niffer::view::NiAlphaProperty>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10), v); }
+protected:
+    explicit NiTriShape(::niffer::Block& b) : NiAVObject(b) {}
+};
+
+class BSLODTriShape : public NiTriShape {
 public:
     static constexpr uint16_t kBlock = 15;
     static std::optional<BSLODTriShape> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSLODTriShape(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
+    // unknown1
+    std::vector<uint32_t> Unknown1() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(11)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown1(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(11), v); }
 protected:
-    explicit BSLODTriShape(::niffer::Block& b) : NiAVObject(b) {}
+    explicit BSLODTriShape(::niffer::Block& b) : NiTriShape(b) {}
 };
 
 class BSLagBoneController : public NiTimeController {
@@ -1801,9 +1824,9 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSMultiBound(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // data
+    ::niffer::NiRef<::niffer::view::NiObject> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetData(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0), v); }
 protected:
     explicit BSMultiBound(::niffer::Block& b) : NiObject(b) {}
 };
@@ -1910,9 +1933,15 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSPSysHavokUpdateModifier(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // unknown0
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
+    // modifier
+    ::niffer::NiRef<::niffer::view::NiPSysRotationModifier> Modifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysRotationModifier>>(p_.Child(6)).value_or(::niffer::NiRef<::niffer::view::NiPSysRotationModifier>{}); }
+    bool SetModifier(const ::niffer::NiRef<::niffer::view::NiPSysRotationModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysRotationModifier>>(p_.Child(6), v); }
 protected:
     explicit BSPSysHavokUpdateModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -1924,9 +1953,12 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSPSysInheritVelocityModifier(b);
         return std::nullopt;
     }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
     explicit BSPSysInheritVelocityModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -1945,18 +1977,27 @@ protected:
     explicit BSPSysLODModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
 
-class BSPSysMultiTargetEmitterCtlr : public NiTimeController {
+class BSPSysMultiTargetEmitterCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 31;
     static std::optional<BSPSysMultiTargetEmitterCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSPSysMultiTargetEmitterCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
+    // boolInterpolator
+    ::niffer::NiRef<::niffer::view::NiBoolInterpolator> BoolInterpolator() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiBoolInterpolator>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiBoolInterpolator>{}); }
+    bool SetBoolInterpolator(const ::niffer::NiRef<::niffer::view::NiBoolInterpolator>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiBoolInterpolator>>(p_.Child(9), v); }
+    // unknown0 — 15 in the corpus.
+    uint16_t Unknown0() const { return b_->GetAt<uint16_t>(p_.Child(10)).value_or(uint16_t{}); }
+    bool SetUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(10), v); }
+    // unknown1 — Always 0 in the corpus.
+    uint32_t Unknown1() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
+    bool SetUnknown1(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
 protected:
-    explicit BSPSysMultiTargetEmitterCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit BSPSysMultiTargetEmitterCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
 class BSPSysRecycleBoundModifier : public NiPSysModifier {
@@ -1966,9 +2007,12 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSPSysRecycleBoundModifier(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // unknownFloats
+    std::vector<float> UnknownFloats() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
+    bool SetUnknownFloats(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
 protected:
     explicit BSPSysRecycleBoundModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -2042,9 +2086,12 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSProceduralLightningController(b);
         return std::nullopt;
     }
+    // interpolators
+    std::vector<::niffer::NiRef<::niffer::view::NiObject>> Interpolators() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
+    bool SetInterpolators(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
 protected:
     explicit BSProceduralLightningController(::niffer::Block& b) : NiTimeController(b) {}
 };
@@ -2646,18 +2693,18 @@ protected:
     explicit NiFloatExtraData(::niffer::Block& b) : NiExtraData(b) {}
 };
 
-class NiFloatExtraDataController : public NiTimeController {
+class NiFloatExtraDataController : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 69;
     static std::optional<NiFloatExtraDataController> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiFloatExtraDataController(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // extraDataName
+    ::niffer::NiStringRef ExtraDataName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetExtraDataName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiFloatExtraDataController(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiFloatExtraDataController(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
 class NiFloatInterpolator : public NiObject {
@@ -2698,9 +2745,15 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiLookAtInterpolator(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // unknown0
+    uint16_t Unknown0() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
+    bool SetUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
+    // lookAt
+    ::niffer::NiRef<::niffer::view::NiNode> LookAt() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetLookAt(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1), v); }
+    // tail — Not yet decoded.
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
 protected:
     explicit NiLookAtInterpolator(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2712,9 +2765,12 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiMeshPSysData(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // unknown0 — Not yet decoded.
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1), v); }
 protected:
     explicit NiMeshPSysData(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2751,9 +2807,12 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysAgeDeathModifier(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // unknown0
+    uint8_t Unknown0() const { return b_->GetAt<uint8_t>(p_.Child(4)).value_or(uint8_t{}); }
+    bool SetUnknown0(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
+    // spawnModifier
+    ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier> SpawnModifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>{}); }
+    bool SetSpawnModifier(const ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(5), v); }
 protected:
     explicit NiPSysAgeDeathModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -2765,9 +2824,12 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysBombModifier(b);
         return std::nullopt;
     }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
     explicit NiPSysBombModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -2793,9 +2855,15 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysBoxEmitter(b);
         return std::nullopt;
     }
+    // unknown0 — Not yet decoded.
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
     explicit NiPSysBoxEmitter(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -2807,9 +2875,9 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysColliderManager(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // collider
+    ::niffer::NiRef<::niffer::view::NiObject> Collider() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetCollider(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4), v); }
 protected:
     explicit NiPSysColliderManager(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -2821,9 +2889,15 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysCylinderEmitter(b);
         return std::nullopt;
     }
+    // unknown0 — Not yet decoded.
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
     explicit NiPSysCylinderEmitter(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -2835,95 +2909,101 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysDragModifier(b);
         return std::nullopt;
     }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
     explicit NiPSysDragModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
 
-class NiPSysEmitterCtlr : public NiTimeController {
+class NiPSysEmitterCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 87;
     static std::optional<NiPSysEmitterCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysEmitterCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
+    // boolInterpolator
+    ::niffer::NiRef<::niffer::view::NiObject> BoolInterpolator() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetBoolInterpolator(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9), v); }
 protected:
-    explicit NiPSysEmitterCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysEmitterCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class NiPSysEmitterDeclinationCtlr : public NiTimeController {
+class NiPSysEmitterDeclinationCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 88;
     static std::optional<NiPSysEmitterDeclinationCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysEmitterDeclinationCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysEmitterDeclinationCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysEmitterDeclinationCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class NiPSysEmitterInitialRadiusCtlr : public NiTimeController {
+class NiPSysEmitterInitialRadiusCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 89;
     static std::optional<NiPSysEmitterInitialRadiusCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysEmitterInitialRadiusCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysEmitterInitialRadiusCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysEmitterInitialRadiusCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class NiPSysEmitterLifeSpanCtlr : public NiTimeController {
+class NiPSysEmitterLifeSpanCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 90;
     static std::optional<NiPSysEmitterLifeSpanCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysEmitterLifeSpanCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysEmitterLifeSpanCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysEmitterLifeSpanCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class NiPSysEmitterPlanarAngleCtlr : public NiTimeController {
+class NiPSysEmitterPlanarAngleCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 91;
     static std::optional<NiPSysEmitterPlanarAngleCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysEmitterPlanarAngleCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysEmitterPlanarAngleCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysEmitterPlanarAngleCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class NiPSysEmitterSpeedCtlr : public NiTimeController {
+class NiPSysEmitterSpeedCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 92;
     static std::optional<NiPSysEmitterSpeedCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysEmitterSpeedCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysEmitterSpeedCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysEmitterSpeedCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
 class NiPSysGravityModifier : public NiPSysModifier {
@@ -2933,39 +3013,42 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysGravityModifier(b);
         return std::nullopt;
     }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
     explicit NiPSysGravityModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
 
-class NiPSysGravityStrengthCtlr : public NiTimeController {
+class NiPSysGravityStrengthCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 94;
     static std::optional<NiPSysGravityStrengthCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysGravityStrengthCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysGravityStrengthCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysGravityStrengthCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class NiPSysInitialRotSpeedCtlr : public NiTimeController {
+class NiPSysInitialRotSpeedCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 95;
     static std::optional<NiPSysInitialRotSpeedCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysInitialRotSpeedCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysInitialRotSpeedCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysInitialRotSpeedCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
 class NiPSysMeshEmitter : public NiPSysModifier {
@@ -2975,25 +3058,31 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysMeshEmitter(b);
         return std::nullopt;
     }
+    // unknown0 — Not yet decoded.
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // meshes
+    std::vector<::niffer::NiRef<::niffer::view::BSTriShape>> Meshes() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>>(p_.Child(5)).value_or(std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>{}); }
+    bool SetMeshes(const std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>>(p_.Child(5), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
     explicit NiPSysMeshEmitter(::niffer::Block& b) : NiPSysModifier(b) {}
 };
 
-class NiPSysModifierActiveCtlr : public NiTimeController {
+class NiPSysModifierActiveCtlr : public NiSingleInterpController {
 public:
     static constexpr uint16_t kBlock = 98;
     static std::optional<NiPSysModifierActiveCtlr> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysModifierActiveCtlr(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // modifierName
+    ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
+    bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
-    explicit NiPSysModifierActiveCtlr(::niffer::Block& b) : NiTimeController(b) {}
+    explicit NiPSysModifierActiveCtlr(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
 class NiPSysPlanarCollider : public NiObject {
@@ -3003,9 +3092,27 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysPlanarCollider(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // unknown0
+    float Unknown0() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetUnknown0(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // unknown1
+    std::vector<uint8_t> Unknown1() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown1(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
+    // spawnModifier
+    ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier> SpawnModifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>{}); }
+    bool SetSpawnModifier(const ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2), v); }
+    // manager
+    ::niffer::NiRef<::niffer::view::NiPSysColliderManager> Manager() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3)).value_or(::niffer::NiRef<::niffer::view::NiPSysColliderManager>{}); }
+    bool SetManager(const ::niffer::NiRef<::niffer::view::NiPSysColliderManager>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3), v); }
+    // nextCollider
+    ::niffer::NiRef<::niffer::view::NiObject> NextCollider() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetNextCollider(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
+    // shapeData — Not yet decoded.
+    std::vector<uint8_t> ShapeData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
+    bool SetShapeData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
     explicit NiPSysPlanarCollider(::niffer::Block& b) : NiObject(b) {}
 };
@@ -3059,9 +3166,15 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysSphereEmitter(b);
         return std::nullopt;
     }
+    // unknown0 — Not yet decoded.
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
+    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
     explicit NiPSysSphereEmitter(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -3073,9 +3186,27 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPSysSphericalCollider(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // unknown0
+    float Unknown0() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetUnknown0(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // unknown1
+    std::vector<uint8_t> Unknown1() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown1(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
+    // spawnModifier
+    ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier> SpawnModifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>{}); }
+    bool SetSpawnModifier(const ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2), v); }
+    // manager
+    ::niffer::NiRef<::niffer::view::NiPSysColliderManager> Manager() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3)).value_or(::niffer::NiRef<::niffer::view::NiPSysColliderManager>{}); }
+    bool SetManager(const ::niffer::NiRef<::niffer::view::NiPSysColliderManager>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3), v); }
+    // nextCollider
+    ::niffer::NiRef<::niffer::view::NiObject> NextCollider() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetNextCollider(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4), v); }
+    // node
+    ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
+    // shapeData — Not yet decoded.
+    std::vector<uint8_t> ShapeData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
+    bool SetShapeData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
     explicit NiPSysSphericalCollider(::niffer::Block& b) : NiObject(b) {}
 };
@@ -3101,9 +3232,15 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiPathInterpolator(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // unknown0 — Not yet decoded.
+    std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // posData
+    ::niffer::NiRef<::niffer::view::NiPosData> PosData() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPosData>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiPosData>{}); }
+    bool SetPosData(const ::niffer::NiRef<::niffer::view::NiPosData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPosData>>(p_.Child(1), v); }
+    // floatData
+    ::niffer::NiRef<::niffer::view::NiFloatData> FloatData() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiFloatData>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiFloatData>{}); }
+    bool SetFloatData(const ::niffer::NiRef<::niffer::view::NiFloatData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiFloatData>>(p_.Child(2), v); }
 protected:
     explicit NiPathInterpolator(::niffer::Block& b) : NiObject(b) {}
 };
@@ -3322,20 +3459,6 @@ public:
     bool SetData(const ::niffer::NiRef<::niffer::view::NiTransformData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTransformData>>(p_.Child(3), v); }
 protected:
     explicit NiTransformInterpolator(::niffer::Block& b) : NiObject(b) {}
-};
-
-class NiTriShape : public NiAVObject {
-public:
-    static constexpr uint16_t kBlock = 122;
-    static std::optional<NiTriShape> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return NiTriShape(b);
-        return std::nullopt;
-    }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
-protected:
-    explicit NiTriShape(::niffer::Block& b) : NiAVObject(b) {}
 };
 
 class NiTriShapeData : public NiObject {

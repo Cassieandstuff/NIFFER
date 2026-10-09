@@ -2087,7 +2087,7 @@
   },
   {
    "name": "BSBlastNode",
-   "parent": "NiAVObject",
+   "parent": "NiNode",
    "abstract": false,
    "layout": [
     {
@@ -2203,15 +2203,43 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "children",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
      },
-     "declaredBy": "BSBlastNode",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "declaredBy": "BSBlastNode"
     }
    ],
-   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "A NiNode plus 3 bytes: all 31 SSE instances parse as NiNode's child and effect lists followed by 3 bytes."
   },
   {
    "name": "BSBoneLODExtraData",
@@ -2327,7 +2355,7 @@
   },
   {
    "name": "BSDamageStage",
-   "parent": "NiAVObject",
+   "parent": "NiNode",
    "abstract": false,
    "layout": [
     {
@@ -2443,15 +2471,43 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "children",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
      },
-     "declaredBy": "BSDamageStage",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "declaredBy": "BSDamageStage"
     }
    ],
-   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "A NiNode plus 3 bytes: all 13 SSE instances parse as NiNode's child and effect lists followed by 3 bytes."
   },
   {
    "name": "BSDecalPlacementVectorExtraData",
@@ -3293,6 +3349,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",
@@ -3379,6 +3436,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",
@@ -3547,7 +3605,7 @@
   },
   {
    "name": "BSFrustumFOVController",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -3607,15 +3665,24 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "BSFrustumFOVController",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "Just the interpolator (always a NiFloatInterpolator in the corpus)."
   },
   {
    "name": "BSFurnitureMarkerNode",
@@ -3685,7 +3752,7 @@
   },
   {
    "name": "BSLODTriShape",
-   "parent": "NiAVObject",
+   "parent": "NiTriShape",
    "abstract": false,
    "layout": [
     {
@@ -3801,15 +3868,65 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "data",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiTriShapeData"
+      ]
      },
-     "declaredBy": "BSLODTriShape",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiTriShape"
+    },
+    {
+     "name": "skin",
+     "type": {
+      "kind": "ref"
+     },
+     "declaredBy": "NiTriShape"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "bytes",
+      "size": 9
+     },
+     "declaredBy": "NiTriShape",
+     "doc": "Always zero in the corpus."
+    },
+    {
+     "name": "shaderProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSEffectShaderProperty",
+       "BSLightingShaderProperty"
+      ]
+     },
+     "declaredBy": "NiTriShape"
+    },
+    {
+     "name": "alphaProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiAlphaProperty"
+      ]
+     },
+     "declaredBy": "NiTriShape"
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u32"
+      },
+      "count": 3
+     },
+     "declaredBy": "BSLODTriShape"
     }
    ],
-   "doc": "Legacy geometry, typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "NiTriShape's layout plus three u32s. All 43 SSE instances."
   },
   {
    "name": "BSLagBoneController",
@@ -4439,6 +4556,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",
@@ -4525,6 +4643,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",
@@ -4718,12 +4837,16 @@
     {
      "name": "data",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "BSMultiBoundAABB",
+       "BSMultiBoundOBB"
+      ]
      },
-     "declaredBy": "BSMultiBound",
-     "doc": "Not yet decoded."
+     "declaredBy": "BSMultiBound"
     }
-   ]
+   ],
+   "doc": "Its bound volume. All 246 SSE instances."
   },
   {
    "name": "BSMultiBoundAABB",
@@ -4984,6 +5107,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",
@@ -5219,14 +5343,34 @@
      "declaredBy": "NiPSysModifier"
     },
     {
-     "name": "tail",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
-     "declaredBy": "BSPSysHavokUpdateModifier",
-     "doc": "Not yet decoded."
+     "declaredBy": "BSPSysHavokUpdateModifier"
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "BSPSysHavokUpdateModifier"
+    },
+    {
+     "name": "modifier",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiPSysRotationModifier"
+      ]
+     },
+     "declaredBy": "BSPSysHavokUpdateModifier"
     }
-   ]
+   ],
+   "doc": "A u32 (always 1), a scene-node pointer and a rotation-modifier pointer. All 3 SSE instances."
   },
   {
    "name": "BSPSysInheritVelocityModifier",
@@ -5267,14 +5411,26 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "BSPSysInheritVelocityModifier"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 12
      },
      "declaredBy": "BSPSysInheritVelocityModifier",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "A pointer to a scene node, then 12 bytes not yet decoded. All 188 SSE instances."
   },
   {
    "name": "BSPSysLODModifier",
@@ -5326,7 +5482,7 @@
   },
   {
    "name": "BSPSysMultiTargetEmitterCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -5386,15 +5542,57 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
+     },
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "BSPSysMultiTargetEmitterCtlr"
+    },
+    {
+     "name": "boolInterpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBoolInterpolator"
+      ]
+     },
+     "declaredBy": "BSPSysMultiTargetEmitterCtlr"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u16"
      },
      "declaredBy": "BSPSysMultiTargetEmitterCtlr",
-     "doc": "Not yet decoded."
+     "doc": "15 in the corpus."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSPSysMultiTargetEmitterCtlr",
+     "doc": "Always 0 in the corpus."
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "Like NiPSysEmitterCtlr plus 6 bytes. All 142 SSE instances."
   },
   {
    "name": "BSPSysRecycleBoundModifier",
@@ -5435,14 +5633,28 @@
      "declaredBy": "NiPSysModifier"
     },
     {
-     "name": "tail",
+     "name": "unknownFloats",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "count": 6
      },
-     "declaredBy": "BSPSysRecycleBoundModifier",
-     "doc": "Not yet decoded."
+     "declaredBy": "BSPSysRecycleBoundModifier"
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "BSPSysRecycleBoundModifier"
     }
-   ]
+   ],
+   "doc": "Six floats, then a scene-node pointer (null in 6 of 45 SSE instances)."
   },
   {
    "name": "BSPSysScaleModifier",
@@ -5810,6 +6022,23 @@
      "declaredBy": "NiTimeController"
     },
     {
+     "name": "interpolators",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiBlendInterpolator",
+        "NiBoolInterpolator",
+        "NiBoolTimelineInterpolator",
+        "NiFloatInterpolator"
+       ]
+      },
+      "count": 9
+     },
+     "declaredBy": "BSProceduralLightningController"
+    },
+    {
      "name": "tail",
      "type": {
       "kind": "bytes"
@@ -5818,7 +6047,7 @@
      "doc": "Not yet decoded."
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "Nine interpolator refs (bool and float interpolators, or null), then a 33-byte tail. All 37 SSE instances."
   },
   {
    "name": "BSShaderTextureSet",
@@ -8734,7 +8963,7 @@
   },
   {
    "name": "NiFloatExtraDataController",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -8794,15 +9023,31 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiFloatExtraDataController",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "extraDataName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiFloatExtraDataController"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of an extra-data block in the same file (188 of 188)."
   },
   {
    "name": "NiFloatInterpolator",
@@ -8855,14 +9100,33 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "u16"
+     },
+     "declaredBy": "NiLookAtInterpolator"
+    },
+    {
+     "name": "lookAt",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiLookAtInterpolator"
+    },
+    {
+     "name": "tail",
+     "type": {
+      "kind": "bytes",
+      "size": 48
      },
      "declaredBy": "NiLookAtInterpolator",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "A u16, a pointer to the node looked at, then 48 bytes. All 5 SSE instances."
   },
   {
    "name": "NiMeshPSysData",
@@ -8870,14 +9134,26 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 83
      },
      "declaredBy": "NiMeshPSysData",
      "doc": "Not yet decoded."
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiMeshPSysData"
     }
-   ]
+   ],
+   "doc": "83 bytes, then a scene-node pointer. All 3 SSE instances."
   },
   {
    "name": "NiMeshParticleSystem",
@@ -9428,14 +9704,24 @@
      "declaredBy": "NiPSysModifier"
     },
     {
-     "name": "tail",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "u8"
      },
-     "declaredBy": "NiPSysAgeDeathModifier",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiPSysAgeDeathModifier"
+    },
+    {
+     "name": "spawnModifier",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiPSysSpawnModifier"
+      ]
+     },
+     "declaredBy": "NiPSysAgeDeathModifier"
     }
-   ]
+   ],
+   "doc": "A byte, then a pointer to a NiPSysSpawnModifier (1,729 of 1,729)."
   },
   {
    "name": "NiPSysBombModifier",
@@ -9476,14 +9762,26 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysBombModifier"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 28
      },
      "declaredBy": "NiPSysBombModifier",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "A pointer to a scene node, then 28 bytes not yet decoded. All 500 SSE instances."
   },
   {
    "name": "NiPSysBoundUpdateModifier",
@@ -9572,14 +9870,35 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "unknown0",
+     "type": {
+      "kind": "bytes",
+      "size": 56
+     },
+     "declaredBy": "NiPSysBoxEmitter",
+     "doc": "Not yet decoded."
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysBoxEmitter"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 12
      },
      "declaredBy": "NiPSysBoxEmitter",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "56 bytes, a scene-node pointer, then 12 bytes. All 564 SSE instances."
   },
   {
    "name": "NiPSysColliderManager",
@@ -9620,14 +9939,18 @@
      "declaredBy": "NiPSysModifier"
     },
     {
-     "name": "tail",
+     "name": "collider",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiPSysPlanarCollider",
+       "NiPSysSphericalCollider"
+      ]
      },
-     "declaredBy": "NiPSysColliderManager",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiPSysColliderManager"
     }
-   ]
+   ],
+   "doc": "The first collider of the chain. All 77 SSE instances."
   },
   {
    "name": "NiPSysCylinderEmitter",
@@ -9668,14 +9991,35 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "unknown0",
+     "type": {
+      "kind": "bytes",
+      "size": 56
+     },
+     "declaredBy": "NiPSysCylinderEmitter",
+     "doc": "Not yet decoded."
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysCylinderEmitter"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 8
      },
      "declaredBy": "NiPSysCylinderEmitter",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "56 bytes, a scene-node pointer, then 8 bytes. All 373 SSE instances."
   },
   {
    "name": "NiPSysData",
@@ -9942,18 +10286,30 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysDragModifier"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 24
      },
      "declaredBy": "NiPSysDragModifier",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "A pointer to a scene node, then 24 bytes not yet decoded. All 2,293 SSE instances."
   },
   {
    "name": "NiPSysEmitterCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10013,19 +10369,46 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysEmitterCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysEmitterCtlr"
+    },
+    {
+     "name": "boolInterpolator",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator"
+      ]
+     },
+     "declaredBy": "NiPSysEmitterCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "A float interpolator, the driven modifier's name, then a second (bool) interpolator. All 1,587 SSE instances."
   },
   {
    "name": "NiPSysEmitterDeclinationCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10085,19 +10468,35 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysEmitterDeclinationCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysEmitterDeclinationCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysEmitterInitialRadiusCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10157,19 +10556,35 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysEmitterInitialRadiusCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysEmitterInitialRadiusCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysEmitterLifeSpanCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10229,19 +10644,35 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysEmitterLifeSpanCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysEmitterLifeSpanCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysEmitterPlanarAngleCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10301,19 +10732,35 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysEmitterPlanarAngleCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysEmitterPlanarAngleCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysEmitterSpeedCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10373,15 +10820,31 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysEmitterSpeedCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysEmitterSpeedCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysGravityModifier",
@@ -10422,18 +10885,30 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysGravityModifier"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 33
      },
      "declaredBy": "NiPSysGravityModifier",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "A pointer to a scene node, then 33 bytes not yet decoded. All 1,379 SSE instances."
   },
   {
    "name": "NiPSysGravityStrengthCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10493,19 +10968,35 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysGravityStrengthCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysGravityStrengthCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysInitialRotSpeedCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10565,15 +11056,31 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysInitialRotSpeedCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysInitialRotSpeedCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysMeshEmitter",
@@ -10614,14 +11121,39 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "unknown0",
+     "type": {
+      "kind": "bytes",
+      "size": 56
+     },
+     "declaredBy": "NiPSysMeshEmitter",
+     "doc": "Not yet decoded."
+    },
+    {
+     "name": "meshes",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "BSTriShape"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiPSysMeshEmitter"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 20
      },
      "declaredBy": "NiPSysMeshEmitter",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "56 bytes, a counted list of BSTriShape pointers, then 20 bytes. All 644 SSE instances."
   },
   {
    "name": "NiPSysModifier",
@@ -10666,7 +11198,7 @@
   },
   {
    "name": "NiPSysModifierActiveCtlr",
-   "parent": "NiTimeController",
+   "parent": "NiSingleInterpController",
    "abstract": false,
    "layout": [
     {
@@ -10726,15 +11258,31 @@
      "declaredBy": "NiTimeController"
     },
     {
-     "name": "tail",
+     "name": "interpolator",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiBlendInterpolator",
+       "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
+       "NiFloatInterpolator",
+       "NiLookAtInterpolator",
+       "NiPathInterpolator",
+       "NiPoint3Interpolator",
+       "NiTransformInterpolator"
+      ]
      },
-     "declaredBy": "NiPSysModifierActiveCtlr",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiSingleInterpController"
+    },
+    {
+     "name": "modifierName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiPSysModifierActiveCtlr"
     }
    ],
-   "doc": "Typed structurally: the NiTimeController fields are decoded and the rest is kept raw."
+   "doc": "The interpolator, then the name of the particle modifier it drives (a modifier in the same file in every SSE instance)."
   },
   {
    "name": "NiPSysPlanarCollider",
@@ -10742,14 +11290,75 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysPlanarCollider"
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 2
+     },
+     "declaredBy": "NiPSysPlanarCollider"
+    },
+    {
+     "name": "spawnModifier",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiPSysSpawnModifier"
+      ]
+     },
+     "declaredBy": "NiPSysPlanarCollider"
+    },
+    {
+     "name": "manager",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiPSysColliderManager"
+      ]
+     },
+     "declaredBy": "NiPSysPlanarCollider"
+    },
+    {
+     "name": "nextCollider",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiPSysPlanarCollider",
+       "NiPSysSphericalCollider"
+      ]
+     },
+     "declaredBy": "NiPSysPlanarCollider"
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysPlanarCollider"
+    },
+    {
+     "name": "shapeData",
+     "type": {
+      "kind": "bytes",
+      "size": 32
      },
      "declaredBy": "NiPSysPlanarCollider",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "A float and two bytes, then the spawn modifier, the owning collider manager, the next collider in the chain (or null), a scene node, and 32 bytes of shape data. All 96 SSE instances."
   },
   {
    "name": "NiPSysPositionModifier",
@@ -10934,14 +11543,35 @@
      "declaredBy": "NiPSysModifier"
     },
     {
+     "name": "unknown0",
+     "type": {
+      "kind": "bytes",
+      "size": 56
+     },
+     "declaredBy": "NiPSysSphereEmitter",
+     "doc": "Not yet decoded."
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysSphereEmitter"
+    },
+    {
      "name": "tail",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 4
      },
      "declaredBy": "NiPSysSphereEmitter",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "56 bytes, a scene-node pointer, then 4 bytes. All 148 SSE instances."
   },
   {
    "name": "NiPSysSphericalCollider",
@@ -10949,14 +11579,75 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysSphericalCollider"
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 2
+     },
+     "declaredBy": "NiPSysSphericalCollider"
+    },
+    {
+     "name": "spawnModifier",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiPSysSpawnModifier"
+      ]
+     },
+     "declaredBy": "NiPSysSphericalCollider"
+    },
+    {
+     "name": "manager",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiPSysColliderManager"
+      ]
+     },
+     "declaredBy": "NiPSysSphericalCollider"
+    },
+    {
+     "name": "nextCollider",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiPSysPlanarCollider",
+       "NiPSysSphericalCollider"
+      ]
+     },
+     "declaredBy": "NiPSysSphericalCollider"
+    },
+    {
+     "name": "node",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
+     },
+     "declaredBy": "NiPSysSphericalCollider"
+    },
+    {
+     "name": "shapeData",
+     "type": {
+      "kind": "bytes",
+      "size": 4
      },
      "declaredBy": "NiPSysSphericalCollider",
      "doc": "Not yet decoded."
     }
-   ]
+   ],
+   "doc": "A float and two bytes, then the spawn modifier, the owning collider manager, the next collider in the chain (or null), a scene node, and 4 bytes of shape data. All 28 SSE instances."
   },
   {
    "name": "NiPSysUpdateCtlr",
@@ -11275,14 +11966,36 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "bytes",
+      "size": 16
      },
      "declaredBy": "NiPathInterpolator",
      "doc": "Not yet decoded."
+    },
+    {
+     "name": "posData",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiPosData"
+      ]
+     },
+     "declaredBy": "NiPathInterpolator"
+    },
+    {
+     "name": "floatData",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiFloatData"
+      ]
+     },
+     "declaredBy": "NiPathInterpolator"
     }
-   ]
+   ],
+   "doc": "16 bytes, then a NiPosData and a NiFloatData. All 73 SSE instances."
   },
   {
    "name": "NiPoint3Interpolator",
@@ -11689,6 +12402,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",
@@ -12829,6 +13543,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",
@@ -14130,15 +14845,54 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "data",
      "type": {
-      "kind": "bytes"
+      "kind": "ref",
+      "to": [
+       "NiTriShapeData"
+      ]
+     },
+     "declaredBy": "NiTriShape"
+    },
+    {
+     "name": "skin",
+     "type": {
+      "kind": "ref"
+     },
+     "declaredBy": "NiTriShape"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "bytes",
+      "size": 9
      },
      "declaredBy": "NiTriShape",
-     "doc": "Not yet decoded."
+     "doc": "Always zero in the corpus."
+    },
+    {
+     "name": "shaderProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSEffectShaderProperty",
+       "BSLightingShaderProperty"
+      ]
+     },
+     "declaredBy": "NiTriShape"
+    },
+    {
+     "name": "alphaProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiAlphaProperty"
+      ]
+     },
+     "declaredBy": "NiTriShape"
     }
    ],
-   "doc": "Legacy geometry, typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "A legacy shape: its data, a skin ref (always null in the corpus), 9 bytes, then shader and alpha properties. All 243 SSE instances (and BSLODTriShape's 43)."
   },
   {
    "name": "NiTriShapeData",
@@ -15051,6 +15805,7 @@
       "to": [
        "NiBlendInterpolator",
        "NiBoolInterpolator",
+       "NiBoolTimelineInterpolator",
        "NiFloatInterpolator",
        "NiLookAtInterpolator",
        "NiPathInterpolator",

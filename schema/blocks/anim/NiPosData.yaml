@@ -1,4 +1,4 @@
 block: NiPosData
 inherits: NiObject
 fields:
-  - { name: keys, type: KeyGroup }
+  - { name: keys, type: Vec3KeyGroup }

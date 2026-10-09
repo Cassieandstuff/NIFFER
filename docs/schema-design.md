@@ -1,6 +1,6 @@
 # NIFFER — schema-first design
 
-Status: **step 1 implemented** (2026-10-09). The normative spec is
+Status: **steps 1–2 implemented** (2026-10-09). The normative spec is
 [schema-language.md](schema-language.md). The model follows ESPER's
 (github.com/Cassieandstuff/ESPER, `docs/schema-design.md`), which settled the same questions for
 plugin records; this document records where NIF differs.
@@ -109,13 +109,23 @@ raw.
 
 ## Performance
 
-A generic value tree costs more than a hand-written struct. Two things keep it in bounds:
+A generic value tree costs more than a hand-written struct. Fully materialized, a skinned body
+mesh (`femalebody_1.nif`, 192 KB) becomes a 12.3 MB tree (64×) and loads in 5.1 ms, against
+0.5 ms on the typed path. **Packed arrays** (`packed: true`, spec §4.4) keep vertices,
+triangles, skin tables and keys as their encoded bytes, and decode an element only when a path
+reaches it. The same mesh then holds a 0.36 MB tree (1.9× its bytes) and loads in 2.4 ms. It's
+a general storage mode in the engine, not per-block code:
 
-- **Raw until modeled.** Vertex and triangle data stay `bytes` until the language can describe
-  them, so a mesh is one byte run, not a tree of per-vertex values.
-- **Packed arrays (reserved).** When vertex data is modeled (`union:` on `vertexDesc`), large
-  fixed-size arrays will be kept as one byte run and read in place, through a general
-  `packed: true` construct, not per-block code.
+- `LoadMode::Packed` is the default. `LoadMode::Materialized` builds every element, and the gate
+  uses it so the forced re-encode proves each element's layout. The gate also checks that the
+  packed load saves identically.
+- Reads go through `Block::Visit` / `GetAt` / `Count` / `Has` and the views, which decode just
+  the element a path reaches. `GetValue` returns tree pointers only, so it stops at a packed
+  array. Writing into a packed array unpacks that array first.
+- **Open:** each accessor decodes its element again, so reading every attribute of every vertex
+  through views costs more than materialized access (3.1 ms against 0.6 ms for the body's
+  vertices). Bulk consumers such as `DecodeMesh` (step 4) should visit each element once;
+  that needs an element-iteration entry point on `Block`.
 
 ## Migration plan
 
@@ -139,11 +149,26 @@ until step 6.
    extra-data classes typed as raw) and a registry race. All are logged in
    [bugs.md](bugs.md). The schema carries the corrected layouts; the typed path is left as it is
    until step 6.
-2. **Unions and halves:** vertex data by `vertexDesc`, key groups by interpolation type,
-   BSLightingShaderProperty's material scalars by shader type, NiSkinPartition's partition
-   tables. Each opened tail is gated on real data. Add packed arrays.
-3. **Close the remaining tails:** NiControllerSequence, NiTransformData, particle and Havok
-   payloads, each as far as real data verifies.
+2. **Done (2026-10-09). Language 0.2 and the big payloads.** Language 0.2 adds `half`,
+   unions, byte-window arrays, packed arrays, and named structs that read enclosing fields. With
+   it the schema now describes:
+   - BSTriShape vertices and triangles (`BSVertex`, laid out by the `vertexDesc` flags);
+   - BSDynamicTriShape's dynamic vertices;
+   - NiSkinPartition's vertex data and partition tables;
+   - every key group (float, bool, Vec3) and NiTransformData (quaternion, TBC and XYZ
+     rotations);
+   - BSLightingShaderProperty's material scalars and shader-type extras.
+
+   Each layout was measured on the corpus first: all 33 distinct `vertexDesc`s, key sizes per
+   interpolation type, and material-tail word types per shader type. Result:
+   `roundtrip --schema` stays GREEN, and **95.94% of the corpus's 2.28 GB of block data now
+   decodes field by field** (opaque `bytes` 4.06%, mostly Havok). Field names come from
+   first-party code (SCT's NifDocument, NIFFER's decode helpers) or from layout; words whose
+   meaning isn't established are `unknownN`.
+3. **Close the remaining tails,** largest first by `roundtrip --schema --refs`: Havok
+   (`bhkCompressedMeshShapeData`, the `bhkShapeWrapper` and `bhkPrimitiveShape` payloads),
+   legacy `NiTriShapeData`, `NiControllerSequence`, `BSEffectShaderProperty`, then particles,
+   each as far as real data verifies.
 4. **Decode helpers on views:** `DecodeMesh`, `ExtractCollision` and the morph helpers read
    through the schema.
 5. **Port SCT** (sct-assets, sct-pipeline, Scene Editor v2) to `niffer::Nif` and the views, and

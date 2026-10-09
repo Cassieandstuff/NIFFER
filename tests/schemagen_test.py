@@ -76,8 +76,28 @@ rejects("unknown key", """\
 rejects("reserved construct by name", """\
     block: A
     inherits: NiObject
-    fields: [ { name: x, type: "u32[]", packed: true } ]
-""", "packed arrays")
+    fields:
+      - { name: k, type: u32 }
+      - { name: v, union: { by: { lookup: { table: t, key: k } }, cases: [ { when: 1, name: a, type: u8 } ] } }
+""", "lookup selectors")
+rejects("packed on a non-array", """\
+    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: u32, packed: true } ]
+""", "only to arrays")
+rejects("packed array holding refs", """\
+    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: "ref[count: u32]", packed: true } ]
+""", "can't contain ref")
+accepts("packed arrays", """\
+    struct: P
+    fields: [ { name: a, type: half }, { name: b, type: "u8[3]" } ]
+    ---
+    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: "P[count: u16]", packed: true }, { name: y, type: "u16[]", packed: true } ]
+""")
 accepts("half", """\
     block: A
     inherits: NiObject
@@ -220,14 +240,14 @@ rejects("count from a non-integer", """\
     inherits: NiObject
     fields: [ { name: n, type: f32 }, { name: xs, type: "u8[count: n]" } ]
 """, "must be an integer scalar")
-rejects("count from a conditional field", """\
+accepts("reference to a conditional field", """\
     block: A
     inherits: NiObject
     fields:
       - { name: f, type: u8 }
       - { name: n, type: u8, if: { field: f, ne: 0 } }
-      - { name: xs, type: "u8[count: n]" }
-""", "is conditional")
+      - { name: xs, type: "u8[count: n]", if: { field: f, ne: 0 } }
+""")
 rejects("two operators", """\
     block: A
     inherits: NiObject

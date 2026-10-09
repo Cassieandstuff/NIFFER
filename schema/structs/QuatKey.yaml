@@ -1,0 +1,13 @@
+struct: QuatKey
+doc: >-
+  A rotation key: time + quaternion, plus tension, bias and continuity when the enclosing
+  rotationType is 3 (TBC). Reads the enclosing NiTransformData's rotationType.
+fields:
+  - { name: time, type: f32 }
+  - { name: value, type: Quat }
+  - name: tbc
+    union:
+      by: { field: rotationType }
+      cases:
+        - { when: 1, name: linear }
+        - { when: 3, name: tbc, fields: [ { name: tension, type: f32 }, { name: bias, type: f32 }, { name: continuity, type: f32 } ] }

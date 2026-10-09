@@ -78,8 +78,9 @@ field. The name resolves to the **nearest earlier field**: first among the field
 in the same struct, then among the fields before the enclosing field in each enclosing struct,
 outward to the block. So an array element can read a count or flag that lives on the block.
 
-The referenced field must be an integer scalar (`u8`–`u64`, `i8`–`i64`) and must not itself be
-conditional.
+The referenced field must be an integer scalar (`u8`–`u64`, `i8`–`i64`). It may itself be
+conditional; when it is absent, a condition on it is false, a union on it selects no case (not
+even the default), and a length taken from it refuses the block.
 
 A **named** struct may also reference a field of the structs that enclose it, such as a vertex
 layout reading its shape's `vertexDesc`. Such a reference is resolved **at each use site**,
@@ -119,6 +120,7 @@ fields:
 | `to` | `ref`/`ptr` (or arrays of them) only: allowed target blocks (§8) |
 | `size` | `bytes` (§3.1) and `T[]` byte windows (§3.2) |
 | `if` | a condition (§4.2) |
+| `packed` | arrays only: a storage hint (§4.4) |
 | `doc` | free text: what the field means and how it was verified. Ignored by engines. |
 
 ### 4.2 Conditional fields
@@ -167,6 +169,19 @@ A union is one of a closed set of layouts, chosen by an earlier integer field, t
 
 In a value, a union is its selected case. Paths name the case after the union field
 (`data/linear/value`), and a case that isn't selected has no value.
+
+### 4.4 Packed arrays
+
+`packed: true` on an array field is a **storage hint**: it never changes the bytes or the
+meaning. An engine may keep a packed array as its elements' encoded bytes and decode an element
+only when it is read, instead of building a value per element. Use it for large arrays such as
+vertices, triangles and keys.
+
+- A packed array's elements can't contain `ref`, `ptr`, `stringref`, `sizedstring` or `bytes`,
+  so walks over references and strings never need to look inside one.
+- Every element is still decoded, and so validated, when the block loads.
+- NIFFER's engine packs an array only when all its elements decode to the same size. Otherwise
+  it keeps the array materialized.
 
 ## 5. Blocks
 
@@ -270,7 +285,6 @@ language version rejects them by name.
 | Construct | Purpose |
 |---|---|
 | `lookup` union selector | a case chosen through a table, keyed by a field |
-| `packed: true` on arrays | fixed-size elements kept as one byte run and read in place, for vertex and triangle data |
 | `enum:`, `flags:`, `unit:` and `enum` descriptors | rendering hints |
 
 ## 11. Versioning
@@ -284,4 +298,4 @@ language version rejects them by name.
 | Version | Change |
 |---|---|
 | 0.1 | Initial: scalars, `ref`/`ptr`, `stringref`, `sizedstring`, `bytes`, structs, arrays (fixed, rest, count prefix, count field), `if:` conditions, block inheritance, `to:` |
-| 0.2 | adds `half`, `union:` (selector field with optional mask, `when` values, `default`, empty cases), byte-window arrays (`T[]` + `size:`), and named structs that read enclosing fields (resolved per use site) |
+| 0.2 | adds `half`, `union:` (selector field with optional mask, `when` values, `default`, empty cases), byte-window arrays (`T[]` + `size:`), `packed: true`, references to conditional fields, and named structs that read enclosing fields (resolved per use site) |

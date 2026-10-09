@@ -364,7 +364,10 @@ void Language02() {
     // Replacing a byte-window array updates its size field to the encoded size.
     {
         Block b = Block::Load(Test(), "TNew", MakeTNew(4));   // Probe has y: 3 bytes each
-        Value three = *b.GetValue(*b.Find("window"));
+        Value three;   // window is packed: Visit hands it over unpacked
+        CHECK(b.Visit(*b.Find("window"), [&](const schema::TypeDef&, const Value& v) { three = v; }));
+        CHECK_EQ(three.items.size(), 2u);
+        if (three.items.size() != 2) return;
         three.items.push_back(three.items[0]);
         CHECK(b.StoreValue(*b.Find("window"), three));
         CHECK_EQ(*b.Get(tf::TNew::windowSize), 9);
@@ -394,6 +397,42 @@ void Language02() {
         CHECK(!b.Modeled());
         CHECK(b.Refusal().find("window") != std::string::npos);
     }
+}
+
+void Packed() {
+    const auto bytes = MakeTAll();
+    Block b = Block::Load(Test(), "TAll", bytes);              // LoadMode::Packed (default)
+    Block m = Block::Load(Test(), "TAll", bytes, LoadMode::Materialized);
+    CHECK(b.Modeled() && m.Modeled());
+    const RelPath byCount = *b.Find("byCount");
+
+    // byCount (uniform u32 elements) is stored packed; rows (elements differ in
+    // size: value is conditional per row) falls back to materialized.
+    CHECK(b.GetValue(byCount) && b.GetValue(byCount)->packed);
+    CHECK(!m.GetValue(byCount)->packed);
+    CHECK(!b.GetValue(*b.Find("rows"))->packed);
+    CHECK_EQ(b.Count(byCount), 3u);
+    CHECK(!b.GetValue(byCount.Child(1)));                      // no tree pointer into packed storage…
+    CHECK_EQ(*b.GetAt<uint32_t>(byCount.Child(1)), 20u);        // …but reads decode the element
+    CHECK(b.Has(byCount.Child(2)) && !b.Has(byCount.Child(3)));
+    CHECK(*b.Get(tf::TAll::byCount) == (std::vector<uint32_t>{10, 20, 30}));
+    CHECK(b.Encode(true) == bytes && m.Encode(true) == bytes);
+
+    // Editing one element unpacks the array; the block re-encodes correctly.
+    CHECK(b.SetAt<uint32_t>(byCount.Child(1), 99u));
+    CHECK(!b.GetValue(byCount)->packed);
+    CHECK(*b.Get(tf::TAll::byCount) == (std::vector<uint32_t>{10, 99, 30}));
+    Block r = Block::Load(Test(), "TAll", b.Encode());
+    CHECK(r.Modeled() && *r.Get(tf::TAll::byCount) == (std::vector<uint32_t>{10, 99, 30}));
+
+    // A packed array of structs whose layout reads an enclosing field (TNew's
+    // window of Probe, kind = 6: every Probe carries y).
+    Block t = Block::Load(Test(), "TNew", MakeTNew(6));
+    const RelPath window = *t.Find("window");
+    CHECK(t.GetValue(window) && t.GetValue(window)->packed);
+    auto v = tv::TNew::From(t);
+    CHECK(v && v->Window().size() == 2u && v->Window()[1].Y() == uint16_t(0x3333));
+    CHECK_EQ(*t.GetAt<uint16_t>(*t.Find("window/0/y")), 0x2222);
 }
 
 void RealSchemaSmoke() {
@@ -438,5 +477,6 @@ void run_schema_tests() {
     Refusals();
     Container();
     Language02();
+    Packed();
     RealSchemaSmoke();
 }

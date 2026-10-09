@@ -14,15 +14,40 @@ namespace niffer::view {
 class AvTransform;
 class BSBoneLODExtraDataBoneLODs;
 class BSDismemberSkinInstancePartitions;
+class BSVertex;
+class BoolKey;
+class BoolKeyDataConstant;
+class BoolKeyGroup;
+class FloatKey;
+class FloatKeyDataConstant;
+class FloatKeyDataLinear;
+class FloatKeyDataQuadratic;
+class FloatKeyDataTbc;
+class FloatKeyGroup;
 class KeyGroup;
 class Matrix33;
 class NiSkinDataBones;
 class NiSkinDataBonesVertexWeights;
 class NiTextKeyExtraDataKeys;
 class NiTransform;
+class NiTransformDataRotationsQuaternion;
+class NiTransformDataRotationsXyz;
 class Quat;
+class QuatKey;
+class QuatKeyTbcTbc;
+class SkinPartition;
+class SkinPartitionBoneIndices;
+class SkinPartitionVertexWeights;
+class TexCoord;
+class Triangle;
 class Vec2;
 class Vec3;
+class Vec3Key;
+class Vec3KeyDataConstant;
+class Vec3KeyDataLinear;
+class Vec3KeyDataQuadratic;
+class Vec3KeyDataTbc;
+class Vec3KeyGroup;
 class Vec4;
 class BSBehaviorGraphExtraData;
 class BSBlastNode;
@@ -260,6 +285,226 @@ private:
     ::niffer::RelPath p_;
 };
 
+class TexCoord {
+public:
+    TexCoord(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // u
+    ::niffer::Half U() const { return b_->GetAt<::niffer::Half>(p_.Child(0)).value_or(::niffer::Half{}); }
+    bool SetU(const ::niffer::Half& v) const { return b_->SetAt<::niffer::Half>(p_.Child(0), v); }
+    // v
+    ::niffer::Half V() const { return b_->GetAt<::niffer::Half>(p_.Child(1)).value_or(::niffer::Half{}); }
+    bool SetV(const ::niffer::Half& v) const { return b_->SetAt<::niffer::Half>(p_.Child(1), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class BSVertex {
+public:
+    BSVertex(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // position
+    std::optional<::niffer::view::Vec3> Position() const { if (!b_->Has(p_.Child(0))) return std::nullopt; return ::niffer::view::Vec3(*b_, p_.Child(0)); }
+    // positionW
+    std::optional<float> PositionW() const { return b_->GetAt<float>(p_.Child(1)); }
+    bool SetPositionW(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // uv
+    std::optional<::niffer::view::TexCoord> Uv() const { if (!b_->Has(p_.Child(2))) return std::nullopt; return ::niffer::view::TexCoord(*b_, p_.Child(2)); }
+    // normal — Signed-normalized bytes (b / 127.5 - 1).
+    std::optional<std::vector<uint8_t>> Normal() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(3)); }
+    bool SetNormal(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(3), v); }
+    // normalW
+    std::optional<uint8_t> NormalW() const { return b_->GetAt<uint8_t>(p_.Child(4)); }
+    bool SetNormalW(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
+    // tangent — Signed-normalized bytes.
+    std::optional<std::vector<uint8_t>> Tangent() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)); }
+    bool SetTangent(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
+    // tangentW
+    std::optional<uint8_t> TangentW() const { return b_->GetAt<uint8_t>(p_.Child(6)); }
+    bool SetTangentW(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
+    // color — RGBA.
+    std::optional<std::vector<uint8_t>> Color() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)); }
+    bool SetColor(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+    // boneWeights
+    std::optional<std::vector<::niffer::Half>> BoneWeights() const { return b_->GetAt<std::vector<::niffer::Half>>(p_.Child(8)); }
+    bool SetBoneWeights(const std::vector<::niffer::Half>& v) const { return b_->SetAt<std::vector<::niffer::Half>>(p_.Child(8), v); }
+    // boneIndices
+    std::optional<std::vector<uint8_t>> BoneIndices() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(9)); }
+    bool SetBoneIndices(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(9), v); }
+    // eye
+    std::optional<float> Eye() const { return b_->GetAt<float>(p_.Child(10)); }
+    bool SetEye(const float& v) const { return b_->SetAt<float>(p_.Child(10), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class BoolKeyDataConstant {
+public:
+    BoolKeyDataConstant(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    uint8_t Value() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
+    bool SetValue(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class BoolKey {
+public:
+    BoolKey(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // time
+    float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // data
+    int DataCase() const { return b_->CaseAt(p_.Child(1)); }
+    std::optional<::niffer::view::BoolKeyDataConstant> DataConstant() const { if (!b_->Has(p_.Child(1).Child(0))) return std::nullopt; return ::niffer::view::BoolKeyDataConstant(*b_, p_.Child(1).Child(0)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class BoolKeyGroup {
+public:
+    BoolKeyGroup(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // numKeys
+    uint32_t NumKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetNumKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // interpolation
+    std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
+    bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // keys
+    std::vector<::niffer::view::BoolKey> Keys() const {
+        std::vector<::niffer::view::BoolKey> out;
+        const size_t n = b_->Count(p_.Child(2));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(2).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class FloatKeyDataLinear {
+public:
+    FloatKeyDataLinear(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class FloatKeyDataQuadratic {
+public:
+    FloatKeyDataQuadratic(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // forward
+    float Forward() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetForward(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // backward
+    float Backward() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetBackward(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class FloatKeyDataTbc {
+public:
+    FloatKeyDataTbc(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // tension
+    float Tension() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetTension(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // bias
+    float Bias() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetBias(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+    // continuity
+    float Continuity() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
+    bool SetContinuity(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class FloatKeyDataConstant {
+public:
+    FloatKeyDataConstant(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class FloatKey {
+public:
+    FloatKey(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // time
+    float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // data
+    int DataCase() const { return b_->CaseAt(p_.Child(1)); }
+    std::optional<::niffer::view::FloatKeyDataLinear> DataLinear() const { if (!b_->Has(p_.Child(1).Child(0))) return std::nullopt; return ::niffer::view::FloatKeyDataLinear(*b_, p_.Child(1).Child(0)); }
+    std::optional<::niffer::view::FloatKeyDataQuadratic> DataQuadratic() const { if (!b_->Has(p_.Child(1).Child(1))) return std::nullopt; return ::niffer::view::FloatKeyDataQuadratic(*b_, p_.Child(1).Child(1)); }
+    std::optional<::niffer::view::FloatKeyDataTbc> DataTbc() const { if (!b_->Has(p_.Child(1).Child(2))) return std::nullopt; return ::niffer::view::FloatKeyDataTbc(*b_, p_.Child(1).Child(2)); }
+    std::optional<::niffer::view::FloatKeyDataConstant> DataConstant() const { if (!b_->Has(p_.Child(1).Child(3))) return std::nullopt; return ::niffer::view::FloatKeyDataConstant(*b_, p_.Child(1).Child(3)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class FloatKeyGroup {
+public:
+    FloatKeyGroup(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // numKeys
+    uint32_t NumKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetNumKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // interpolation
+    std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
+    bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // keys
+    std::vector<::niffer::view::FloatKey> Keys() const {
+        std::vector<::niffer::view::FloatKey> out;
+        const size_t n = b_->Count(p_.Child(2));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(2).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
 class KeyGroup {
 public:
     KeyGroup(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -271,7 +516,7 @@ public:
     // interpolation — The key type; present only when there are keys.
     std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
     bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
-    // keys — The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions).
+    // keys — The keys, raw.
     std::vector<uint8_t> Keys() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
     bool SetKeys(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
 private:
@@ -330,8 +575,9 @@ public:
     // vertexWeights
     std::vector<::niffer::view::NiSkinDataBonesVertexWeights> VertexWeights() const {
         std::vector<::niffer::view::NiSkinDataBonesVertexWeights> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(4)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(4).Child(e));
+        const size_t n = b_->Count(p_.Child(4));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(4).Child(static_cast<uint16_t>(e)));
         return out;
     }
 private:
@@ -377,6 +623,207 @@ private:
     ::niffer::RelPath p_;
 };
 
+class QuatKeyTbcTbc {
+public:
+    QuatKeyTbcTbc(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // tension
+    float Tension() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetTension(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // bias
+    float Bias() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetBias(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // continuity
+    float Continuity() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetContinuity(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class QuatKey {
+public:
+    QuatKey(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // time
+    float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // value
+    ::niffer::view::Quat Value() const { return ::niffer::view::Quat(*b_, p_.Child(1)); }
+    // tbc
+    int TbcCase() const { return b_->CaseAt(p_.Child(2)); }
+    bool TbcLinear() const { return b_->Has(p_.Child(2).Child(0)); }
+    std::optional<::niffer::view::QuatKeyTbcTbc> TbcTbc() const { if (!b_->Has(p_.Child(2).Child(1))) return std::nullopt; return ::niffer::view::QuatKeyTbcTbc(*b_, p_.Child(2).Child(1)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class NiTransformDataRotationsQuaternion {
+public:
+    NiTransformDataRotationsQuaternion(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // keys
+    std::vector<::niffer::view::QuatKey> Keys() const {
+        std::vector<::niffer::view::QuatKey> out;
+        const size_t n = b_->Count(p_.Child(0));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(0).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class NiTransformDataRotationsXyz {
+public:
+    NiTransformDataRotationsXyz(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // x
+    ::niffer::view::FloatKeyGroup X() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(0)); }
+    // y
+    ::niffer::view::FloatKeyGroup Y() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(1)); }
+    // z
+    ::niffer::view::FloatKeyGroup Z() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(2)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class SkinPartitionVertexWeights {
+public:
+    SkinPartitionVertexWeights(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // weights
+    std::vector<float> Weights() const { return b_->GetAt<std::vector<float>>(p_.Child(0)).value_or(std::vector<float>{}); }
+    bool SetWeights(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(0), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Triangle {
+public:
+    Triangle(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // a
+    uint16_t A() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
+    bool SetA(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
+    // b
+    uint16_t B() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetB(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // c
+    uint16_t C() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetC(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class SkinPartitionBoneIndices {
+public:
+    SkinPartitionBoneIndices(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // indices
+    std::vector<uint8_t> Indices() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
+    bool SetIndices(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class SkinPartition {
+public:
+    SkinPartition(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // numVertices
+    uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
+    bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
+    // numTriangles
+    uint16_t NumTriangles() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetNumTriangles(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // numBones
+    uint16_t NumBones() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetNumBones(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+    // numStrips
+    uint16_t NumStrips() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
+    bool SetNumStrips(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
+    // numWeightsPerVertex
+    uint16_t NumWeightsPerVertex() const { return b_->GetAt<uint16_t>(p_.Child(4)).value_or(uint16_t{}); }
+    bool SetNumWeightsPerVertex(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(4), v); }
+    // bones
+    std::vector<uint16_t> Bones() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)).value_or(std::vector<uint16_t>{}); }
+    bool SetBones(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
+    // hasVertexMap
+    uint8_t HasVertexMap() const { return b_->GetAt<uint8_t>(p_.Child(6)).value_or(uint8_t{}); }
+    bool SetHasVertexMap(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
+    // vertexMap
+    std::optional<std::vector<uint16_t>> VertexMap() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(7)); }
+    bool SetVertexMap(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(7), v); }
+    // hasVertexWeights
+    uint8_t HasVertexWeights() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
+    bool SetHasVertexWeights(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
+    // vertexWeights
+    std::vector<::niffer::view::SkinPartitionVertexWeights> VertexWeights() const {
+        std::vector<::niffer::view::SkinPartitionVertexWeights> out;
+        const size_t n = b_->Count(p_.Child(9));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(9).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // stripLengths
+    std::vector<uint16_t> StripLengths() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(10)).value_or(std::vector<uint16_t>{}); }
+    bool SetStripLengths(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(10), v); }
+    // hasFaces
+    uint8_t HasFaces() const { return b_->GetAt<uint8_t>(p_.Child(11)).value_or(uint8_t{}); }
+    bool SetHasFaces(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(11), v); }
+    // triangles
+    std::vector<::niffer::view::Triangle> Triangles() const {
+        std::vector<::niffer::view::Triangle> out;
+        const size_t n = b_->Count(p_.Child(12));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(12).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // hasBoneIndices
+    uint8_t HasBoneIndices() const { return b_->GetAt<uint8_t>(p_.Child(13)).value_or(uint8_t{}); }
+    bool SetHasBoneIndices(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(13), v); }
+    // boneIndices
+    std::vector<::niffer::view::SkinPartitionBoneIndices> BoneIndices() const {
+        std::vector<::niffer::view::SkinPartitionBoneIndices> out;
+        const size_t n = b_->Count(p_.Child(14));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(14).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // unknownShort
+    uint16_t UnknownShort() const { return b_->GetAt<uint16_t>(p_.Child(15)).value_or(uint16_t{}); }
+    bool SetUnknownShort(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(15), v); }
+    // vertexDesc
+    uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(16)).value_or(uint64_t{}); }
+    bool SetVertexDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(16), v); }
+    // trueTriangles — Triangles indexing the shape's global vertex array.
+    std::vector<::niffer::view::Triangle> TrueTriangles() const {
+        std::vector<::niffer::view::Triangle> out;
+        const size_t n = b_->Count(p_.Child(17));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(17).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
 class Vec2 {
 public:
     Vec2(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -388,6 +835,110 @@ public:
     // y
     float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec3KeyDataLinear {
+public:
+    Vec3KeyDataLinear(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec3KeyDataQuadratic {
+public:
+    Vec3KeyDataQuadratic(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
+    // forward
+    ::niffer::view::Vec3 Forward() const { return ::niffer::view::Vec3(*b_, p_.Child(1)); }
+    // backward
+    ::niffer::view::Vec3 Backward() const { return ::niffer::view::Vec3(*b_, p_.Child(2)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec3KeyDataTbc {
+public:
+    Vec3KeyDataTbc(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
+    // tension
+    float Tension() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetTension(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // bias
+    float Bias() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetBias(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+    // continuity
+    float Continuity() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
+    bool SetContinuity(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec3KeyDataConstant {
+public:
+    Vec3KeyDataConstant(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // value
+    ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec3Key {
+public:
+    Vec3Key(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // time
+    float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // data
+    int DataCase() const { return b_->CaseAt(p_.Child(1)); }
+    std::optional<::niffer::view::Vec3KeyDataLinear> DataLinear() const { if (!b_->Has(p_.Child(1).Child(0))) return std::nullopt; return ::niffer::view::Vec3KeyDataLinear(*b_, p_.Child(1).Child(0)); }
+    std::optional<::niffer::view::Vec3KeyDataQuadratic> DataQuadratic() const { if (!b_->Has(p_.Child(1).Child(1))) return std::nullopt; return ::niffer::view::Vec3KeyDataQuadratic(*b_, p_.Child(1).Child(1)); }
+    std::optional<::niffer::view::Vec3KeyDataTbc> DataTbc() const { if (!b_->Has(p_.Child(1).Child(2))) return std::nullopt; return ::niffer::view::Vec3KeyDataTbc(*b_, p_.Child(1).Child(2)); }
+    std::optional<::niffer::view::Vec3KeyDataConstant> DataConstant() const { if (!b_->Has(p_.Child(1).Child(3))) return std::nullopt; return ::niffer::view::Vec3KeyDataConstant(*b_, p_.Child(1).Child(3)); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec3KeyGroup {
+public:
+    Vec3KeyGroup(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // numKeys
+    uint32_t NumKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetNumKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // interpolation
+    std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
+    bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // keys
+    std::vector<::niffer::view::Vec3Key> Keys() const {
+        std::vector<::niffer::view::Vec3Key> out;
+        const size_t n = b_->Count(p_.Child(2));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(2).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
 private:
     ::niffer::Block* b_;
     ::niffer::RelPath p_;
@@ -523,8 +1074,9 @@ public:
     // boneLODs
     std::vector<::niffer::view::BSBoneLODExtraDataBoneLODs> BoneLODs() const {
         std::vector<::niffer::view::BSBoneLODExtraDataBoneLODs> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(1)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(1).Child(e));
+        const size_t n = b_->Count(p_.Child(1));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(1).Child(static_cast<uint16_t>(e)));
         return out;
     }
 protected:
@@ -607,8 +1159,9 @@ public:
     // partitions
     std::vector<::niffer::view::BSDismemberSkinInstancePartitions> Partitions() const {
         std::vector<::niffer::view::BSDismemberSkinInstancePartitions> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(4)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(4).Child(e));
+        const size_t n = b_->Count(p_.Child(4));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(4).Child(static_cast<uint16_t>(e)));
         return out;
     }
 protected:
@@ -645,18 +1198,31 @@ public:
     // numVertices
     uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(13)).value_or(uint16_t{}); }
     bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(13), v); }
-    // dataSize
+    // dataSize — Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit.
     uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(14)).value_or(uint32_t{}); }
     bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(14), v); }
-    // geometryData — Interleaved vertex data then triangles, raw until vertex unions land.
-    std::vector<uint8_t> GeometryData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(15)).value_or(std::vector<uint8_t>{}); }
-    bool SetGeometryData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(15), v); }
+    // vertices
+    std::vector<::niffer::view::BSVertex> Vertices() const {
+        std::vector<::niffer::view::BSVertex> out;
+        const size_t n = b_->Count(p_.Child(15));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(15).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // triangles
+    std::vector<::niffer::view::Triangle> Triangles() const {
+        std::vector<::niffer::view::Triangle> out;
+        const size_t n = b_->Count(p_.Child(16));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(16).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
     // particleDataSize
-    uint32_t ParticleDataSize() const { return b_->GetAt<uint32_t>(p_.Child(16)).value_or(uint32_t{}); }
-    bool SetParticleDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(16), v); }
+    uint32_t ParticleDataSize() const { return b_->GetAt<uint32_t>(p_.Child(17)).value_or(uint32_t{}); }
+    bool SetParticleDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(17), v); }
     // particleData — Present only on particle/FX shapes.
-    std::vector<uint16_t> ParticleData() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(17)).value_or(std::vector<uint16_t>{}); }
-    bool SetParticleData(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(17), v); }
+    std::vector<uint16_t> ParticleData() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(18)).value_or(std::vector<uint16_t>{}); }
+    bool SetParticleData(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(18), v); }
 protected:
     explicit BSTriShape(::niffer::Block& b) : NiAVObject(b) {}
 };
@@ -669,11 +1235,16 @@ public:
         return std::nullopt;
     }
     // dynamicDataSize — Bytes; numVertices * 16.
-    uint32_t DynamicDataSize() const { return b_->GetAt<uint32_t>(p_.Child(18)).value_or(uint32_t{}); }
-    bool SetDynamicDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(18), v); }
-    // dynamicData — A Vector4 per vertex, raw.
-    std::vector<uint8_t> DynamicData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(19)).value_or(std::vector<uint8_t>{}); }
-    bool SetDynamicData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(19), v); }
+    uint32_t DynamicDataSize() const { return b_->GetAt<uint32_t>(p_.Child(19)).value_or(uint32_t{}); }
+    bool SetDynamicDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(19), v); }
+    // dynamicData — A Vec4 per vertex.
+    std::vector<::niffer::view::Vec4> DynamicData() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(20));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(20).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
 protected:
     explicit BSDynamicTriShape(::niffer::Block& b) : BSTriShape(b) {}
 };
@@ -916,9 +1487,51 @@ public:
     // textureSet
     ::niffer::NiRef<::niffer::view::BSShaderTextureSet> TextureSet() const { return b_->GetAt<::niffer::NiRef<::niffer::view::BSShaderTextureSet>>(p_.Child(8)).value_or(::niffer::NiRef<::niffer::view::BSShaderTextureSet>{}); }
     bool SetTextureSet(const ::niffer::NiRef<::niffer::view::BSShaderTextureSet>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::BSShaderTextureSet>>(p_.Child(8), v); }
-    // materialTail — The shader-type-dependent material scalars, raw until unions land.
-    std::vector<uint8_t> MaterialTail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(9)).value_or(std::vector<uint8_t>{}); }
-    bool SetMaterialTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(9), v); }
+    // emissiveColor
+    ::niffer::view::Vec3 EmissiveColor() const { return ::niffer::view::Vec3(*b_, p_.Child(9)); }
+    // emissiveMultiple
+    float EmissiveMultiple() const { return b_->GetAt<float>(p_.Child(10)).value_or(float{}); }
+    bool SetEmissiveMultiple(const float& v) const { return b_->SetAt<float>(p_.Child(10), v); }
+    // unknown0 — An integer; 3 in almost every SSE block, otherwise 0 or 1.
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
+    // unknown1 — 1.0 in almost every SSE block.
+    float Unknown1() const { return b_->GetAt<float>(p_.Child(12)).value_or(float{}); }
+    bool SetUnknown1(const float& v) const { return b_->SetAt<float>(p_.Child(12), v); }
+    // unknown2 — 0 in almost every SSE block.
+    float Unknown2() const { return b_->GetAt<float>(p_.Child(13)).value_or(float{}); }
+    bool SetUnknown2(const float& v) const { return b_->SetAt<float>(p_.Child(13), v); }
+    // glossiness
+    float Glossiness() const { return b_->GetAt<float>(p_.Child(14)).value_or(float{}); }
+    bool SetGlossiness(const float& v) const { return b_->SetAt<float>(p_.Child(14), v); }
+    // specularColor
+    ::niffer::view::Vec3 SpecularColor() const { return ::niffer::view::Vec3(*b_, p_.Child(15)); }
+    // specularStrength
+    float SpecularStrength() const { return b_->GetAt<float>(p_.Child(16)).value_or(float{}); }
+    bool SetSpecularStrength(const float& v) const { return b_->SetAt<float>(p_.Child(16), v); }
+    // unknown3 — 0.3 in most SSE blocks.
+    float Unknown3() const { return b_->GetAt<float>(p_.Child(17)).value_or(float{}); }
+    bool SetUnknown3(const float& v) const { return b_->SetAt<float>(p_.Child(17), v); }
+    // unknown4 — 2.0 in most SSE blocks.
+    float Unknown4() const { return b_->GetAt<float>(p_.Child(18)).value_or(float{}); }
+    bool SetUnknown4(const float& v) const { return b_->SetAt<float>(p_.Child(18), v); }
+    // typeData — Floats that only some shader types carry; their meanings aren't established yet.
+    int TypeDataCase() const { return b_->CaseAt(p_.Child(19)); }
+    bool TypeDataNone() const { return b_->Has(p_.Child(19).Child(0)); }
+    std::optional<std::vector<float>> TypeDataType1() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(1)); }
+    bool SetTypeDataType1(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(1), v); }
+    std::optional<std::vector<float>> TypeDataType5() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(2)); }
+    bool SetTypeDataType5(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(2), v); }
+    std::optional<std::vector<float>> TypeDataType6() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(3)); }
+    bool SetTypeDataType6(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(3), v); }
+    std::optional<std::vector<float>> TypeDataType11() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(4)); }
+    bool SetTypeDataType11(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(4), v); }
+    std::optional<std::vector<float>> TypeDataType14() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(5)); }
+    bool SetTypeDataType14(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(5), v); }
+    std::optional<std::vector<float>> TypeDataType16() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(6)); }
+    bool SetTypeDataType16(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(6), v); }
+    std::optional<std::vector<uint8_t>> TypeDataUnknown() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(19).Child(7)); }
+    bool SetTypeDataUnknown(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(19).Child(7), v); }
 protected:
     explicit BSLightingShaderProperty(::niffer::Block& b) : NiObject(b) {}
 };
@@ -1477,7 +2090,7 @@ public:
         return std::nullopt;
     }
     // keys
-    ::niffer::view::KeyGroup Keys() const { return ::niffer::view::KeyGroup(*b_, p_.Child(0)); }
+    ::niffer::view::BoolKeyGroup Keys() const { return ::niffer::view::BoolKeyGroup(*b_, p_.Child(0)); }
 protected:
     explicit NiBoolData(::niffer::Block& b) : NiObject(b) {}
 };
@@ -1619,7 +2232,7 @@ public:
         return std::nullopt;
     }
     // keys
-    ::niffer::view::KeyGroup Keys() const { return ::niffer::view::KeyGroup(*b_, p_.Child(0)); }
+    ::niffer::view::FloatKeyGroup Keys() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(0)); }
 protected:
     explicit NiFloatData(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2155,7 +2768,7 @@ public:
         return std::nullopt;
     }
     // keys
-    ::niffer::view::KeyGroup Keys() const { return ::niffer::view::KeyGroup(*b_, p_.Child(0)); }
+    ::niffer::view::Vec3KeyGroup Keys() const { return ::niffer::view::Vec3KeyGroup(*b_, p_.Child(0)); }
 protected:
     explicit NiPosData(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2178,8 +2791,9 @@ public:
     // bones
     std::vector<::niffer::view::NiSkinDataBones> Bones() const {
         std::vector<::niffer::view::NiSkinDataBones> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(3)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(3).Child(e));
+        const size_t n = b_->Count(p_.Child(3));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(3).Child(static_cast<uint16_t>(e)));
         return out;
     }
 protected:
@@ -2206,11 +2820,21 @@ public:
     uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(3)).value_or(uint64_t{}); }
     bool SetVertexDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(3), v); }
     // vertexData
-    std::vector<uint8_t> VertexData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetVertexData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
-    // partitionData — The per-partition tables, raw until decoded.
-    std::vector<uint8_t> PartitionData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
-    bool SetPartitionData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
+    std::vector<::niffer::view::BSVertex> VertexData() const {
+        std::vector<::niffer::view::BSVertex> out;
+        const size_t n = b_->Count(p_.Child(4));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(4).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // partitions
+    std::vector<::niffer::view::SkinPartition> Partitions() const {
+        std::vector<::niffer::view::SkinPartition> out;
+        const size_t n = b_->Count(p_.Child(5));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(5).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
 protected:
     explicit NiSkinPartition(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2270,8 +2894,9 @@ public:
     // keys
     std::vector<::niffer::view::NiTextKeyExtraDataKeys> Keys() const {
         std::vector<::niffer::view::NiTextKeyExtraDataKeys> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(1)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(1).Child(e));
+        const size_t n = b_->Count(p_.Child(1));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(1).Child(static_cast<uint16_t>(e)));
         return out;
     }
 protected:
@@ -2299,9 +2924,17 @@ public:
     // numRotationKeys
     uint32_t NumRotationKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetNumRotationKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
-    // tail — The rotation, translation and scale key groups, raw.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
+    // rotationType
+    std::optional<uint32_t> RotationType() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
+    bool SetRotationType(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // rotations
+    int RotationsCase() const { return b_->CaseAt(p_.Child(2)); }
+    std::optional<::niffer::view::NiTransformDataRotationsXyz> RotationsXyz() const { if (!b_->Has(p_.Child(2).Child(0))) return std::nullopt; return ::niffer::view::NiTransformDataRotationsXyz(*b_, p_.Child(2).Child(0)); }
+    std::optional<::niffer::view::NiTransformDataRotationsQuaternion> RotationsQuaternion() const { if (!b_->Has(p_.Child(2).Child(1))) return std::nullopt; return ::niffer::view::NiTransformDataRotationsQuaternion(*b_, p_.Child(2).Child(1)); }
+    // translations
+    ::niffer::view::Vec3KeyGroup Translations() const { return ::niffer::view::Vec3KeyGroup(*b_, p_.Child(3)); }
+    // scales
+    ::niffer::view::FloatKeyGroup Scales() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(4)); }
 protected:
     explicit NiTransformData(::niffer::Block& b) : NiObject(b) {}
 };

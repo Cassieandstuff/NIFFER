@@ -216,8 +216,8 @@ namespace BSDismemberSkinInstance {
 
 // BSDynamicTriShape : BSTriShape
 namespace BSDynamicTriShape {
-    inline constexpr ::niffer::FieldRef<uint32_t> dynamicDataSize{ 7, { { 18 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> dynamicData{ 7, { { 19 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> dynamicDataSize{ 7, { { 19 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> dynamicData{ 7, { { 20 }, 1 } };
 }
 
 // BSEffectShaderProperty : NiObjectNET
@@ -282,7 +282,36 @@ namespace BSLightingShaderProperty {
         inline constexpr ::niffer::FieldRef<float> y{ 18, { { 7, 1 }, 2 } };
     }
     inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::BSShaderTextureSet>> textureSet{ 18, { { 8 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> materialTail{ 18, { { 9 }, 1 } };
+    namespace emissiveColor {
+        inline constexpr ::niffer::StructRef self{ 18, { { 9 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 18, { { 9, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 18, { { 9, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 18, { { 9, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> emissiveMultiple{ 18, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 18, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown1{ 18, { { 12 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown2{ 18, { { 13 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> glossiness{ 18, { { 14 }, 1 } };
+    namespace specularColor {
+        inline constexpr ::niffer::StructRef self{ 18, { { 15 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 18, { { 15, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 18, { { 15, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 18, { { 15, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> specularStrength{ 18, { { 16 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown3{ 18, { { 17 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown4{ 18, { { 18 }, 1 } };
+    namespace typeData {
+        inline constexpr ::niffer::StructRef none{ 18, { { 19, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<std::vector<float>> type1{ 18, { { 19, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<std::vector<float>> type5{ 18, { { 19, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<std::vector<float>> type6{ 18, { { 19, 3 }, 2 } };
+        inline constexpr ::niffer::FieldRef<std::vector<float>> type11{ 18, { { 19, 4 }, 2 } };
+        inline constexpr ::niffer::FieldRef<std::vector<float>> type14{ 18, { { 19, 5 }, 2 } };
+        inline constexpr ::niffer::FieldRef<std::vector<float>> type16{ 18, { { 19, 6 }, 2 } };
+        inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown{ 18, { { 19, 7 }, 2 } };
+    }
 }
 
 // BSLightingShaderPropertyColorController : NiSingleInterpController
@@ -425,9 +454,10 @@ namespace BSTriShape {
     inline constexpr ::niffer::FieldRef<uint16_t> numTriangles{ 43, { { 12 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint16_t> numVertices{ 43, { { 13 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint32_t> dataSize{ 43, { { 14 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> geometryData{ 43, { { 15 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint32_t> particleDataSize{ 43, { { 16 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint16_t>> particleData{ 43, { { 17 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> vertices{ 43, { { 15 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> triangles{ 43, { { 16 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> particleDataSize{ 43, { { 17 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint16_t>> particleData{ 43, { { 18 }, 1 } };
 }
 
 // BSValueNode : NiNode
@@ -526,7 +556,7 @@ namespace NiBoolData {
         inline constexpr ::niffer::StructRef self{ 57, { { 0 }, 1 } };
         inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 57, { { 0, 0 }, 2 } };
         inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 57, { { 0, 1 }, 2 } };
-        inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> keys{ 57, { { 0, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 57, { { 0, 2 }, 2 } };
     }
 }
 
@@ -592,7 +622,7 @@ namespace NiFloatData {
         inline constexpr ::niffer::StructRef self{ 67, { { 0 }, 1 } };
         inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 67, { { 0, 0 }, 2 } };
         inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 67, { { 0, 1 }, 2 } };
-        inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> keys{ 67, { { 0, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 67, { { 0, 2 }, 2 } };
     }
 }
 
@@ -815,7 +845,7 @@ namespace NiPosData {
         inline constexpr ::niffer::StructRef self{ 109, { { 0 }, 1 } };
         inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 109, { { 0, 0 }, 2 } };
         inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 109, { { 0, 1 }, 2 } };
-        inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> keys{ 109, { { 0, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 109, { { 0, 2 }, 2 } };
     }
 }
 
@@ -859,8 +889,8 @@ namespace NiSkinPartition {
     inline constexpr ::niffer::FieldRef<uint32_t> dataSize{ 113, { { 1 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint32_t> vertexSize{ 113, { { 2 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint64_t> vertexDesc{ 113, { { 3 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> vertexData{ 113, { { 4 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> partitionData{ 113, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> vertexData{ 113, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> partitions{ 113, { { 5 }, 1 } };
 }
 
 // NiStringExtraData : NiExtraData
@@ -898,7 +928,46 @@ namespace NiTimeController {
 // NiTransformData : NiObject
 namespace NiTransformData {
     inline constexpr ::niffer::FieldRef<uint32_t> numRotationKeys{ 120, { { 0 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 120, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> rotationType{ 120, { { 1 }, 1 } };
+    namespace rotations {
+        namespace xyz {
+            inline constexpr ::niffer::StructRef self{ 120, { { 2, 0 }, 2 } };
+            namespace x {
+                inline constexpr ::niffer::StructRef self{ 120, { { 2, 0, 0 }, 3 } };
+                inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 120, { { 2, 0, 0, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 120, { { 2, 0, 0, 1 }, 4 } };
+                inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 120, { { 2, 0, 0, 2 }, 4 } };
+            }
+            namespace y {
+                inline constexpr ::niffer::StructRef self{ 120, { { 2, 0, 1 }, 3 } };
+                inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 120, { { 2, 0, 1, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 120, { { 2, 0, 1, 1 }, 4 } };
+                inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 120, { { 2, 0, 1, 2 }, 4 } };
+            }
+            namespace z {
+                inline constexpr ::niffer::StructRef self{ 120, { { 2, 0, 2 }, 3 } };
+                inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 120, { { 2, 0, 2, 0 }, 4 } };
+                inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 120, { { 2, 0, 2, 1 }, 4 } };
+                inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 120, { { 2, 0, 2, 2 }, 4 } };
+            }
+        }
+        namespace quaternion {
+            inline constexpr ::niffer::StructRef self{ 120, { { 2, 1 }, 2 } };
+            inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 120, { { 2, 1, 0 }, 3 } };
+        }
+    }
+    namespace translations {
+        inline constexpr ::niffer::StructRef self{ 120, { { 3 }, 1 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 120, { { 3, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 120, { { 3, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 120, { { 3, 2 }, 2 } };
+    }
+    namespace scales {
+        inline constexpr ::niffer::StructRef self{ 120, { { 4 }, 1 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> numKeys{ 120, { { 4, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> interpolation{ 120, { { 4, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> keys{ 120, { { 4, 2 }, 2 } };
+    }
 }
 
 // NiTransformInterpolator : NiObject

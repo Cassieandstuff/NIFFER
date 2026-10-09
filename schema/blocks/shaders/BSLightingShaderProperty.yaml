@@ -1,7 +1,10 @@
 block: BSLightingShaderProperty
 inherits: NiObject
 doc: >-
-  The main lighting material. Confirmed against clutter/barrel01.nif block 8. The leading u32 is the
+  The main lighting material. Confirmed against clutter/barrel01.nif block 8. The material
+  scalars after textureSet are named where SCT's NifDocument already reads them (emissive color
+  and multiple, glossiness, specular color and strength); each word's type was checked on the
+  corpus. The leading u32 is the
   shader type: across the SSE corpus it takes 10 values (0-6, 11, 14, 16) and the block size is a
   function of it alone. The NiObjectNET fields (name, extra data, controller) follow it, so this
   class can't inherit NiObjectNET's layout.
@@ -16,4 +19,26 @@ fields:
   - { name: uvOffset, type: Vec2 }
   - { name: uvScale, type: Vec2 }
   - { name: textureSet, type: ref, to: [BSShaderTextureSet] }
-  - { name: materialTail, type: bytes, doc: "The shader-type-dependent material scalars, raw until unions land." }
+  - { name: emissiveColor, type: Vec3 }
+  - { name: emissiveMultiple, type: f32 }
+  - { name: unknown0, type: u32, doc: "An integer; 3 in almost every SSE block, otherwise 0 or 1." }
+  - { name: unknown1, type: f32, doc: "1.0 in almost every SSE block." }
+  - { name: unknown2, type: f32, doc: "0 in almost every SSE block." }
+  - { name: glossiness, type: f32 }
+  - { name: specularColor, type: Vec3 }
+  - { name: specularStrength, type: f32 }
+  - { name: unknown3, type: f32, doc: "0.3 in most SSE blocks." }
+  - { name: unknown4, type: f32, doc: "2.0 in most SSE blocks." }
+  - name: typeData
+    doc: "Floats that only some shader types carry; their meanings aren't established yet."
+    union:
+      by: { field: shaderType }
+      cases:
+        - { when: [0, 2, 3, 4], name: none }
+        - { when: 1, name: type1, type: "f32[1]" }
+        - { when: 5, name: type5, type: "f32[3]" }
+        - { when: 6, name: type6, type: "f32[3]" }
+        - { when: 11, name: type11, type: "f32[5]" }
+        - { when: 14, name: type14, type: "f32[4]" }
+        - { when: 16, name: type16, type: "f32[7]" }
+      default: { name: unknown, type: bytes }

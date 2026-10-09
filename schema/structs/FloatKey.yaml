@@ -1,0 +1,13 @@
+struct: FloatKey
+doc: >-
+  Key layouts by interpolation type, measured on the SSE corpus: 1 is time + value (linear), 2 adds two tangents (quadratic), 3 adds tension, bias and continuity (TBC), 5 is time + value (constant). Names are inferred from the layouts. Reads the enclosing group's interpolation. Constant float keys don't occur in the corpus; the case has the layout verified for bool and Vec3 constant keys.
+fields:
+  - { name: time, type: f32 }
+  - name: data
+    union:
+      by: { field: interpolation }
+      cases:
+        - { when: 1, name: linear, fields: [ { name: value, type: f32 } ] }
+        - { when: 2, name: quadratic, fields: [ { name: value, type: f32 }, { name: forward, type: f32 }, { name: backward, type: f32 } ] }
+        - { when: 3, name: tbc, fields: [ { name: value, type: f32 }, { name: tension, type: f32 }, { name: bias, type: f32 }, { name: continuity, type: f32 } ] }
+        - { when: 5, name: constant, fields: [ { name: value, type: f32 } ] }

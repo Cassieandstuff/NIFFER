@@ -1,0 +1,5 @@
+struct: BoolKeyGroup
+fields:
+  - { name: numKeys, type: u32 }
+  - { name: interpolation, type: u32, if: { field: numKeys, min: 1 } }
+  - { name: keys, type: "BoolKey[count: numKeys]", packed: true }

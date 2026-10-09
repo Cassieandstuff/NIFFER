@@ -22,6 +22,7 @@
 #include <array>
 #include <bit>
 #include <cstdint>
+#include <deque>
 #include <expected>
 #include <functional>
 #include <optional>
@@ -100,6 +101,7 @@ struct FieldDef {
     uint8_t     selUp     = 0;         // Union: the selector field…
     uint16_t    selField  = kNoField;
     uint64_t    selMask   = 0;         //   …ANDed with this mask when non-zero
+    bool        packed    = false;     // Array: may be stored packed (spec §4.4)
 };
 
 struct CaseDef {
@@ -168,14 +170,28 @@ struct Half {
 // chosen case's index in `bits` and its value in `items[0]` (no items for an
 // empty case). A conditional field whose condition was false is
 // `present == false`.
+//
+// A PACKED array (a `packed: true` field whose elements all have the same size,
+// loaded in LoadMode::Packed) keeps its elements as their encoded bytes in
+// `bytes`, with the element count in the low 32 bits of `bits` and the element
+// size in the high 32; `items` is empty. Read it through Block::Visit / GetAt /
+// Count (which decode just the elements a path reaches) — never through `items`.
 struct Value {
     uint64_t             bits    = 0;
     std::string          str;
     std::vector<uint8_t> bytes;
     std::vector<Value>   items;
     bool                 present = true;
+    bool                 packed  = false;
     friend bool operator==(const Value&, const Value&) = default;
 };
+
+// How Block::Load stores `packed: true` arrays. Packed keeps large arrays
+// (vertices, triangles, keys) as bytes and decodes elements on access; every
+// element is still validated at load. Materialized decodes everything into the
+// value tree (the real-data gate uses it, so a forced re-encode proves every
+// element's layout).
+enum class LoadMode : uint8_t { Packed, Materialized };
 
 // A path into a block's value: struct field indices, with an element index after
 // each array field and a case index after each union field
@@ -211,7 +227,7 @@ public:
     // Never fails: a block with no concrete descriptor, or one whose decode was
     // refused, is raw (Modeled() == false) and keeps its bytes.
     static Block Load(const schema::SchemaSet& set, std::string_view typeName,
-                      std::span<const uint8_t> bytes);
+                      std::span<const uint8_t> bytes, LoadMode mode = LoadMode::Packed);
 
     std::string_view          TypeName() const { return typeName_; }
     bool                      Modeled() const { return def_ != nullptr; }
@@ -237,12 +253,24 @@ public:
     // ── Path access (tools/UIs): "transform/translation/x", "bones/0/transform"
     std::optional<RelPath> Find(std::string_view path) const;
     const Value*           Root() const { return Modeled() ? &value_ : nullptr; }
-    // nullptr when the path doesn't exist or the field is absent.
+    // The value at `p` in the stored tree; nullptr when the path doesn't exist,
+    // the field is absent, or the path enters a packed array (use Visit).
     const Value*           GetValue(const RelPath& p) const;
+    // Calls fn(type, value) with the value at `p`, decoding elements of packed
+    // arrays on the way (a path ending ON a packed array gets it unpacked).
+    // Returns false (fn not called) when the path doesn't exist or is absent.
+    bool                   Visit(const RelPath& p,
+                                 const std::function<void(const schema::TypeDef&, const Value&)>& fn) const;
+    bool                   Has(const RelPath& p) const;
+    // Element count of the array at `p` (packed or not); 0 when absent.
+    size_t                 Count(const RelPath& p) const;
+    // The selected case of the union at `p`; -1 when absent.
+    int                    CaseAt(const RelPath& p) const;
     // The schema type at `p` (whether or not the value is present).
     const schema::TypeDef* TypeAt(const RelPath& p) const;
     // Replaces the value at `p`. A no-op when unchanged, so untouched blocks stay
-    // verbatim. Replacing an array/bytes field also updates its length field.
+    // verbatim. Replacing an array/bytes field also updates its length field. A
+    // path into a packed array unpacks that array first.
     // Returns false when the block isn't modeled or `p` doesn't exist.
     bool                   StoreValue(const RelPath& p, Value v);
 
@@ -263,6 +291,9 @@ public:
     template <class T> static Value ToValue(const T& x, const schema::TypeDef& t, const schema::SchemaSet& s);
 
 private:
+    const Value* Locate(const RelPath& p, std::deque<Value>& temps, const schema::TypeDef*& t,
+                        bool unpackEnd) const;
+
     const schema::SchemaSet* set_ = nullptr;
     const schema::BlockDef*  def_ = nullptr;
     std::string              typeName_;
@@ -286,11 +317,14 @@ public:
     std::vector<uint8_t>  trailing;   // bytes past the footer, verbatim
 
     static std::expected<Nif, NifError> Load(const uint8_t* data, size_t len,
-                                             const schema::SchemaSet& set = schema::Main());
+                                             const schema::SchemaSet& set = schema::Main(),
+                                             LoadMode mode = LoadMode::Packed);
     static std::expected<Nif, NifError> Load(const std::vector<uint8_t>& bytes,
-                                             const schema::SchemaSet& set = schema::Main());
+                                             const schema::SchemaSet& set = schema::Main(),
+                                             LoadMode mode = LoadMode::Packed);
     static std::expected<Nif, NifError> LoadFile(const std::string& path,
-                                                 const schema::SchemaSet& set = schema::Main());
+                                                 const schema::SchemaSet& set = schema::Main(),
+                                                 LoadMode mode = LoadMode::Packed);
 
     // Block sizes are re-measured; every other header fact is emitted verbatim.
     // `force` re-encodes every modeled block from its value (the real-data gate).
@@ -392,20 +426,20 @@ Value Block::ToValue(const T& x, const schema::TypeDef& t, const schema::SchemaS
 
 template <class T>
 std::optional<T> Block::GetAt(const RelPath& p) const {
-    const Value* v = GetValue(p);
-    if (!v) return std::nullopt;
-    return FromValue<T>(*v, *TypeAt(p), *set_);
+    std::optional<T> out;
+    Visit(p, [&](const schema::TypeDef& t, const Value& v) { out = FromValue<T>(v, t, *set_); });
+    return out;
 }
 
 template <class T>
 std::vector<T> Block::GetElements(const RelPath& arrayPath) const {
     std::vector<T> out;
-    const Value* v = GetValue(arrayPath);
-    const schema::TypeDef* t = TypeAt(arrayPath);
-    if (!v || !t || t->kind != schema::Kind::Array) return out;
-    const schema::TypeDef& et = set_->types[t->ref];
-    out.reserve(v->items.size());
-    for (const Value& item : v->items) out.push_back(FromValue<T>(item, et, *set_));
+    Visit(arrayPath, [&](const schema::TypeDef& t, const Value& v) {
+        if (t.kind != schema::Kind::Array) return;
+        const schema::TypeDef& et = set_->types[t.ref];
+        out.reserve(v.items.size());
+        for (const Value& item : v.items) out.push_back(FromValue<T>(item, et, *set_));
+    });
     return out;
 }
 

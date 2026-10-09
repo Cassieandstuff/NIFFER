@@ -1,0 +1,7 @@
+struct: Triangle
+size: 6
+doc: Three vertex indices.
+fields:
+  - { name: a, type: u16 }
+  - { name: b, type: u16 }
+  - { name: c, type: u16 }

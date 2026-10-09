@@ -7,5 +7,5 @@ fields:
   - { name: dataSize, type: u32, doc: "Bytes of vertexData: numVertices * vertexSize." }
   - { name: vertexSize, type: u32 }
   - { name: vertexDesc, type: u64, doc: "BSVertexDesc, the same layout as BSTriShape's." }
-  - { name: vertexData, type: bytes, size: dataSize }
-  - { name: partitionData, type: bytes, doc: "The per-partition tables, raw until decoded." }
+  - { name: vertexData, type: "BSVertex[]", size: dataSize, packed: true }
+  - { name: partitions, type: "SkinPartition[count: numPartitions]" }

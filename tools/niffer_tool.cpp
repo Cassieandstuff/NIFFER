@@ -202,7 +202,7 @@ static int CmdRoundtrip(const fs::path& root) {
 // targets actually have — the evidence for adding a `to:` claim.
 struct SchemaFileResult {
     bool unsupported = false, malformed = false;
-    bool verbatimOk = false, forcedOk = false;
+    bool verbatimOk = false, forcedOk = false, packedOk = false;
     size_t forcedDiverge = 0;
     std::string forcedDivergeType;
     uint64_t blocks = 0, modeled = 0, typedModeled = 0;
@@ -211,6 +211,8 @@ struct SchemaFileResult {
     std::map<std::string, uint64_t> refViolations; // "Owner.field -> Target: why"
     std::map<std::string, uint64_t> badStringRefs; // by field
     uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
+    uint64_t blockBytes = 0, rawBlockBytes = 0;
+    std::map<std::string, uint64_t> opaqueBytes;    // `bytes` fields, by field
     std::string cycle;                              // first ref cycle's edge, "" if none
     std::string cycleAt;                            // …and where it is
     std::map<std::string, std::map<std::string, uint64_t>> refTargets;  // "Owner.field" -> target type -> n
@@ -254,13 +256,20 @@ static void WalkNamed(const schema::SchemaSet& s, const schema::TypeDef& t, cons
 static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
     SchemaFileResult r;
     auto bytes = ReadFile(p);
-    auto nif = Nif::Load(bytes);
+    const schema::SchemaSet& s = schema::Main();
+    // Materialized: the forced re-encode below then proves every element of
+    // every packed array, not just its stored bytes.
+    auto nif = Nif::Load(bytes, s, LoadMode::Materialized);
     if (!nif) {
         if (nif.error().kind == NifErrorKind::UnsupportedVersion) r.unsupported = true;
         else r.malformed = true;
         return r;
     }
-    const schema::SchemaSet& s = schema::Main();
+    // The default (packed) load must decode the same blocks and save identically.
+    if (auto packed = Nif::Load(bytes, s, LoadMode::Packed)) {
+        bool same = packed->RawCount() == nif->RawCount();
+        r.packedOk = same && packed->Save(false) == bytes && packed->Save(true) == bytes;
+    }
 
     auto verbatim = nif->Save(false);
     r.verbatimOk = verbatim == bytes;
@@ -292,7 +301,9 @@ static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
     for (size_t i = 0; i < nb; ++i) {
         const Block& b = nif->blocks[i];
         if (!typedRaw[i]) ++r.typedModeled;
+        r.blockBytes += b.Original().size();
         if (!b.Modeled()) {
+            r.rawBlockBytes += b.Original().size();
             if (!b.Refusal().empty()) {
                 auto& e = r.refusals[std::string(b.TypeName())];
                 if (e.first++ == 0) e.second = b.Refusal();
@@ -307,6 +318,10 @@ static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
             const auto& fd = s.fields[layout.ref + fi];
             const std::string owner = DeclaringClass(s, b.Def(), fi)->name;
             auto visit = [&](const std::string& name, const schema::TypeDef& t, const Value& v) {
+                if (t.kind == schema::Kind::Bytes) {
+                    r.opaqueBytes[name] += v.bytes.size();
+                    return;
+                }
                 if (t.kind == schema::Kind::StringRef) {
                     const uint32_t si = static_cast<uint32_t>(v.bits);
                     if (si != 0xFFFFFFFFu && si >= nif->header.strings.size()) ++r.badStringRefs[name];
@@ -378,10 +393,12 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
     std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
                    [&](const fs::path& p) { return SchemaRoundtripOne(p, wantRefs); });
 
-    uint64_t checked = 0, unsupported = 0, malformed = 0, verbatimBad = 0, forcedBad = 0;
+    uint64_t checked = 0, unsupported = 0, malformed = 0, verbatimBad = 0, forcedBad = 0, packedBad = 0;
     uint64_t blocks = 0, modeled = 0, typedModeled = 0, badStrings = 0, cycles = 0;
     std::map<std::string, uint64_t> badStringsByField, cyclesByEdge;
     uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
+    uint64_t blockBytes = 0, rawBlockBytes = 0;
+    std::map<std::string, uint64_t> opaqueBytes;
     std::map<std::string, std::string> cycleExample;
     std::map<std::string, std::pair<uint64_t, std::string>> refusals;
     std::map<std::string, uint64_t> regressions, refViolations, forcedByType;
@@ -393,6 +410,7 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
         if (r.malformed) { ++malformed; continue; }
         ++checked;
         verbatimBad += r.verbatimOk ? 0 : 1;
+        packedBad += r.packedOk ? 0 : 1;
         if (!r.forcedOk) {
             ++forcedBad;
             ++forcedByType[r.forcedDivergeType];
@@ -404,6 +422,9 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
         refsChecked += r.refsChecked;
         claimsChecked += r.claimsChecked;
         stringRefsChecked += r.stringRefsChecked;
+        blockBytes += r.blockBytes;
+        rawBlockBytes += r.rawBlockBytes;
+        for (auto& [f, n] : r.opaqueBytes) opaqueBytes[f] += n;
         for (auto& [f, n] : r.badStringRefs) { badStringsByField[f] += n; badStrings += n; }
         for (auto& [t, e] : r.refusals) {
             auto& agg = refusals[t];
@@ -458,6 +479,16 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
         }
     }
 
+    uint64_t opaque = 0;
+    for (auto& [f, n] : opaqueBytes) opaque += n;
+    if (wantRefs && !opaqueBytes.empty()) {
+        std::vector<std::pair<std::string, uint64_t>> v(opaqueBytes.begin(), opaqueBytes.end());
+        std::sort(v.begin(), v.end(), [](auto& a, auto& b) { return a.second > b.second; });
+        std::printf("\nOPAQUE `bytes` fields (largest first):\n");
+        for (auto& [f, n] : v)
+            if (n) std::printf("  %12llu  %s\n", (unsigned long long)n, f.c_str());
+    }
+
     uint64_t refused = 0, regressed = 0, violations = 0;
     for (auto& [t, e] : refusals) refused += e.first;
     for (auto& [t, n] : regressions) regressed += n;
@@ -468,9 +499,14 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
                 (unsigned long long)checked, (unsigned long long)unsupported, (unsigned long long)malformed);
     std::printf("  verbatim diff     %llu\n", (unsigned long long)verbatimBad);
     std::printf("  forced diff       %llu\n", (unsigned long long)forcedBad);
+    std::printf("  packed-load diff  %llu\n", (unsigned long long)packedBad);
     std::printf("  blocks            %llu  modeled %llu (%.2f%%), typed path %llu\n",
                 (unsigned long long)blocks, (unsigned long long)modeled,
                 blocks ? 100.0 * double(modeled) / double(blocks) : 0.0, (unsigned long long)typedModeled);
+    auto pct = [&](uint64_t n) { return blockBytes ? 100.0 * double(n) / double(blockBytes) : 0.0; };
+    std::printf("  block bytes       %llu: decoded %.2f%%, opaque `bytes` %.2f%%, raw blocks %.2f%%\n",
+                (unsigned long long)blockBytes, pct(blockBytes - opaque - rawBlockBytes), pct(opaque),
+                pct(rawBlockBytes));
     std::printf("  refused           %llu\n", (unsigned long long)refused);
     std::printf("  regressions       %llu\n", (unsigned long long)regressed);
     std::printf("  refs              %llu non-null, %llu checked against `to:`\n",
@@ -480,7 +516,7 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
     std::printf("  stringrefs        %llu checked, %llu bad\n",
                 (unsigned long long)stringRefsChecked, (unsigned long long)badStrings);
 
-    const bool green = malformed == 0 && verbatimBad == 0 && forcedBad == 0 && refused == 0 &&
+    const bool green = malformed == 0 && verbatimBad == 0 && forcedBad == 0 && packedBad == 0 && refused == 0 &&
                        regressed == 0 && violations == 0 && cycles == 0 && badStrings == 0;
     std::printf("\n  GATE: %s\n", green ? "GREEN" : "RED");
     return green ? 0 : 1;

@@ -8,7 +8,7 @@
 namespace niffer {
 
 std::expected<Nif, NifError> Nif::Load(const uint8_t* data, size_t len,
-                                       const schema::SchemaSet& set) {
+                                       const schema::SchemaSet& set, LoadMode mode) {
     auto framing = detail::ReadFraming(data, len);
     if (!framing) return std::unexpected(framing.error());
 
@@ -20,21 +20,21 @@ std::expected<Nif, NifError> Nif::Load(const uint8_t* data, size_t len,
     for (size_t i = 0; i < framing->blocks.size(); ++i) {
         const detail::BlockSpan span = framing->blocks[i];
         f.blocks.push_back(Block::Load(set, f.header.TypeNameOf(static_cast<uint32_t>(i)),
-                                       std::span<const uint8_t>(data + span.offset, span.size)));
+                                       std::span<const uint8_t>(data + span.offset, span.size), mode));
     }
     return f;
 }
 
 std::expected<Nif, NifError> Nif::Load(const std::vector<uint8_t>& bytes,
-                                       const schema::SchemaSet& set) {
-    return Load(bytes.data(), bytes.size(), set);
+                                       const schema::SchemaSet& set, LoadMode mode) {
+    return Load(bytes.data(), bytes.size(), set, mode);
 }
 
 std::expected<Nif, NifError> Nif::LoadFile(const std::string& path,
-                                           const schema::SchemaSet& set) {
+                                           const schema::SchemaSet& set, LoadMode mode) {
     auto bytes = detail::ReadWholeFile(path);
     if (!bytes) return std::unexpected(bytes.error());
-    return Load(*bytes, set);
+    return Load(*bytes, set, mode);
 }
 
 std::vector<uint8_t> Nif::Save(bool force) const {

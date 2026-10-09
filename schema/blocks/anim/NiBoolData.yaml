@@ -1,4 +1,4 @@
 block: NiBoolData
 inherits: NiObject
 fields:
-  - { name: keys, type: KeyGroup }
+  - { name: keys, type: BoolKeyGroup }

@@ -15,6 +15,7 @@ fields:
       - { name: boundingRadius, type: f32 }
       - { name: numVertices, type: u16 }
       - name: vertexWeights
+        packed: true
         array: "count: numVertices"
         if: { field: hasVertexWeights, ne: 0 }
         fields:

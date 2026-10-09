@@ -1,0 +1,20 @@
+struct: BSVertex
+doc: >-
+  One vertex of an SSE shape, laid out by the enclosing vertexDesc's attribute flags (bits 44+):
+  position 0x001, uv 0x002, normal 0x008, tangent 0x010, color 0x020, skin 0x040, eye 0x100, in
+  that order. Verified on every distinct vertexDesc in the SSE corpus (33 of them, 110,972 blocks):
+  the flags alone give the layout, its offsets and its size. Positions are always full precision
+  there (a float3 plus a fourth float), whether or not flag 0x400 is set; a half-precision
+  position never occurs, so it isn't modeled (such a block would refuse and stay raw).
+fields:
+  - { name: position, type: Vec3, if: { field: vertexDesc, mask: 0x0000100000000000 } }
+  - { name: positionW, type: f32, if: { field: vertexDesc, mask: 0x0000100000000000 } }
+  - { name: uv, type: TexCoord, if: { field: vertexDesc, mask: 0x0000200000000000 } }
+  - { name: normal, type: "u8[3]", if: { field: vertexDesc, mask: 0x0000800000000000 }, doc: "Signed-normalized bytes (b / 127.5 - 1)." }
+  - { name: normalW, type: u8, if: { field: vertexDesc, mask: 0x0000800000000000 } }
+  - { name: tangent, type: "u8[3]", if: { field: vertexDesc, mask: 0x0001000000000000 }, doc: "Signed-normalized bytes." }
+  - { name: tangentW, type: u8, if: { field: vertexDesc, mask: 0x0001000000000000 } }
+  - { name: color, type: "u8[4]", if: { field: vertexDesc, mask: 0x0002000000000000 }, doc: RGBA. }
+  - { name: boneWeights, type: "half[4]", if: { field: vertexDesc, mask: 0x0004000000000000 } }
+  - { name: boneIndices, type: "u8[4]", if: { field: vertexDesc, mask: 0x0004000000000000 } }
+  - { name: eye, type: f32, if: { field: vertexDesc, mask: 0x0010000000000000 } }

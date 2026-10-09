@@ -40,11 +40,12 @@ fields:
   - { name: medium, type: "u16[count: u16]" }
   - { name: leaves, type: "ref[count: u32]", to: [TLeaf] }
   - { name: count, type: u16 }
-  - { name: byCount, type: "u32[count: count]" }
+  - { name: byCount, type: "u32[count: count]", packed: true }
   - { name: blobSize, type: u32 }
   - { name: blob, type: bytes, size: blobSize }
   - { name: counted, type: Counted }
   - name: rows
+    packed: true
     array: "count: u8"
     fields:
       - { name: mask, type: u8 }
@@ -71,7 +72,7 @@ fields:
         - { when: [2, 3], name: many, fields: [ { name: a, type: u8 }, { name: b, type: Probe } ] }
       default: { name: none }
   - { name: windowSize, type: u16 }
-  - { name: window, type: "Probe[]", size: windowSize }
+  - { name: window, type: "Probe[]", size: windowSize, packed: true }
   - { name: fixedWindow, type: "u16[]", size: 4 }
   - { name: tail, type: Probe }
 ---

@@ -56,70 +56,70 @@ inline constexpr TypeDef kTypes[] = {
 };
 
 inline constexpr FieldDef kFields[] = {
-    { "a", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 0
-    { "b", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 1
-    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 2
-    { "items", 4, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 3
-    { "mask", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 4
-    { "value", 6, 0, kNoField, CondOp::Mask, 0, 0, 1ll, 0, kNoField, 0ull },  // 5
-    { "outer", 1, 0, kNoField, CondOp::Mask, 1, 1, 16ll, 0, kNoField, 0ull },  // 6
-    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 7
-    { "y", 1, 0, kNoField, CondOp::Mask, 2, 0, 4ll, 0, kNoField, 0ull },  // 8
-    { "a", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 9
-    { "b", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 10
-    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 11
-    { "y", 1, 0, kNoField, CondOp::Mask, 1, 0, 4ll, 0, kNoField, 0ull },  // 12
-    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 13
-    { "y", 1, 0, kNoField, CondOp::Mask, 1, 0, 4ll, 0, kNoField, 0ull },  // 14
-    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 15
-    { "y", 1, 0, kNoField, CondOp::Mask, 1, 1, 4ll, 0, kNoField, 0ull },  // 16
-    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 17
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 18
-    { "u8v", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 19
-    { "u16v", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 20
-    { "u32v", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 21
-    { "u64v", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 22
-    { "i8v", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 23
-    { "i16v", 18, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 24
-    { "i32v", 19, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 25
-    { "i64v", 20, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 26
-    { "f32v", 6, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 27
-    { "child", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 28
-    { "back", 22, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 29
-    { "label", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 30
-    { "fixedBytes", 24, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 31
-    { "pairs", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 32
-    { "small", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 33
-    { "medium", 27, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 34
-    { "leaves", 28, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 35
-    { "count", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 36
-    { "byCount", 30, 0, 19, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 37
-    { "blobSize", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 38
-    { "blob", 31, 0, 21, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 39
-    { "counted", 2, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 40
-    { "rows", 32, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 41
-    { "sel", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 42
-    { "negOnly", 3, 0, kNoField, CondOp::Max, 0, 25, (-1ll), 0, kNoField, 0ull },  // 43
-    { "eqTwo", 3, 0, kNoField, CondOp::Eq, 0, 25, 2ll, 0, kNoField, 0ull },  // 44
-    { "neTwo", 3, 0, kNoField, CondOp::Ne, 0, 25, 2ll, 0, kNoField, 0ull },  // 45
-    { "minOne", 3, 0, kNoField, CondOp::Min, 0, 25, 1ll, 0, kNoField, 0ull },  // 46
-    { "tail", 33, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 47
-    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 48
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 49
-    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 50
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 51
-    { "value", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 52
-    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 53
-    { "h", 37, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 54
-    { "pick", 38, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, 0, 3ull },  // 55
-    { "windowSize", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 56
-    { "window", 39, 0, 3, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 57
-    { "fixedWindow", 40, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 58
-    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 59
-    { "pad", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 60
-    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 61
-    { "p", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 62
-    { "data", 43, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 63
+    { "a", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 0
+    { "b", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1
+    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 2
+    { "items", 4, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 3
+    { "mask", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 4
+    { "value", 6, 0, kNoField, CondOp::Mask, 0, 0, 1ll, 0, kNoField, 0ull, false },  // 5
+    { "outer", 1, 0, kNoField, CondOp::Mask, 1, 1, 16ll, 0, kNoField, 0ull, false },  // 6
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 7
+    { "y", 1, 0, kNoField, CondOp::Mask, 2, 0, 4ll, 0, kNoField, 0ull, false },  // 8
+    { "a", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 9
+    { "b", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 10
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 11
+    { "y", 1, 0, kNoField, CondOp::Mask, 1, 0, 4ll, 0, kNoField, 0ull, false },  // 12
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 13
+    { "y", 1, 0, kNoField, CondOp::Mask, 1, 0, 4ll, 0, kNoField, 0ull, false },  // 14
+    { "x", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 15
+    { "y", 1, 0, kNoField, CondOp::Mask, 1, 1, 4ll, 0, kNoField, 0ull, false },  // 16
+    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 17
+    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 18
+    { "u8v", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 19
+    { "u16v", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 20
+    { "u32v", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 21
+    { "u64v", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 22
+    { "i8v", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 23
+    { "i16v", 18, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 24
+    { "i32v", 19, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 25
+    { "i64v", 20, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 26
+    { "f32v", 6, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 27
+    { "child", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 28
+    { "back", 22, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 29
+    { "label", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 30
+    { "fixedBytes", 24, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 31
+    { "pairs", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 32
+    { "small", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 33
+    { "medium", 27, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 34
+    { "leaves", 28, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 35
+    { "count", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 36
+    { "byCount", 30, 0, 19, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 37
+    { "blobSize", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 38
+    { "blob", 31, 0, 21, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 39
+    { "counted", 2, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 40
+    { "rows", 32, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 41
+    { "sel", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 42
+    { "negOnly", 3, 0, kNoField, CondOp::Max, 0, 25, (-1ll), 0, kNoField, 0ull, false },  // 43
+    { "eqTwo", 3, 0, kNoField, CondOp::Eq, 0, 25, 2ll, 0, kNoField, 0ull, false },  // 44
+    { "neTwo", 3, 0, kNoField, CondOp::Ne, 0, 25, 2ll, 0, kNoField, 0ull, false },  // 45
+    { "minOne", 3, 0, kNoField, CondOp::Min, 0, 25, 1ll, 0, kNoField, 0ull, false },  // 46
+    { "tail", 33, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 47
+    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 48
+    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 49
+    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 50
+    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 51
+    { "value", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 52
+    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 53
+    { "h", 37, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 54
+    { "pick", 38, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, 0, 3ull, false },  // 55
+    { "windowSize", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 56
+    { "window", 39, 0, 3, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 57
+    { "fixedWindow", 40, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 58
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 59
+    { "pad", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 60
+    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 61
+    { "p", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 62
+    { "data", 43, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 63
 };
 
 inline constexpr CaseDef kCases[] = {

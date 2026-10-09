@@ -1,7 +1,9 @@
 struct: KeyGroup
 doc: >-
-  An animation key group. Confirmed against glazedcandles (NiFloatData, quadratic 16-byte keys), nocturnal (NiBoolData, constant 5-byte keys) and ashpile (NiPosData, quadratic 40-byte keys).
+  An animation key group with its keys kept raw. Only NiColorData uses it: no NiColorData occurs in
+  the SSE corpus, so its key layout can't be verified (the other channels use FloatKeyGroup,
+  BoolKeyGroup and Vec3KeyGroup).
 fields:
   - { name: numKeys, type: u32 }
   - { name: interpolation, type: u32, if: { field: numKeys, min: 1 }, doc: The key type; present only when there are keys. }
-  - { name: keys, type: bytes, doc: "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)." }
+  - { name: keys, type: bytes, doc: "The keys, raw." }

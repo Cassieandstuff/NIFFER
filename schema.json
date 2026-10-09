@@ -61,6 +61,568 @@
    ]
   },
   {
+   "name": "BSVertex",
+   "fields": [
+    {
+     "name": "position",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 17592186044416
+     }
+    },
+    {
+     "name": "positionW",
+     "type": {
+      "kind": "f32"
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 17592186044416
+     }
+    },
+    {
+     "name": "uv",
+     "type": {
+      "kind": "struct",
+      "name": "TexCoord",
+      "fields": [
+       {
+        "name": "u",
+        "type": {
+         "kind": "half"
+        }
+       },
+       {
+        "name": "v",
+        "type": {
+         "kind": "half"
+        }
+       }
+      ]
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 35184372088832
+     }
+    },
+    {
+     "name": "normal",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 140737488355328
+     },
+     "doc": "Signed-normalized bytes (b / 127.5 - 1)."
+    },
+    {
+     "name": "normalW",
+     "type": {
+      "kind": "u8"
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 140737488355328
+     }
+    },
+    {
+     "name": "tangent",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 281474976710656
+     },
+     "doc": "Signed-normalized bytes."
+    },
+    {
+     "name": "tangentW",
+     "type": {
+      "kind": "u8"
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 281474976710656
+     }
+    },
+    {
+     "name": "color",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 4
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 562949953421312
+     },
+     "doc": "RGBA."
+    },
+    {
+     "name": "boneWeights",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "half"
+      },
+      "count": 4
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 1125899906842624
+     }
+    },
+    {
+     "name": "boneIndices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 4
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 1125899906842624
+     }
+    },
+    {
+     "name": "eye",
+     "type": {
+      "kind": "f32"
+     },
+     "if": {
+      "field": "vertexDesc",
+      "mask": 4503599627370496
+     }
+    }
+   ]
+  },
+  {
+   "name": "BoolKey",
+   "fields": [
+    {
+     "name": "time",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "union",
+      "cases": [
+       {
+        "name": "constant",
+        "when": [
+         5
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "BoolKeyDataConstant",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "u8"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "by": {
+       "field": "interpolation"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "BoolKeyGroup",
+   "fields": [
+    {
+     "name": "numKeys",
+     "type": {
+      "kind": "u32"
+     }
+    },
+    {
+     "name": "interpolation",
+     "type": {
+      "kind": "u32"
+     },
+     "if": {
+      "field": "numKeys",
+      "min": 1
+     }
+    },
+    {
+     "name": "keys",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "BoolKey",
+       "fields": [
+        {
+         "name": "time",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "data",
+         "type": {
+          "kind": "union",
+          "cases": [
+           {
+            "name": "constant",
+            "when": [
+             5
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "BoolKeyDataConstant",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "u8"
+               }
+              }
+             ]
+            }
+           }
+          ],
+          "by": {
+           "field": "interpolation"
+          }
+         }
+        }
+       ]
+      },
+      "countField": "numKeys"
+     },
+     "packed": true
+    }
+   ]
+  },
+  {
+   "name": "FloatKey",
+   "fields": [
+    {
+     "name": "time",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "union",
+      "cases": [
+       {
+        "name": "linear",
+        "when": [
+         1
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "FloatKeyDataLinear",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "quadratic",
+        "when": [
+         2
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "FloatKeyDataQuadratic",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "forward",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "backward",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "tbc",
+        "when": [
+         3
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "FloatKeyDataTbc",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "tension",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "bias",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "continuity",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "constant",
+        "when": [
+         5
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "FloatKeyDataConstant",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "by": {
+       "field": "interpolation"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "FloatKeyGroup",
+   "fields": [
+    {
+     "name": "numKeys",
+     "type": {
+      "kind": "u32"
+     }
+    },
+    {
+     "name": "interpolation",
+     "type": {
+      "kind": "u32"
+     },
+     "if": {
+      "field": "numKeys",
+      "min": 1
+     }
+    },
+    {
+     "name": "keys",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "FloatKey",
+       "fields": [
+        {
+         "name": "time",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "data",
+         "type": {
+          "kind": "union",
+          "cases": [
+           {
+            "name": "linear",
+            "when": [
+             1
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "FloatKeyDataLinear",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "f32"
+               }
+              }
+             ]
+            }
+           },
+           {
+            "name": "quadratic",
+            "when": [
+             2
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "FloatKeyDataQuadratic",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "forward",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "backward",
+               "type": {
+                "kind": "f32"
+               }
+              }
+             ]
+            }
+           },
+           {
+            "name": "tbc",
+            "when": [
+             3
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "FloatKeyDataTbc",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "tension",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "bias",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "continuity",
+               "type": {
+                "kind": "f32"
+               }
+              }
+             ]
+            }
+           },
+           {
+            "name": "constant",
+            "when": [
+             5
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "FloatKeyDataConstant",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "f32"
+               }
+              }
+             ]
+            }
+           }
+          ],
+          "by": {
+           "field": "interpolation"
+          }
+         }
+        }
+       ]
+      },
+      "countField": "numKeys"
+     },
+     "packed": true
+    }
+   ]
+  },
+  {
    "name": "KeyGroup",
    "fields": [
     {
@@ -85,7 +647,7 @@
      "type": {
       "kind": "bytes"
      },
-     "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+     "doc": "The keys, raw."
     }
    ]
   },
@@ -193,6 +755,370 @@
    ]
   },
   {
+   "name": "QuatKey",
+   "fields": [
+    {
+     "name": "time",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "value",
+     "type": {
+      "kind": "struct",
+      "name": "Quat",
+      "fields": [
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "name": "tbc",
+     "type": {
+      "kind": "union",
+      "cases": [
+       {
+        "name": "linear",
+        "when": [
+         1
+        ],
+        "type": null
+       },
+       {
+        "name": "tbc",
+        "when": [
+         3
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "QuatKeyTbcTbc",
+         "fields": [
+          {
+           "name": "tension",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "bias",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "continuity",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "by": {
+       "field": "rotationType"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "SkinPartition",
+   "fields": [
+    {
+     "name": "numVertices",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "numTriangles",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "numBones",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "numStrips",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "numWeightsPerVertex",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "bones",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countField": "numBones"
+     },
+     "packed": true
+    },
+    {
+     "name": "hasVertexMap",
+     "type": {
+      "kind": "u8"
+     }
+    },
+    {
+     "name": "vertexMap",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "hasVertexMap",
+      "ne": 0
+     },
+     "packed": true
+    },
+    {
+     "name": "hasVertexWeights",
+     "type": {
+      "kind": "u8"
+     }
+    },
+    {
+     "name": "vertexWeights",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "SkinPartitionVertexWeights",
+       "fields": [
+        {
+         "name": "weights",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "f32"
+          },
+          "countField": "numWeightsPerVertex"
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "hasVertexWeights",
+      "ne": 0
+     },
+     "packed": true
+    },
+    {
+     "name": "stripLengths",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countField": "numStrips"
+     }
+    },
+    {
+     "name": "hasFaces",
+     "type": {
+      "kind": "u8"
+     }
+    },
+    {
+     "name": "triangles",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Triangle",
+       "fields": [
+        {
+         "name": "a",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "b",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "c",
+         "type": {
+          "kind": "u16"
+         }
+        }
+       ]
+      },
+      "countField": "numTriangles"
+     },
+     "if": {
+      "field": "hasFaces",
+      "ne": 0
+     },
+     "packed": true
+    },
+    {
+     "name": "hasBoneIndices",
+     "type": {
+      "kind": "u8"
+     }
+    },
+    {
+     "name": "boneIndices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "SkinPartitionBoneIndices",
+       "fields": [
+        {
+         "name": "indices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "countField": "numWeightsPerVertex"
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "hasBoneIndices",
+      "ne": 0
+     },
+     "packed": true
+    },
+    {
+     "name": "unknownShort",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "vertexDesc",
+     "type": {
+      "kind": "u64"
+     }
+    },
+    {
+     "name": "trueTriangles",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Triangle",
+       "fields": [
+        {
+         "name": "a",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "b",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "c",
+         "type": {
+          "kind": "u16"
+         }
+        }
+       ]
+      },
+      "countField": "numTriangles"
+     },
+     "packed": true,
+     "doc": "Triangles indexing the shape's global vertex array."
+    }
+   ]
+  },
+  {
+   "name": "TexCoord",
+   "fields": [
+    {
+     "name": "u",
+     "type": {
+      "kind": "half"
+     }
+    },
+    {
+     "name": "v",
+     "type": {
+      "kind": "half"
+     }
+    }
+   ]
+  },
+  {
+   "name": "Triangle",
+   "fields": [
+    {
+     "name": "a",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "b",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "c",
+     "type": {
+      "kind": "u16"
+     }
+    }
+   ]
+  },
+  {
    "name": "Vec2",
    "fields": [
     {
@@ -229,6 +1155,536 @@
      "type": {
       "kind": "f32"
      }
+    }
+   ]
+  },
+  {
+   "name": "Vec3Key",
+   "fields": [
+    {
+     "name": "time",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "union",
+      "cases": [
+       {
+        "name": "linear",
+        "when": [
+         1
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "Vec3KeyDataLinear",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "struct",
+            "name": "Vec3",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "quadratic",
+        "when": [
+         2
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "Vec3KeyDataQuadratic",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "struct",
+            "name": "Vec3",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "name": "forward",
+           "type": {
+            "kind": "struct",
+            "name": "Vec3",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "name": "backward",
+           "type": {
+            "kind": "struct",
+            "name": "Vec3",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "tbc",
+        "when": [
+         3
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "Vec3KeyDataTbc",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "struct",
+            "name": "Vec3",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "name": "tension",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "bias",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "continuity",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "constant",
+        "when": [
+         5
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "Vec3KeyDataConstant",
+         "fields": [
+          {
+           "name": "value",
+           "type": {
+            "kind": "struct",
+            "name": "Vec3",
+            "fields": [
+             {
+              "name": "x",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "y",
+              "type": {
+               "kind": "f32"
+              }
+             },
+             {
+              "name": "z",
+              "type": {
+               "kind": "f32"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "by": {
+       "field": "interpolation"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Vec3KeyGroup",
+   "fields": [
+    {
+     "name": "numKeys",
+     "type": {
+      "kind": "u32"
+     }
+    },
+    {
+     "name": "interpolation",
+     "type": {
+      "kind": "u32"
+     },
+     "if": {
+      "field": "numKeys",
+      "min": 1
+     }
+    },
+    {
+     "name": "keys",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec3Key",
+       "fields": [
+        {
+         "name": "time",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "data",
+         "type": {
+          "kind": "union",
+          "cases": [
+           {
+            "name": "linear",
+            "when": [
+             1
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "Vec3KeyDataLinear",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "struct",
+                "name": "Vec3",
+                "fields": [
+                 {
+                  "name": "x",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "y",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "z",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           {
+            "name": "quadratic",
+            "when": [
+             2
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "Vec3KeyDataQuadratic",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "struct",
+                "name": "Vec3",
+                "fields": [
+                 {
+                  "name": "x",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "y",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "z",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "forward",
+               "type": {
+                "kind": "struct",
+                "name": "Vec3",
+                "fields": [
+                 {
+                  "name": "x",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "y",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "z",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "backward",
+               "type": {
+                "kind": "struct",
+                "name": "Vec3",
+                "fields": [
+                 {
+                  "name": "x",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "y",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "z",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           },
+           {
+            "name": "tbc",
+            "when": [
+             3
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "Vec3KeyDataTbc",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "struct",
+                "name": "Vec3",
+                "fields": [
+                 {
+                  "name": "x",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "y",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "z",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "tension",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "bias",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "continuity",
+               "type": {
+                "kind": "f32"
+               }
+              }
+             ]
+            }
+           },
+           {
+            "name": "constant",
+            "when": [
+             5
+            ],
+            "type": {
+             "kind": "struct",
+             "name": "Vec3KeyDataConstant",
+             "fields": [
+              {
+               "name": "value",
+               "type": {
+                "kind": "struct",
+                "name": "Vec3",
+                "fields": [
+                 {
+                  "name": "x",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "y",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "z",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           }
+          ],
+          "by": {
+           "field": "interpolation"
+          }
+         }
+        }
+       ]
+      },
+      "countField": "numKeys"
+     },
+     "packed": true
     }
    ]
   },
@@ -973,16 +2429,233 @@
      "type": {
       "kind": "u32"
      },
+     "declaredBy": "BSTriShape",
+     "doc": "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit."
+    },
+    {
+     "name": "vertices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "BSVertex",
+       "fields": [
+        {
+         "name": "position",
+         "type": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 17592186044416
+         }
+        },
+        {
+         "name": "positionW",
+         "type": {
+          "kind": "f32"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 17592186044416
+         }
+        },
+        {
+         "name": "uv",
+         "type": {
+          "kind": "struct",
+          "name": "TexCoord",
+          "fields": [
+           {
+            "name": "u",
+            "type": {
+             "kind": "half"
+            }
+           },
+           {
+            "name": "v",
+            "type": {
+             "kind": "half"
+            }
+           }
+          ]
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 35184372088832
+         }
+        },
+        {
+         "name": "normal",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 3
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 140737488355328
+         },
+         "doc": "Signed-normalized bytes (b / 127.5 - 1)."
+        },
+        {
+         "name": "normalW",
+         "type": {
+          "kind": "u8"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 140737488355328
+         }
+        },
+        {
+         "name": "tangent",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 3
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 281474976710656
+         },
+         "doc": "Signed-normalized bytes."
+        },
+        {
+         "name": "tangentW",
+         "type": {
+          "kind": "u8"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 281474976710656
+         }
+        },
+        {
+         "name": "color",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 562949953421312
+         },
+         "doc": "RGBA."
+        },
+        {
+         "name": "boneWeights",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "half"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 1125899906842624
+         }
+        },
+        {
+         "name": "boneIndices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 1125899906842624
+         }
+        },
+        {
+         "name": "eye",
+         "type": {
+          "kind": "f32"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 4503599627370496
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "dataSize",
+      "ne": 0
+     },
+     "packed": true,
      "declaredBy": "BSTriShape"
     },
     {
-     "name": "geometryData",
+     "name": "triangles",
      "type": {
-      "kind": "bytes",
-      "sizeField": "dataSize"
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Triangle",
+       "fields": [
+        {
+         "name": "a",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "b",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "c",
+         "type": {
+          "kind": "u16"
+         }
+        }
+       ]
+      },
+      "countField": "numTriangles"
      },
-     "declaredBy": "BSTriShape",
-     "doc": "Interleaved vertex data then triangles, raw until vertex unions land."
+     "if": {
+      "field": "dataSize",
+      "ne": 0
+     },
+     "packed": true,
+     "declaredBy": "BSTriShape"
     },
     {
      "name": "particleDataSize",
@@ -1000,6 +2673,7 @@
       },
       "countField": "particleDataSize"
      },
+     "packed": true,
      "declaredBy": "BSTriShape",
      "doc": "Present only on particle/FX shapes."
     },
@@ -1014,11 +2688,42 @@
     {
      "name": "dynamicData",
      "type": {
-      "kind": "bytes",
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
       "sizeField": "dynamicDataSize"
      },
+     "packed": true,
      "declaredBy": "BSDynamicTriShape",
-     "doc": "A Vector4 per vertex, raw."
+     "doc": "A Vec4 per vertex."
     }
    ],
    "verified": [
@@ -1989,18 +3694,235 @@
      "declaredBy": "BSLightingShaderProperty"
     },
     {
-     "name": "materialTail",
+     "name": "emissiveColor",
      "type": {
-      "kind": "bytes"
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "emissiveMultiple",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u32"
      },
      "declaredBy": "BSLightingShaderProperty",
-     "doc": "The shader-type-dependent material scalars, raw until unions land."
+     "doc": "An integer; 3 in almost every SSE block, otherwise 0 or 1."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSLightingShaderProperty",
+     "doc": "1.0 in almost every SSE block."
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSLightingShaderProperty",
+     "doc": "0 in almost every SSE block."
+    },
+    {
+     "name": "glossiness",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "specularColor",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "specularStrength",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSLightingShaderProperty"
+    },
+    {
+     "name": "unknown3",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSLightingShaderProperty",
+     "doc": "0.3 in most SSE blocks."
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSLightingShaderProperty",
+     "doc": "2.0 in most SSE blocks."
+    },
+    {
+     "name": "typeData",
+     "type": {
+      "kind": "union",
+      "cases": [
+       {
+        "name": "none",
+        "when": [
+         0,
+         2,
+         3,
+         4
+        ],
+        "type": null
+       },
+       {
+        "name": "type1",
+        "when": [
+         1
+        ],
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 1
+        }
+       },
+       {
+        "name": "type5",
+        "when": [
+         5
+        ],
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "type6",
+        "when": [
+         6
+        ],
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 3
+        }
+       },
+       {
+        "name": "type11",
+        "when": [
+         11
+        ],
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 5
+        }
+       },
+       {
+        "name": "type14",
+        "when": [
+         14
+        ],
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 4
+        }
+       },
+       {
+        "name": "type16",
+        "when": [
+         16
+        ],
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "f32"
+         },
+         "count": 7
+        }
+       },
+       {
+        "name": "unknown",
+        "default": true,
+        "type": {
+         "kind": "bytes"
+        }
+       }
+      ],
+      "by": {
+       "field": "shaderType"
+      }
+     },
+     "declaredBy": "BSLightingShaderProperty",
+     "doc": "Floats that only some shader types carry; their meanings aren't established yet."
     }
    ],
    "verified": [
     "clutter/barrel01.nif#8"
    ],
-   "doc": "The main lighting material. Confirmed against clutter/barrel01.nif block 8. The leading u32 is the shader type: across the SSE corpus it takes 10 values (0-6, 11, 14, 16) and the block size is a function of it alone. The NiObjectNET fields (name, extra data, controller) follow it, so this class can't inherit NiObjectNET's layout."
+   "doc": "The main lighting material. Confirmed against clutter/barrel01.nif block 8. The material scalars after textureSet are named where SCT's NifDocument already reads them (emissive color and multiple, glossiness, specular color and strength); each word's type was checked on the corpus. The leading u32 is the shader type: across the SSE corpus it takes 10 values (0-6, 11, 14, 16) and the block size is a function of it alone. The NiObjectNET fields (name, extra data, controller) follow it, so this class can't inherit NiObjectNET's layout."
   },
   {
    "name": "BSLightingShaderPropertyColorController",
@@ -3896,16 +5818,233 @@
      "type": {
       "kind": "u32"
      },
+     "declaredBy": "BSTriShape",
+     "doc": "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit."
+    },
+    {
+     "name": "vertices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "BSVertex",
+       "fields": [
+        {
+         "name": "position",
+         "type": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 17592186044416
+         }
+        },
+        {
+         "name": "positionW",
+         "type": {
+          "kind": "f32"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 17592186044416
+         }
+        },
+        {
+         "name": "uv",
+         "type": {
+          "kind": "struct",
+          "name": "TexCoord",
+          "fields": [
+           {
+            "name": "u",
+            "type": {
+             "kind": "half"
+            }
+           },
+           {
+            "name": "v",
+            "type": {
+             "kind": "half"
+            }
+           }
+          ]
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 35184372088832
+         }
+        },
+        {
+         "name": "normal",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 3
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 140737488355328
+         },
+         "doc": "Signed-normalized bytes (b / 127.5 - 1)."
+        },
+        {
+         "name": "normalW",
+         "type": {
+          "kind": "u8"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 140737488355328
+         }
+        },
+        {
+         "name": "tangent",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 3
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 281474976710656
+         },
+         "doc": "Signed-normalized bytes."
+        },
+        {
+         "name": "tangentW",
+         "type": {
+          "kind": "u8"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 281474976710656
+         }
+        },
+        {
+         "name": "color",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 562949953421312
+         },
+         "doc": "RGBA."
+        },
+        {
+         "name": "boneWeights",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "half"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 1125899906842624
+         }
+        },
+        {
+         "name": "boneIndices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 1125899906842624
+         }
+        },
+        {
+         "name": "eye",
+         "type": {
+          "kind": "f32"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 4503599627370496
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "dataSize",
+      "ne": 0
+     },
+     "packed": true,
      "declaredBy": "BSTriShape"
     },
     {
-     "name": "geometryData",
+     "name": "triangles",
      "type": {
-      "kind": "bytes",
-      "sizeField": "dataSize"
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Triangle",
+       "fields": [
+        {
+         "name": "a",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "b",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "c",
+         "type": {
+          "kind": "u16"
+         }
+        }
+       ]
+      },
+      "countField": "numTriangles"
      },
-     "declaredBy": "BSTriShape",
-     "doc": "Interleaved vertex data then triangles, raw until vertex unions land."
+     "if": {
+      "field": "dataSize",
+      "ne": 0
+     },
+     "packed": true,
+     "declaredBy": "BSTriShape"
     },
     {
      "name": "particleDataSize",
@@ -3923,6 +6062,7 @@
       },
       "countField": "particleDataSize"
      },
+     "packed": true,
      "declaredBy": "BSTriShape",
      "doc": "Present only on particle/FX shapes."
     }
@@ -4796,7 +6936,7 @@
      "name": "keys",
      "type": {
       "kind": "struct",
-      "name": "KeyGroup",
+      "name": "BoolKeyGroup",
       "fields": [
        {
         "name": "numKeys",
@@ -4812,15 +6952,56 @@
         "if": {
          "field": "numKeys",
          "min": 1
-        },
-        "doc": "The key type; present only when there are keys."
+        }
        },
        {
         "name": "keys",
         "type": {
-         "kind": "bytes"
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "BoolKey",
+          "fields": [
+           {
+            "name": "time",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "data",
+            "type": {
+             "kind": "union",
+             "cases": [
+              {
+               "name": "constant",
+               "when": [
+                5
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "BoolKeyDataConstant",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "u8"
+                  }
+                 }
+                ]
+               }
+              }
+             ],
+             "by": {
+              "field": "interpolation"
+             }
+            }
+           }
+          ]
+         },
+         "countField": "numKeys"
         },
-        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+        "packed": true
        }
       ]
      },
@@ -5059,7 +7240,7 @@
         "type": {
          "kind": "bytes"
         },
-        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+        "doc": "The keys, raw."
        }
       ]
      },
@@ -5230,7 +7411,7 @@
      "name": "keys",
      "type": {
       "kind": "struct",
-      "name": "KeyGroup",
+      "name": "FloatKeyGroup",
       "fields": [
        {
         "name": "numKeys",
@@ -5246,15 +7427,140 @@
         "if": {
          "field": "numKeys",
          "min": 1
-        },
-        "doc": "The key type; present only when there are keys."
+        }
        },
        {
         "name": "keys",
         "type": {
-         "kind": "bytes"
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "FloatKey",
+          "fields": [
+           {
+            "name": "time",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "data",
+            "type": {
+             "kind": "union",
+             "cases": [
+              {
+               "name": "linear",
+               "when": [
+                1
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataLinear",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "quadratic",
+               "when": [
+                2
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataQuadratic",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "forward",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "backward",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "tbc",
+               "when": [
+                3
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataTbc",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "tension",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "bias",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "continuity",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "constant",
+               "when": [
+                5
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataConstant",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              }
+             ],
+             "by": {
+              "field": "interpolation"
+             }
+            }
+           }
+          ]
+         },
+         "countField": "numKeys"
         },
-        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+        "packed": true
        }
       ]
      },
@@ -7456,7 +9762,7 @@
      "name": "keys",
      "type": {
       "kind": "struct",
-      "name": "KeyGroup",
+      "name": "Vec3KeyGroup",
       "fields": [
        {
         "name": "numKeys",
@@ -7472,15 +9778,266 @@
         "if": {
          "field": "numKeys",
          "min": 1
-        },
-        "doc": "The key type; present only when there are keys."
+        }
        },
        {
         "name": "keys",
         "type": {
-         "kind": "bytes"
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3Key",
+          "fields": [
+           {
+            "name": "time",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "data",
+            "type": {
+             "kind": "union",
+             "cases": [
+              {
+               "name": "linear",
+               "when": [
+                1
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataLinear",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "quadratic",
+               "when": [
+                2
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataQuadratic",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "name": "forward",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "name": "backward",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "tbc",
+               "when": [
+                3
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataTbc",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "name": "tension",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "bias",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "continuity",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "constant",
+               "when": [
+                5
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataConstant",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              }
+             ],
+             "by": {
+              "field": "interpolation"
+             }
+            }
+           }
+          ]
+         },
+         "countField": "numKeys"
         },
-        "doc": "The keys, raw. Their size depends on the key type and the channel, so they are decoded by a later language version (unions)."
+        "packed": true
        }
       ]
      },
@@ -7786,7 +10343,8 @@
          "if": {
           "field": "hasVertexWeights",
           "ne": 0
-         }
+         },
+         "packed": true
         }
        ]
       },
@@ -7893,18 +10451,427 @@
     {
      "name": "vertexData",
      "type": {
-      "kind": "bytes",
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "BSVertex",
+       "fields": [
+        {
+         "name": "position",
+         "type": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 17592186044416
+         }
+        },
+        {
+         "name": "positionW",
+         "type": {
+          "kind": "f32"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 17592186044416
+         }
+        },
+        {
+         "name": "uv",
+         "type": {
+          "kind": "struct",
+          "name": "TexCoord",
+          "fields": [
+           {
+            "name": "u",
+            "type": {
+             "kind": "half"
+            }
+           },
+           {
+            "name": "v",
+            "type": {
+             "kind": "half"
+            }
+           }
+          ]
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 35184372088832
+         }
+        },
+        {
+         "name": "normal",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 3
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 140737488355328
+         },
+         "doc": "Signed-normalized bytes (b / 127.5 - 1)."
+        },
+        {
+         "name": "normalW",
+         "type": {
+          "kind": "u8"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 140737488355328
+         }
+        },
+        {
+         "name": "tangent",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 3
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 281474976710656
+         },
+         "doc": "Signed-normalized bytes."
+        },
+        {
+         "name": "tangentW",
+         "type": {
+          "kind": "u8"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 281474976710656
+         }
+        },
+        {
+         "name": "color",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 562949953421312
+         },
+         "doc": "RGBA."
+        },
+        {
+         "name": "boneWeights",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "half"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 1125899906842624
+         }
+        },
+        {
+         "name": "boneIndices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u8"
+          },
+          "count": 4
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 1125899906842624
+         }
+        },
+        {
+         "name": "eye",
+         "type": {
+          "kind": "f32"
+         },
+         "if": {
+          "field": "vertexDesc",
+          "mask": 4503599627370496
+         }
+        }
+       ]
+      },
       "sizeField": "dataSize"
      },
+     "packed": true,
      "declaredBy": "NiSkinPartition"
     },
     {
-     "name": "partitionData",
+     "name": "partitions",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "SkinPartition",
+       "fields": [
+        {
+         "name": "numVertices",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "numTriangles",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "numBones",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "numStrips",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "numWeightsPerVertex",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "bones",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countField": "numBones"
+         },
+         "packed": true
+        },
+        {
+         "name": "hasVertexMap",
+         "type": {
+          "kind": "u8"
+         }
+        },
+        {
+         "name": "vertexMap",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countField": "numVertices"
+         },
+         "if": {
+          "field": "hasVertexMap",
+          "ne": 0
+         },
+         "packed": true
+        },
+        {
+         "name": "hasVertexWeights",
+         "type": {
+          "kind": "u8"
+         }
+        },
+        {
+         "name": "vertexWeights",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "struct",
+           "name": "SkinPartitionVertexWeights",
+           "fields": [
+            {
+             "name": "weights",
+             "type": {
+              "kind": "array",
+              "element": {
+               "kind": "f32"
+              },
+              "countField": "numWeightsPerVertex"
+             }
+            }
+           ]
+          },
+          "countField": "numVertices"
+         },
+         "if": {
+          "field": "hasVertexWeights",
+          "ne": 0
+         },
+         "packed": true
+        },
+        {
+         "name": "stripLengths",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countField": "numStrips"
+         }
+        },
+        {
+         "name": "hasFaces",
+         "type": {
+          "kind": "u8"
+         }
+        },
+        {
+         "name": "triangles",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "struct",
+           "name": "Triangle",
+           "fields": [
+            {
+             "name": "a",
+             "type": {
+              "kind": "u16"
+             }
+            },
+            {
+             "name": "b",
+             "type": {
+              "kind": "u16"
+             }
+            },
+            {
+             "name": "c",
+             "type": {
+              "kind": "u16"
+             }
+            }
+           ]
+          },
+          "countField": "numTriangles"
+         },
+         "if": {
+          "field": "hasFaces",
+          "ne": 0
+         },
+         "packed": true
+        },
+        {
+         "name": "hasBoneIndices",
+         "type": {
+          "kind": "u8"
+         }
+        },
+        {
+         "name": "boneIndices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "struct",
+           "name": "SkinPartitionBoneIndices",
+           "fields": [
+            {
+             "name": "indices",
+             "type": {
+              "kind": "array",
+              "element": {
+               "kind": "u8"
+              },
+              "countField": "numWeightsPerVertex"
+             }
+            }
+           ]
+          },
+          "countField": "numVertices"
+         },
+         "if": {
+          "field": "hasBoneIndices",
+          "ne": 0
+         },
+         "packed": true
+        },
+        {
+         "name": "unknownShort",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "vertexDesc",
+         "type": {
+          "kind": "u64"
+         }
+        },
+        {
+         "name": "trueTriangles",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "struct",
+           "name": "Triangle",
+           "fields": [
+            {
+             "name": "a",
+             "type": {
+              "kind": "u16"
+             }
+            },
+            {
+             "name": "b",
+             "type": {
+              "kind": "u16"
+             }
+            },
+            {
+             "name": "c",
+             "type": {
+              "kind": "u16"
+             }
+            }
+           ]
+          },
+          "countField": "numTriangles"
+         },
+         "packed": true,
+         "doc": "Triangles indexing the shape's global vertex array."
+        }
+       ]
+      },
+      "countField": "numPartitions"
      },
-     "declaredBy": "NiSkinPartition",
-     "doc": "The per-partition tables, raw until decoded."
+     "declaredBy": "NiSkinPartition"
     }
    ],
    "doc": "The SSE variant: where a skinned shape's vertices live when its BSTriShape dataSize is 0. Header confirmed against goldringdiamond block 5."
@@ -8310,14 +11277,1078 @@
      "declaredBy": "NiTransformData"
     },
     {
-     "name": "tail",
+     "name": "rotationType",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
-     "declaredBy": "NiTransformData",
-     "doc": "The rotation, translation and scale key groups, raw."
+     "if": {
+      "field": "numRotationKeys",
+      "min": 1
+     },
+     "declaredBy": "NiTransformData"
+    },
+    {
+     "name": "rotations",
+     "type": {
+      "kind": "union",
+      "cases": [
+       {
+        "name": "xyz",
+        "when": [
+         4
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "NiTransformDataRotationsXyz",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "struct",
+            "name": "FloatKeyGroup",
+            "fields": [
+             {
+              "name": "numKeys",
+              "type": {
+               "kind": "u32"
+              }
+             },
+             {
+              "name": "interpolation",
+              "type": {
+               "kind": "u32"
+              },
+              "if": {
+               "field": "numKeys",
+               "min": 1
+              }
+             },
+             {
+              "name": "keys",
+              "type": {
+               "kind": "array",
+               "element": {
+                "kind": "struct",
+                "name": "FloatKey",
+                "fields": [
+                 {
+                  "name": "time",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "data",
+                  "type": {
+                   "kind": "union",
+                   "cases": [
+                    {
+                     "name": "linear",
+                     "when": [
+                      1
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataLinear",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "quadratic",
+                     "when": [
+                      2
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataQuadratic",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "forward",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "backward",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "tbc",
+                     "when": [
+                      3
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataTbc",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "tension",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "bias",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "continuity",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "constant",
+                     "when": [
+                      5
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataConstant",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    }
+                   ],
+                   "by": {
+                    "field": "interpolation"
+                   }
+                  }
+                 }
+                ]
+               },
+               "countField": "numKeys"
+              },
+              "packed": true
+             }
+            ]
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "struct",
+            "name": "FloatKeyGroup",
+            "fields": [
+             {
+              "name": "numKeys",
+              "type": {
+               "kind": "u32"
+              }
+             },
+             {
+              "name": "interpolation",
+              "type": {
+               "kind": "u32"
+              },
+              "if": {
+               "field": "numKeys",
+               "min": 1
+              }
+             },
+             {
+              "name": "keys",
+              "type": {
+               "kind": "array",
+               "element": {
+                "kind": "struct",
+                "name": "FloatKey",
+                "fields": [
+                 {
+                  "name": "time",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "data",
+                  "type": {
+                   "kind": "union",
+                   "cases": [
+                    {
+                     "name": "linear",
+                     "when": [
+                      1
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataLinear",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "quadratic",
+                     "when": [
+                      2
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataQuadratic",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "forward",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "backward",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "tbc",
+                     "when": [
+                      3
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataTbc",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "tension",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "bias",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "continuity",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "constant",
+                     "when": [
+                      5
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataConstant",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    }
+                   ],
+                   "by": {
+                    "field": "interpolation"
+                   }
+                  }
+                 }
+                ]
+               },
+               "countField": "numKeys"
+              },
+              "packed": true
+             }
+            ]
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "struct",
+            "name": "FloatKeyGroup",
+            "fields": [
+             {
+              "name": "numKeys",
+              "type": {
+               "kind": "u32"
+              }
+             },
+             {
+              "name": "interpolation",
+              "type": {
+               "kind": "u32"
+              },
+              "if": {
+               "field": "numKeys",
+               "min": 1
+              }
+             },
+             {
+              "name": "keys",
+              "type": {
+               "kind": "array",
+               "element": {
+                "kind": "struct",
+                "name": "FloatKey",
+                "fields": [
+                 {
+                  "name": "time",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "data",
+                  "type": {
+                   "kind": "union",
+                   "cases": [
+                    {
+                     "name": "linear",
+                     "when": [
+                      1
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataLinear",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "quadratic",
+                     "when": [
+                      2
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataQuadratic",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "forward",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "backward",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "tbc",
+                     "when": [
+                      3
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataTbc",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "tension",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "bias",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       },
+                       {
+                        "name": "continuity",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "name": "constant",
+                     "when": [
+                      5
+                     ],
+                     "type": {
+                      "kind": "struct",
+                      "name": "FloatKeyDataConstant",
+                      "fields": [
+                       {
+                        "name": "value",
+                        "type": {
+                         "kind": "f32"
+                        }
+                       }
+                      ]
+                     }
+                    }
+                   ],
+                   "by": {
+                    "field": "interpolation"
+                   }
+                  }
+                 }
+                ]
+               },
+               "countField": "numKeys"
+              },
+              "packed": true
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "quaternion",
+        "when": [
+         1,
+         3
+        ],
+        "type": {
+         "kind": "struct",
+         "name": "NiTransformDataRotationsQuaternion",
+         "fields": [
+          {
+           "name": "keys",
+           "type": {
+            "kind": "array",
+            "element": {
+             "kind": "struct",
+             "name": "QuatKey",
+             "fields": [
+              {
+               "name": "time",
+               "type": {
+                "kind": "f32"
+               }
+              },
+              {
+               "name": "value",
+               "type": {
+                "kind": "struct",
+                "name": "Quat",
+                "fields": [
+                 {
+                  "name": "w",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "x",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "y",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "z",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "tbc",
+               "type": {
+                "kind": "union",
+                "cases": [
+                 {
+                  "name": "linear",
+                  "when": [
+                   1
+                  ],
+                  "type": null
+                 },
+                 {
+                  "name": "tbc",
+                  "when": [
+                   3
+                  ],
+                  "type": {
+                   "kind": "struct",
+                   "name": "QuatKeyTbcTbc",
+                   "fields": [
+                    {
+                     "name": "tension",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "bias",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "continuity",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ],
+                "by": {
+                 "field": "rotationType"
+                }
+               }
+              }
+             ]
+            },
+            "countField": "numRotationKeys"
+           },
+           "packed": true
+          }
+         ]
+        }
+       }
+      ],
+      "by": {
+       "field": "rotationType"
+      }
+     },
+     "if": {
+      "field": "numRotationKeys",
+      "min": 1
+     },
+     "declaredBy": "NiTransformData"
+    },
+    {
+     "name": "translations",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3KeyGroup",
+      "fields": [
+       {
+        "name": "numKeys",
+        "type": {
+         "kind": "u32"
+        }
+       },
+       {
+        "name": "interpolation",
+        "type": {
+         "kind": "u32"
+        },
+        "if": {
+         "field": "numKeys",
+         "min": 1
+        }
+       },
+       {
+        "name": "keys",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3Key",
+          "fields": [
+           {
+            "name": "time",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "data",
+            "type": {
+             "kind": "union",
+             "cases": [
+              {
+               "name": "linear",
+               "when": [
+                1
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataLinear",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "quadratic",
+               "when": [
+                2
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataQuadratic",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "name": "forward",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "name": "backward",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "tbc",
+               "when": [
+                3
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataTbc",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "name": "tension",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "bias",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "continuity",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "constant",
+               "when": [
+                5
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "Vec3KeyDataConstant",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "struct",
+                   "name": "Vec3",
+                   "fields": [
+                    {
+                     "name": "x",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "y",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    },
+                    {
+                     "name": "z",
+                     "type": {
+                      "kind": "f32"
+                     }
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              }
+             ],
+             "by": {
+              "field": "interpolation"
+             }
+            }
+           }
+          ]
+         },
+         "countField": "numKeys"
+        },
+        "packed": true
+       }
+      ]
+     },
+     "declaredBy": "NiTransformData"
+    },
+    {
+     "name": "scales",
+     "type": {
+      "kind": "struct",
+      "name": "FloatKeyGroup",
+      "fields": [
+       {
+        "name": "numKeys",
+        "type": {
+         "kind": "u32"
+        }
+       },
+       {
+        "name": "interpolation",
+        "type": {
+         "kind": "u32"
+        },
+        "if": {
+         "field": "numKeys",
+         "min": 1
+        }
+       },
+       {
+        "name": "keys",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "FloatKey",
+          "fields": [
+           {
+            "name": "time",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "data",
+            "type": {
+             "kind": "union",
+             "cases": [
+              {
+               "name": "linear",
+               "when": [
+                1
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataLinear",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "quadratic",
+               "when": [
+                2
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataQuadratic",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "forward",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "backward",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "tbc",
+               "when": [
+                3
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataTbc",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "tension",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "bias",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 },
+                 {
+                  "name": "continuity",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "name": "constant",
+               "when": [
+                5
+               ],
+               "type": {
+                "kind": "struct",
+                "name": "FloatKeyDataConstant",
+                "fields": [
+                 {
+                  "name": "value",
+                  "type": {
+                   "kind": "f32"
+                  }
+                 }
+                ]
+               }
+              }
+             ],
+             "by": {
+              "field": "interpolation"
+             }
+            }
+           }
+          ]
+         },
+         "countField": "numKeys"
+        },
+        "packed": true
+       }
+      ]
+     },
+     "declaredBy": "NiTransformData"
     }
-   ]
+   ],
+   "doc": "Rotation, translation and scale keys. Every NiTransformData in the SSE corpus (19,160) decodes exactly: rotation type 4 is three float key groups (X, Y, Z); types 1 and 3 are quaternion keys."
   },
   {
    "name": "NiTransformInterpolator",

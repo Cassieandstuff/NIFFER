@@ -66,6 +66,12 @@ owner writes. Design and migration plan: [docs/schema-design.md](docs/schema-des
 - **Claims about data:** `to:`, `ref` vs `ptr`, and any field meaning describe the data. Add them
   only when the gate confirms them on the vanilla corpus. `roundtrip --schema --refs` lists the
   observed target classes of every ref field that has no `to:` yet.
+- **New layouts are measured first:** before modeling a payload, measure it over the corpus
+  (distinct selector values, sizes per selector, value shapes per word), then describe exactly
+  what the data shows. Name a field from first-party code (SCT, NIFFER's helpers) or from its
+  layout; anything else is `unknownN`.
+- **Packed arrays:** mark large arrays `packed: true`. Read them through `Visit`, `GetAt`,
+  `Count`, `Has` or the views, never through `Value::items`.
 - A descriptor change must keep `roundtrip --schema` **GREEN**.
 
 ## Gates
@@ -77,9 +83,12 @@ owner writes. Design and migration plan: [docs/schema-design.md](docs/schema-des
   `D:/Modding/Development/Common/Vanilla Source Files/1170`:
   - `niffer-tool roundtrip <dir>`: the typed path. 22,760 of 22,761 NIFs byte-identical (the
     one other is a non-SSE version), with 0 unknown blocks and 0 layout mismatches.
-  - `niffer-tool roundtrip --schema <dir>`: the schema path. Verbatim and forced re-encode are
-    byte-exact; 786,940 blocks, all modeled; 884,440 refs checked against `to:`; an acyclic
-    `ref` graph; 400,426 string refs in range.
+  - `niffer-tool roundtrip --schema <dir>`: the schema path. It loads materialized, so forced
+    re-encode proves every element, and it checks that the default packed load saves
+    identically. Verbatim and forced re-encode are byte-exact; 786,940 blocks, all modeled;
+    95.94% of block bytes decoded field by field; 884,440 refs checked against `to:`; an acyclic
+    `ref` graph; 400,426 string refs in range. `--refs` also lists the remaining opaque `bytes`
+    fields, largest first.
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
 
 ## Bug log — sync is mandatory

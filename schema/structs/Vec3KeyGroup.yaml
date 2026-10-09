@@ -1,0 +1,5 @@
+struct: Vec3KeyGroup
+fields:
+  - { name: numKeys, type: u32 }
+  - { name: interpolation, type: u32, if: { field: numKeys, min: 1 } }
+  - { name: keys, type: "Vec3Key[count: numKeys]", packed: true }

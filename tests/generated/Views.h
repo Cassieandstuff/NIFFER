@@ -186,8 +186,9 @@ public:
     // pairs
     std::vector<::niffer_test::view::Pair> Pairs() const {
         std::vector<::niffer_test::view::Pair> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(15)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(15).Child(e));
+        const size_t n = b_->Count(p_.Child(15));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(15).Child(static_cast<uint16_t>(e)));
         return out;
     }
     // small
@@ -216,8 +217,9 @@ public:
     // rows
     std::vector<::niffer_test::view::TAllRows> Rows() const {
         std::vector<::niffer_test::view::TAllRows> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(24)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(24).Child(e));
+        const size_t n = b_->Count(p_.Child(24));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(24).Child(static_cast<uint16_t>(e)));
         return out;
     }
     // sel
@@ -270,19 +272,20 @@ public:
     ::niffer::Half H() const { return b_->GetAt<::niffer::Half>(p_.Child(1)).value_or(::niffer::Half{}); }
     bool SetH(const ::niffer::Half& v) const { return b_->SetAt<::niffer::Half>(p_.Child(1), v); }
     // pick
-    int PickCase() const { const ::niffer::Value* v = b_->GetValue(p_.Child(2)); return v ? static_cast<int>(v->bits) : -1; }
+    int PickCase() const { return b_->CaseAt(p_.Child(2)); }
     std::optional<float> PickOne() const { return b_->GetAt<float>(p_.Child(2).Child(0)); }
     bool SetPickOne(const float& v) const { return b_->SetAt<float>(p_.Child(2).Child(0), v); }
-    std::optional<::niffer_test::view::TNewPickMany> PickMany() const { if (!b_->GetValue(p_.Child(2).Child(1))) return std::nullopt; return ::niffer_test::view::TNewPickMany(*b_, p_.Child(2).Child(1)); }
-    bool PickNone() const { return b_->GetValue(p_.Child(2).Child(2)) != nullptr; }
+    std::optional<::niffer_test::view::TNewPickMany> PickMany() const { if (!b_->Has(p_.Child(2).Child(1))) return std::nullopt; return ::niffer_test::view::TNewPickMany(*b_, p_.Child(2).Child(1)); }
+    bool PickNone() const { return b_->Has(p_.Child(2).Child(2)); }
     // windowSize
     uint16_t WindowSize() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
     bool SetWindowSize(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
     // window
     std::vector<::niffer_test::view::Probe> Window() const {
         std::vector<::niffer_test::view::Probe> out;
-        if (const ::niffer::Value* v = b_->GetValue(p_.Child(4)))
-            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, p_.Child(4).Child(e));
+        const size_t n = b_->Count(p_.Child(4));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(4).Child(static_cast<uint16_t>(e)));
         return out;
     }
     // fixedWindow

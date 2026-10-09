@@ -48,7 +48,7 @@ COND_OPS = {"eq": "Eq", "ne": "Ne", "min": "Min", "max": "Max", "mask": "Mask"}
 
 # Constructs specified by the design but not in this language version: reject by name.
 NOT_YET = {
-    "packed": "packed arrays", "lookup": "lookup selectors",
+    "lookup": "lookup selectors",
     "enum": "enum hints", "flags": "flag hints", "unit": "unit hints",
 }
 
@@ -65,7 +65,10 @@ RESERVED_FIELDS = {"self", "block", "cursor", "path", "from"}
 BLOCK_KEYS = {"block", "inherits", "abstract", "fields", "verified", "doc"}
 STRUCT_KEYS = {"struct", "size", "fields", "doc"}
 MANIFEST_KEYS = {"manifest", "schemaVersion"}
-FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "doc"}
+FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "packed", "doc"}
+# Kinds a packed array's elements may not contain: packed storage is never
+# walked for references, strings or opaque bytes.
+UNPACKABLE = {"Ref", "Ptr", "StringRef", "SizedString", "Bytes"}
 UNION_KEYS = {"by", "cases", "default"}
 CASE_KEYS = {"when", "name", "type", "fields", "to", "doc"}
 SELECTOR_KEYS = {"field", "mask"}
@@ -186,6 +189,7 @@ class Field:
     len_ref: tuple | None = None        # (up, index, name)
     cond: tuple | None = None           # (op, up, index, value, fieldName, opSpelling)
     sel: tuple | None = None            # Union: (up, index, mask, fieldName)
+    packed: bool = False                # storage hint (spec §4.4)
     doc: str | None = None
     declared_by: str | None = None      # block that declares it (block layouts)
 
@@ -440,6 +444,17 @@ class Schema:
                 ftype, len_name = self.parse_type(fwhere, fd["type"], fd, scopes)
 
             f = Field(name=name, type=ftype, where=fwhere, doc=fd.get("doc"), sel=sel)
+            if "packed" in fd:
+                if not isinstance(fd["packed"], bool):
+                    fail(fwhere, "'packed' must be true or false")
+                if fd["packed"]:
+                    if ftype.kind != "Array":
+                        fail(fwhere, "'packed' applies only to arrays")
+                    bad = self.kinds_in(ftype.elem) & UNPACKABLE
+                    if bad:
+                        fail(fwhere, "a packed array's elements can't contain "
+                                     + ", ".join(sorted(k.lower() for k in bad)))
+                    f.packed = True
             base_t = ftype.elem if ftype.kind == "Array" else ftype
             if "to" in fd and base_t.kind not in ("Ref", "Ptr"):
                 fail(fwhere, "'to' applies only to ref/ptr")
@@ -461,6 +476,18 @@ class Schema:
                 f.cond = (COND_OPS[ops[0]], up, idx, operand, c["field"], ops[0])
             out.append(f)
 
+    def kinds_in(self, t: Type) -> set[str]:
+        out = {t.kind}
+        if t.elem is not None:
+            out |= self.kinds_in(t.elem)
+        if t.struct is not None:
+            for f in t.struct.fields:
+                out |= self.kinds_in(f.type)
+        for c in t.cases:
+            if c.type is not None:
+                out |= self.kinds_in(c.type)
+        return out
+
     def inline_struct(self, where: str, name: str, raw_fields, scopes) -> Struct:
         if name in self.struct_docs or name in self.blocks:
             fail(where, f"inline struct name '{name}' collides with another type")
@@ -477,9 +504,11 @@ class Schema:
             fail(where, "'union' must be a mapping with 'by' and 'cases'")
         check_keys(where, u, UNION_KEYS)
         by = u.get("by")
-        if not isinstance(by, dict) or "field" not in by:
+        if not isinstance(by, dict):
             fail(where, "union 'by' must be a mapping with 'field' (and optionally 'mask')")
-        check_keys(f"{where}.by", by, SELECTOR_KEYS)
+        check_keys(f"{where}.by", by, SELECTOR_KEYS)   # names reserved selectors (lookup)
+        if "field" not in by:
+            fail(where, "union 'by' must be a mapping with 'field' (and optionally 'mask')")
         mask = check_int(where, by["mask"], "the selector mask") if "mask" in by else 0
         up, idx, _ = self.lookup(where, by["field"], scopes)
         raw_cases = u.get("cases")
@@ -536,9 +565,9 @@ class Schema:
                     if f.type.kind not in INTEGER_KINDS:
                         fail(where, f"'{name}' must be an integer scalar to be a count, size, "
                                     "condition or selector")
-                    if f.cond is not None:
-                        fail(where, f"'{name}' is conditional, so it can't be a count, size, "
-                                    "condition or selector")
+                    # A conditional field may be referenced: when it's absent, a
+                    # condition on it is false, a union on it selects no case and
+                    # a length from it refuses (spec §3.3).
                     return up, idx, f
         raise LookupMiss(f"{where}: no earlier field '{name}' to reference")
 
@@ -736,7 +765,8 @@ class Tables:
                 sup, sidx, smask = f.sel[0], f.sel[1], f.sel[2]
             else:
                 sup, sidx, smask = 0, None, 0
-            self.fields.append((f.name, ft, len_up, len_field, op, cup, cidx, cval, sup, sidx, smask))
+            self.fields.append((f.name, ft, len_up, len_field, op, cup, cidx, cval, sup, sidx, smask,
+                                f.packed))
         return idx
 
 
@@ -769,9 +799,10 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out.append("};")
     out.append("")
     out.append("inline constexpr FieldDef kFields[] = {")
-    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask) in enumerate(tables.fields):
+    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask, packed) in enumerate(tables.fields):
         out.append(f"    {{ {c_str(name)}, {ft}, {lup}, {field_or_none(lf)}, CondOp::{op}, {cup}, "
-                   f"{field_or_none(cf)}, {c_int64(cval)}, {sup}, {field_or_none(sf)}, {smask}ull }},  // {i}")
+                   f"{field_or_none(cf)}, {c_int64(cval)}, {sup}, {field_or_none(sf)}, {smask}ull, "
+                   f"{'true' if packed else 'false'} }},  // {i}")
     out.append("};")
     out.append("")
     spans = {}
@@ -907,12 +938,12 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     def value_accessor(lines, acc: str, p: str, t: Type | None, optional: bool):
         """Accessors for the value of type `t` at path expression `p`."""
         if t is None:   # empty union case
-            lines.append(f"    bool {acc}() const {{ return b_->GetValue({p}) != nullptr; }}")
+            lines.append(f"    bool {acc}() const {{ return b_->Has({p}); }}")
             return
         if t.kind == "Struct":
             sv = q + t.struct.name
             if optional:
-                lines.append(f"    std::optional<{sv}> {acc}() const {{ if (!b_->GetValue({p})) return std::nullopt; return {sv}(*b_, {p}); }}")
+                lines.append(f"    std::optional<{sv}> {acc}() const {{ if (!b_->Has({p})) return std::nullopt; return {sv}(*b_, {p}); }}")
             else:
                 lines.append(f"    {sv} {acc}() const {{ return {sv}(*b_, {p}); }}")
             return
@@ -920,8 +951,9 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
             sv = q + t.elem.struct.name
             lines.append(f"    std::vector<{sv}> {acc}() const {{")
             lines.append(f"        std::vector<{sv}> out;")
-            lines.append(f"        if (const ::niffer::Value* v = b_->GetValue({p}))")
-            lines.append(f"            for (uint16_t e = 0; e < v->items.size(); ++e) out.emplace_back(*b_, {p}.Child(e));")
+            lines.append(f"        const size_t n = b_->Count({p});")
+            lines.append("        out.reserve(n);")
+            lines.append(f"        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, {p}.Child(static_cast<uint16_t>(e)));")
             lines.append("        return out;")
             lines.append("    }")
             return
@@ -942,8 +974,7 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
             lines.append(doc)
             if f.type.kind == "Union":
                 # One accessor per case; each is empty unless that case is selected.
-                lines.append(f"    int {acc}Case() const {{ const ::niffer::Value* v = b_->GetValue({p}); "
-                             f"return v ? static_cast<int>(v->bits) : -1; }}")
+                lines.append(f"    int {acc}Case() const {{ return b_->CaseAt({p}); }}")
                 for c, case in enumerate(f.type.cases):
                     value_accessor(lines, acc + pascal(case.name), f"{p}.Child({c})", case.type, True)
                 continue
@@ -1066,6 +1097,8 @@ def field_json(f: Field) -> dict:
         d["type"]["by"] = {"field": f.sel[3], **({"mask": f.sel[2]} if f.sel[2] else {})}
     if f.cond:
         d["if"] = {"field": f.cond[4], f.cond[5]: f.cond[3]}
+    if f.packed:
+        d["packed"] = True
     if f.declared_by:
         d["declaredBy"] = f.declared_by
     if f.doc:

@@ -1,0 +1,10 @@
+struct: BoolKey
+doc: >-
+  Key layouts by interpolation type, measured on the SSE corpus: 1 is time + value (linear), 2 adds two tangents (quadratic), 3 adds tension, bias and continuity (TBC), 5 is time + value (constant). Names are inferred from the layouts. Only constant (5) bool keys occur in the corpus.
+fields:
+  - { name: time, type: f32 }
+  - name: data
+    union:
+      by: { field: interpolation }
+      cases:
+        - { when: 5, name: constant, fields: [ { name: value, type: u8 } ] }

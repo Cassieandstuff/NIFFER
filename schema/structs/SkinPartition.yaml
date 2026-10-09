@@ -1,0 +1,34 @@
+struct: SkinPartition
+doc: >-
+  One partition of an SSE NiSkinPartition. Layout from NIFFER's DecodeSkinPartitionTriangles,
+  verified on the whole SSE corpus. Strips (numStrips > 0 with faces) don't occur there and
+  aren't modeled: such a partition refuses and its block stays raw.
+fields:
+  - { name: numVertices, type: u16 }
+  - { name: numTriangles, type: u16 }
+  - { name: numBones, type: u16 }
+  - { name: numStrips, type: u16 }
+  - { name: numWeightsPerVertex, type: u16 }
+  - { name: bones, type: "u16[count: numBones]", packed: true }
+  - { name: hasVertexMap, type: u8 }
+  - { name: vertexMap, type: "u16[count: numVertices]", if: { field: hasVertexMap, ne: 0 }, packed: true }
+  - { name: hasVertexWeights, type: u8 }
+  - name: vertexWeights
+    packed: true
+    array: "count: numVertices"
+    if: { field: hasVertexWeights, ne: 0 }
+    fields:
+      - { name: weights, type: "f32[count: numWeightsPerVertex]" }
+  - { name: stripLengths, type: "u16[count: numStrips]" }
+  - { name: hasFaces, type: u8 }
+  - { name: triangles, type: "Triangle[count: numTriangles]", if: { field: hasFaces, ne: 0 }, packed: true }
+  - { name: hasBoneIndices, type: u8 }
+  - name: boneIndices
+    packed: true
+    array: "count: numVertices"
+    if: { field: hasBoneIndices, ne: 0 }
+    fields:
+      - { name: indices, type: "u8[count: numWeightsPerVertex]" }
+  - { name: unknownShort, type: u16 }
+  - { name: vertexDesc, type: u64 }
+  - { name: trueTriangles, type: "Triangle[count: numTriangles]", doc: "Triangles indexing the shape's global vertex array.", packed: true }

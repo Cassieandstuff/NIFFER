@@ -11,1133 +11,1317 @@ using namespace ::niffer::schema;
 inline constexpr TypeDef kTypes[] = {
     { Kind::Struct, LenKind::None, 0, 0, 3, 0, 0, "Vec3" },  // 0: struct:Vec3#0
     { Kind::F32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 1: f32
-    { Kind::Struct, LenKind::None, 0, 3, 3, 0, 0, "KeyGroup" },  // 2: struct:KeyGroup#1
-    { Kind::U32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 3: u32
-    { Kind::Bytes, LenKind::Rest, 0, 0, 0, 0, 0, nullptr },  // 4: bytes
-    { Kind::Struct, LenKind::None, 0, 6, 4, 0, 0, "Quat" },  // 5: struct:Quat#2
-    { Kind::Struct, LenKind::None, 0, 10, 2, 0, 0, "BSBoneLODExtraDataBoneLODs" },  // 6: struct:BSBoneLODExtraDataBoneLODs#3
-    { Kind::StringRef, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 7: stringref
-    { Kind::Struct, LenKind::None, 0, 12, 2, 0, 0, "NiTextKeyExtraDataKeys" },  // 8: struct:NiTextKeyExtraDataKeys#4
-    { Kind::Struct, LenKind::None, 0, 14, 1, 0, 0, "Matrix33" },  // 9: struct:Matrix33#6
-    { Kind::Array, LenKind::Fixed, 9, 1, 0, 0, 0, nullptr },  // 10: f32[9]
-    { Kind::Struct, LenKind::None, 0, 15, 3, 0, 0, "AvTransform" },  // 11: struct:AvTransform#5
-    { Kind::Struct, LenKind::None, 0, 18, 4, 0, 0, "Vec4" },  // 12: struct:Vec4#7
-    { Kind::Struct, LenKind::None, 0, 22, 2, 0, 0, "Vec2" },  // 13: struct:Vec2#8
-    { Kind::Struct, LenKind::None, 0, 24, 2, 0, 0, "BSDismemberSkinInstancePartitions" },  // 14: struct:BSDismemberSkinInstancePartitions#9
-    { Kind::U16, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 15: u16
-    { Kind::Struct, LenKind::None, 0, 26, 3, 0, 0, "NiTransform" },  // 16: struct:NiTransform#10
-    { Kind::Struct, LenKind::None, 0, 29, 2, 0, 0, "NiSkinDataBonesVertexWeights" },  // 17: struct:NiSkinDataBonesVertexWeights#12
-    { Kind::Struct, LenKind::None, 0, 31, 5, 0, 0, "NiSkinDataBones" },  // 18: struct:NiSkinDataBones#11
-    { Kind::Array, LenKind::Field, 0, 17, 0, 0, 0, nullptr },  // 19: struct:NiSkinDataBonesVertexWeights#12[field]
-    { Kind::Struct, LenKind::None, 0, 36, 3, 0, 0, "BSBehaviorGraphExtraData" },  // 20: block:BSBehaviorGraphExtraData
-    { Kind::U8, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 21: u8
-    { Kind::Struct, LenKind::None, 0, 39, 7, 0, 0, "BSBlastNode" },  // 22: block:BSBlastNode
-    { Kind::Array, LenKind::Prefix32, 0, 24, 0, 0, 0, nullptr },  // 23: ref->NiExtraData[u32]
-    { Kind::Ref, LenKind::None, 0, 0, 0, 0, 1, nullptr },  // 24: ref->NiExtraData
-    { Kind::Ref, LenKind::None, 0, 0, 0, 1, 1, nullptr },  // 25: ref->NiTimeController
-    { Kind::Ref, LenKind::None, 0, 0, 0, 2, 2, nullptr },  // 26: ref->bhkBlendCollisionObject,bhkCollisionObject
-    { Kind::Struct, LenKind::None, 0, 46, 2, 0, 0, "BSBoneLODExtraData" },  // 27: block:BSBoneLODExtraData
-    { Kind::Array, LenKind::Prefix32, 0, 6, 0, 0, 0, nullptr },  // 28: struct:BSBoneLODExtraDataBoneLODs#3[u32]
-    { Kind::Struct, LenKind::None, 0, 48, 3, 0, 0, "BSBound" },  // 29: block:BSBound
-    { Kind::Struct, LenKind::None, 0, 51, 7, 0, 0, "BSDamageStage" },  // 30: block:BSDamageStage
-    { Kind::Struct, LenKind::None, 0, 58, 2, 0, 0, "BSDecalPlacementVectorExtraData" },  // 31: block:BSDecalPlacementVectorExtraData
-    { Kind::Struct, LenKind::None, 0, 60, 5, 0, 0, "BSDismemberSkinInstance" },  // 32: block:BSDismemberSkinInstance
-    { Kind::Ref, LenKind::None, 0, 0, 0, 4, 1, nullptr },  // 33: ref->NiSkinData
-    { Kind::Ref, LenKind::None, 0, 0, 0, 5, 1, nullptr },  // 34: ref->NiSkinPartition
-    { Kind::Ptr, LenKind::None, 0, 0, 0, 6, 1, nullptr },  // 35: ptr->NiNode
-    { Kind::Array, LenKind::Prefix32, 0, 35, 0, 0, 0, nullptr },  // 36: ptr->NiNode[u32]
-    { Kind::Array, LenKind::Prefix32, 0, 14, 0, 0, 0, nullptr },  // 37: struct:BSDismemberSkinInstancePartitions#9[u32]
-    { Kind::Struct, LenKind::None, 0, 65, 20, 0, 0, "BSDynamicTriShape" },  // 38: block:BSDynamicTriShape
-    { Kind::Ref, LenKind::None, 0, 0, 0, 7, 1, nullptr },  // 39: ref->NiSkinInstance
-    { Kind::Ref, LenKind::None, 0, 0, 0, 8, 4, nullptr },  // 40: ref->BSEffectShaderProperty,BSLightingShaderProperty,BSSkyShaderProperty,BSWaterShaderProperty
-    { Kind::Ref, LenKind::None, 0, 0, 0, 12, 1, nullptr },  // 41: ref->NiAlphaProperty
-    { Kind::U64, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 42: u64
-    { Kind::Bytes, LenKind::Field, 0, 0, 0, 0, 0, nullptr },  // 43: bytes:field
-    { Kind::Array, LenKind::Field, 0, 15, 0, 0, 0, nullptr },  // 44: u16[field]
-    { Kind::Struct, LenKind::None, 0, 85, 4, 0, 0, "BSEffectShaderProperty" },  // 45: block:BSEffectShaderProperty
-    { Kind::Struct, LenKind::None, 0, 89, 9, 0, 0, "BSEffectShaderPropertyColorController" },  // 46: block:BSEffectShaderPropertyColorController
-    { Kind::Ptr, LenKind::None, 0, 0, 0, 13, 2, nullptr },  // 47: ptr->BSLightingShaderProperty,NiObjectNET
-    { Kind::Ref, LenKind::None, 0, 0, 0, 15, 7, nullptr },  // 48: ref->NiBlendInterpolator,NiBoolInterpolator,NiFloatInterpolator,NiLookAtInterpolator,NiPathInterpolator,NiPoint3Interpolator,NiTransformInterpolator
-    { Kind::Struct, LenKind::None, 0, 98, 9, 0, 0, "BSEffectShaderPropertyFloatController" },  // 49: block:BSEffectShaderPropertyFloatController
-    { Kind::Struct, LenKind::None, 0, 107, 8, 0, 0, "BSFadeNode" },  // 50: block:BSFadeNode
-    { Kind::Array, LenKind::Prefix32, 0, 52, 0, 0, 0, nullptr },  // 51: ref->NiAVObject[u32]
-    { Kind::Ref, LenKind::None, 0, 0, 0, 22, 1, nullptr },  // 52: ref->NiAVObject
-    { Kind::Array, LenKind::Prefix32, 0, 54, 0, 0, 0, nullptr },  // 53: ref[u32]
-    { Kind::Ref, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 54: ref
-    { Kind::Struct, LenKind::None, 0, 115, 8, 0, 0, "BSFrustumFOVController" },  // 55: block:BSFrustumFOVController
-    { Kind::Struct, LenKind::None, 0, 123, 2, 0, 0, "BSFurnitureMarkerNode" },  // 56: block:BSFurnitureMarkerNode
-    { Kind::Struct, LenKind::None, 0, 125, 5, 0, 0, "BSInvMarker" },  // 57: block:BSInvMarker
-    { Kind::Struct, LenKind::None, 0, 130, 7, 0, 0, "BSLODTriShape" },  // 58: block:BSLODTriShape
-    { Kind::Struct, LenKind::None, 0, 137, 8, 0, 0, "BSLagBoneController" },  // 59: block:BSLagBoneController
-    { Kind::Struct, LenKind::None, 0, 145, 8, 0, 0, "BSLeafAnimNode" },  // 60: block:BSLeafAnimNode
-    { Kind::Struct, LenKind::None, 0, 153, 10, 0, 0, "BSLightingShaderProperty" },  // 61: block:BSLightingShaderProperty
-    { Kind::Ref, LenKind::None, 0, 0, 0, 23, 1, nullptr },  // 62: ref->BSShaderTextureSet
-    { Kind::Struct, LenKind::None, 0, 163, 9, 0, 0, "BSLightingShaderPropertyColorController" },  // 63: block:BSLightingShaderPropertyColorController
-    { Kind::Struct, LenKind::None, 0, 172, 9, 0, 0, "BSLightingShaderPropertyFloatController" },  // 64: block:BSLightingShaderPropertyFloatController
-    { Kind::Struct, LenKind::None, 0, 181, 7, 0, 0, "BSMasterParticleSystem" },  // 65: block:BSMasterParticleSystem
-    { Kind::Struct, LenKind::None, 0, 188, 1, 0, 0, "BSMultiBound" },  // 66: block:BSMultiBound
-    { Kind::Struct, LenKind::None, 0, 189, 1, 0, 0, "BSMultiBoundAABB" },  // 67: block:BSMultiBoundAABB
-    { Kind::Struct, LenKind::None, 0, 190, 10, 0, 0, "BSMultiBoundNode" },  // 68: block:BSMultiBoundNode
-    { Kind::Ref, LenKind::None, 0, 0, 0, 24, 1, nullptr },  // 69: ref->BSMultiBound
-    { Kind::Struct, LenKind::None, 0, 200, 1, 0, 0, "BSMultiBoundOBB" },  // 70: block:BSMultiBoundOBB
-    { Kind::Struct, LenKind::None, 0, 201, 8, 0, 0, "BSNiAlphaPropertyTestRefController" },  // 71: block:BSNiAlphaPropertyTestRefController
-    { Kind::Struct, LenKind::None, 0, 209, 10, 0, 0, "BSOrderedNode" },  // 72: block:BSOrderedNode
-    { Kind::Struct, LenKind::None, 0, 219, 5, 0, 0, "BSPSysHavokUpdateModifier" },  // 73: block:BSPSysHavokUpdateModifier
-    { Kind::Ptr, LenKind::None, 0, 0, 0, 25, 3, nullptr },  // 74: ptr->BSStripParticleSystem,NiMeshParticleSystem,NiParticleSystem
-    { Kind::Struct, LenKind::None, 0, 224, 5, 0, 0, "BSPSysInheritVelocityModifier" },  // 75: block:BSPSysInheritVelocityModifier
-    { Kind::Struct, LenKind::None, 0, 229, 5, 0, 0, "BSPSysLODModifier" },  // 76: block:BSPSysLODModifier
-    { Kind::Struct, LenKind::None, 0, 234, 8, 0, 0, "BSPSysMultiTargetEmitterCtlr" },  // 77: block:BSPSysMultiTargetEmitterCtlr
-    { Kind::Struct, LenKind::None, 0, 242, 5, 0, 0, "BSPSysRecycleBoundModifier" },  // 78: block:BSPSysRecycleBoundModifier
-    { Kind::Struct, LenKind::None, 0, 247, 5, 0, 0, "BSPSysScaleModifier" },  // 79: block:BSPSysScaleModifier
-    { Kind::Struct, LenKind::None, 0, 252, 5, 0, 0, "BSPSysSimpleColorModifier" },  // 80: block:BSPSysSimpleColorModifier
-    { Kind::Struct, LenKind::None, 0, 257, 5, 0, 0, "BSPSysStripUpdateModifier" },  // 81: block:BSPSysStripUpdateModifier
-    { Kind::Struct, LenKind::None, 0, 262, 5, 0, 0, "BSPSysSubTexModifier" },  // 82: block:BSPSysSubTexModifier
-    { Kind::Struct, LenKind::None, 0, 267, 8, 0, 0, "BSProceduralLightningController" },  // 83: block:BSProceduralLightningController
-    { Kind::Struct, LenKind::None, 0, 275, 1, 0, 0, "BSShaderTextureSet" },  // 84: block:BSShaderTextureSet
-    { Kind::Array, LenKind::Prefix32, 0, 86, 0, 0, 0, nullptr },  // 85: sizedstring[u32]
-    { Kind::SizedString, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 86: sizedstring
-    { Kind::Struct, LenKind::None, 0, 276, 4, 0, 0, "BSSkyShaderProperty" },  // 87: block:BSSkyShaderProperty
-    { Kind::Struct, LenKind::None, 0, 280, 1, 0, 0, "BSStripPSysData" },  // 88: block:BSStripPSysData
-    { Kind::Struct, LenKind::None, 0, 281, 7, 0, 0, "BSStripParticleSystem" },  // 89: block:BSStripParticleSystem
-    { Kind::Struct, LenKind::None, 0, 288, 10, 0, 0, "BSTreeNode" },  // 90: block:BSTreeNode
-    { Kind::Array, LenKind::Prefix32, 0, 92, 0, 0, 0, nullptr },  // 91: ref->NiNode[u32]
-    { Kind::Ref, LenKind::None, 0, 0, 0, 6, 1, nullptr },  // 92: ref->NiNode
-    { Kind::Struct, LenKind::None, 0, 298, 18, 0, 0, "BSTriShape" },  // 93: block:BSTriShape
-    { Kind::Struct, LenKind::None, 0, 316, 10, 0, 0, "BSValueNode" },  // 94: block:BSValueNode
-    { Kind::Struct, LenKind::None, 0, 326, 4, 0, 0, "BSWaterShaderProperty" },  // 95: block:BSWaterShaderProperty
-    { Kind::Struct, LenKind::None, 0, 330, 5, 0, 0, "BSWindModifier" },  // 96: block:BSWindModifier
-    { Kind::Struct, LenKind::None, 0, 335, 2, 0, 0, "BSXFlags" },  // 97: block:BSXFlags
-    { Kind::Struct, LenKind::None, 0, 337, 6, 0, 0, "NiAVObject" },  // 98: block:NiAVObject
-    { Kind::Struct, LenKind::None, 0, 343, 5, 0, 0, "NiAlphaProperty" },  // 99: block:NiAlphaProperty
-    { Kind::Struct, LenKind::None, 0, 348, 8, 0, 0, "NiBSBoneLODController" },  // 100: block:NiBSBoneLODController
-    { Kind::Struct, LenKind::None, 0, 356, 9, 0, 0, "NiBillboardNode" },  // 101: block:NiBillboardNode
-    { Kind::Struct, LenKind::None, 0, 365, 3, 0, 0, "NiBinaryExtraData" },  // 102: block:NiBinaryExtraData
-    { Kind::Struct, LenKind::None, 0, 368, 4, 0, 0, "NiBlendBoolInterpolator" },  // 103: block:NiBlendBoolInterpolator
-    { Kind::Struct, LenKind::None, 0, 372, 4, 0, 0, "NiBlendFloatInterpolator" },  // 104: block:NiBlendFloatInterpolator
-    { Kind::Struct, LenKind::None, 0, 376, 3, 0, 0, "NiBlendInterpolator" },  // 105: block:NiBlendInterpolator
-    { Kind::Struct, LenKind::None, 0, 379, 4, 0, 0, "NiBlendPoint3Interpolator" },  // 106: block:NiBlendPoint3Interpolator
-    { Kind::Struct, LenKind::None, 0, 383, 1, 0, 0, "NiBoolData" },  // 107: block:NiBoolData
-    { Kind::Struct, LenKind::None, 0, 384, 2, 0, 0, "NiBoolInterpolator" },  // 108: block:NiBoolInterpolator
-    { Kind::Ref, LenKind::None, 0, 0, 0, 28, 1, nullptr },  // 109: ref->NiBoolData
-    { Kind::Struct, LenKind::None, 0, 386, 2, 0, 0, "NiBoolTimelineInterpolator" },  // 110: block:NiBoolTimelineInterpolator
-    { Kind::Struct, LenKind::None, 0, 388, 2, 0, 0, "NiBooleanExtraData" },  // 111: block:NiBooleanExtraData
-    { Kind::Struct, LenKind::None, 0, 390, 7, 0, 0, "NiCamera" },  // 112: block:NiCamera
-    { Kind::Struct, LenKind::None, 0, 397, 1, 0, 0, "NiColorData" },  // 113: block:NiColorData
-    { Kind::Struct, LenKind::None, 0, 398, 10, 0, 0, "NiControllerManager" },  // 114: block:NiControllerManager
-    { Kind::Array, LenKind::Prefix32, 0, 116, 0, 0, 0, nullptr },  // 115: ref->NiControllerSequence[u32]
-    { Kind::Ref, LenKind::None, 0, 0, 0, 29, 1, nullptr },  // 116: ref->NiControllerSequence
-    { Kind::Ref, LenKind::None, 0, 0, 0, 30, 1, nullptr },  // 117: ref->NiDefaultAVObjectPalette
-    { Kind::Struct, LenKind::None, 0, 408, 3, 0, 0, "NiControllerSequence" },  // 118: block:NiControllerSequence
-    { Kind::Struct, LenKind::None, 0, 411, 1, 0, 0, "NiDefaultAVObjectPalette" },  // 119: block:NiDefaultAVObjectPalette
-    { Kind::Struct, LenKind::None, 0, 412, 1, 0, 0, "NiExtraData" },  // 120: block:NiExtraData
-    { Kind::Struct, LenKind::None, 0, 413, 1, 0, 0, "NiFloatData" },  // 121: block:NiFloatData
-    { Kind::Struct, LenKind::None, 0, 414, 2, 0, 0, "NiFloatExtraData" },  // 122: block:NiFloatExtraData
-    { Kind::Struct, LenKind::None, 0, 416, 8, 0, 0, "NiFloatExtraDataController" },  // 123: block:NiFloatExtraDataController
-    { Kind::Struct, LenKind::None, 0, 424, 2, 0, 0, "NiFloatInterpolator" },  // 124: block:NiFloatInterpolator
-    { Kind::Ref, LenKind::None, 0, 0, 0, 31, 1, nullptr },  // 125: ref->NiFloatData
-    { Kind::Struct, LenKind::None, 0, 426, 2, 0, 0, "NiIntegerExtraData" },  // 126: block:NiIntegerExtraData
-    { Kind::Struct, LenKind::None, 0, 428, 1, 0, 0, "NiLookAtInterpolator" },  // 127: block:NiLookAtInterpolator
-    { Kind::Struct, LenKind::None, 0, 429, 1, 0, 0, "NiMeshPSysData" },  // 128: block:NiMeshPSysData
-    { Kind::Struct, LenKind::None, 0, 430, 7, 0, 0, "NiMeshParticleSystem" },  // 129: block:NiMeshParticleSystem
-    { Kind::Struct, LenKind::None, 0, 437, 8, 0, 0, "NiMultiTargetTransformController" },  // 130: block:NiMultiTargetTransformController
-    { Kind::Array, LenKind::Prefix16, 0, 35, 0, 0, 0, nullptr },  // 131: ptr->NiNode[u16]
-    { Kind::Struct, LenKind::None, 0, 445, 8, 0, 0, "NiNode" },  // 132: block:NiNode
-    { Kind::Struct, LenKind::None, 0, 453, 0, 0, 0, "NiObject" },  // 133: block:NiObject
-    { Kind::Struct, LenKind::None, 0, 453, 3, 0, 0, "NiObjectNET" },  // 134: block:NiObjectNET
-    { Kind::Struct, LenKind::None, 0, 456, 5, 0, 0, "NiPSysAgeDeathModifier" },  // 135: block:NiPSysAgeDeathModifier
-    { Kind::Struct, LenKind::None, 0, 461, 5, 0, 0, "NiPSysBombModifier" },  // 136: block:NiPSysBombModifier
-    { Kind::Struct, LenKind::None, 0, 466, 5, 0, 0, "NiPSysBoundUpdateModifier" },  // 137: block:NiPSysBoundUpdateModifier
-    { Kind::Struct, LenKind::None, 0, 471, 5, 0, 0, "NiPSysBoxEmitter" },  // 138: block:NiPSysBoxEmitter
-    { Kind::Struct, LenKind::None, 0, 476, 5, 0, 0, "NiPSysColliderManager" },  // 139: block:NiPSysColliderManager
-    { Kind::Struct, LenKind::None, 0, 481, 5, 0, 0, "NiPSysCylinderEmitter" },  // 140: block:NiPSysCylinderEmitter
-    { Kind::Struct, LenKind::None, 0, 486, 1, 0, 0, "NiPSysData" },  // 141: block:NiPSysData
-    { Kind::Struct, LenKind::None, 0, 487, 5, 0, 0, "NiPSysDragModifier" },  // 142: block:NiPSysDragModifier
-    { Kind::Struct, LenKind::None, 0, 492, 8, 0, 0, "NiPSysEmitterCtlr" },  // 143: block:NiPSysEmitterCtlr
-    { Kind::Struct, LenKind::None, 0, 500, 8, 0, 0, "NiPSysEmitterDeclinationCtlr" },  // 144: block:NiPSysEmitterDeclinationCtlr
-    { Kind::Struct, LenKind::None, 0, 508, 8, 0, 0, "NiPSysEmitterInitialRadiusCtlr" },  // 145: block:NiPSysEmitterInitialRadiusCtlr
-    { Kind::Struct, LenKind::None, 0, 516, 8, 0, 0, "NiPSysEmitterLifeSpanCtlr" },  // 146: block:NiPSysEmitterLifeSpanCtlr
-    { Kind::Struct, LenKind::None, 0, 524, 8, 0, 0, "NiPSysEmitterPlanarAngleCtlr" },  // 147: block:NiPSysEmitterPlanarAngleCtlr
-    { Kind::Struct, LenKind::None, 0, 532, 8, 0, 0, "NiPSysEmitterSpeedCtlr" },  // 148: block:NiPSysEmitterSpeedCtlr
-    { Kind::Struct, LenKind::None, 0, 540, 5, 0, 0, "NiPSysGravityModifier" },  // 149: block:NiPSysGravityModifier
-    { Kind::Struct, LenKind::None, 0, 545, 8, 0, 0, "NiPSysGravityStrengthCtlr" },  // 150: block:NiPSysGravityStrengthCtlr
-    { Kind::Struct, LenKind::None, 0, 553, 8, 0, 0, "NiPSysInitialRotSpeedCtlr" },  // 151: block:NiPSysInitialRotSpeedCtlr
-    { Kind::Struct, LenKind::None, 0, 561, 5, 0, 0, "NiPSysMeshEmitter" },  // 152: block:NiPSysMeshEmitter
-    { Kind::Struct, LenKind::None, 0, 566, 4, 0, 0, "NiPSysModifier" },  // 153: block:NiPSysModifier
-    { Kind::Struct, LenKind::None, 0, 570, 8, 0, 0, "NiPSysModifierActiveCtlr" },  // 154: block:NiPSysModifierActiveCtlr
-    { Kind::Struct, LenKind::None, 0, 578, 1, 0, 0, "NiPSysPlanarCollider" },  // 155: block:NiPSysPlanarCollider
-    { Kind::Struct, LenKind::None, 0, 579, 5, 0, 0, "NiPSysPositionModifier" },  // 156: block:NiPSysPositionModifier
-    { Kind::Struct, LenKind::None, 0, 584, 5, 0, 0, "NiPSysRotationModifier" },  // 157: block:NiPSysRotationModifier
-    { Kind::Struct, LenKind::None, 0, 589, 5, 0, 0, "NiPSysSpawnModifier" },  // 158: block:NiPSysSpawnModifier
-    { Kind::Struct, LenKind::None, 0, 594, 5, 0, 0, "NiPSysSphereEmitter" },  // 159: block:NiPSysSphereEmitter
-    { Kind::Struct, LenKind::None, 0, 599, 1, 0, 0, "NiPSysSphericalCollider" },  // 160: block:NiPSysSphericalCollider
-    { Kind::Struct, LenKind::None, 0, 600, 8, 0, 0, "NiPSysUpdateCtlr" },  // 161: block:NiPSysUpdateCtlr
-    { Kind::Struct, LenKind::None, 0, 608, 7, 0, 0, "NiParticleSystem" },  // 162: block:NiParticleSystem
-    { Kind::Struct, LenKind::None, 0, 615, 1, 0, 0, "NiPathInterpolator" },  // 163: block:NiPathInterpolator
-    { Kind::Struct, LenKind::None, 0, 616, 2, 0, 0, "NiPoint3Interpolator" },  // 164: block:NiPoint3Interpolator
-    { Kind::Ref, LenKind::None, 0, 0, 0, 32, 1, nullptr },  // 165: ref->NiPosData
-    { Kind::Struct, LenKind::None, 0, 618, 1, 0, 0, "NiPosData" },  // 166: block:NiPosData
-    { Kind::Struct, LenKind::None, 0, 619, 8, 0, 0, "NiSingleInterpController" },  // 167: block:NiSingleInterpController
-    { Kind::Struct, LenKind::None, 0, 627, 4, 0, 0, "NiSkinData" },  // 168: block:NiSkinData
-    { Kind::Array, LenKind::Field, 0, 18, 0, 0, 0, nullptr },  // 169: struct:NiSkinDataBones#11[field]
-    { Kind::Struct, LenKind::None, 0, 631, 4, 0, 0, "NiSkinInstance" },  // 170: block:NiSkinInstance
-    { Kind::Struct, LenKind::None, 0, 635, 6, 0, 0, "NiSkinPartition" },  // 171: block:NiSkinPartition
-    { Kind::Struct, LenKind::None, 0, 641, 2, 0, 0, "NiStringExtraData" },  // 172: block:NiStringExtraData
-    { Kind::Struct, LenKind::None, 0, 643, 2, 0, 0, "NiStringsExtraData" },  // 173: block:NiStringsExtraData
-    { Kind::Struct, LenKind::None, 0, 645, 10, 0, 0, "NiSwitchNode" },  // 174: block:NiSwitchNode
-    { Kind::Struct, LenKind::None, 0, 655, 2, 0, 0, "NiTextKeyExtraData" },  // 175: block:NiTextKeyExtraData
-    { Kind::Array, LenKind::Prefix32, 0, 8, 0, 0, 0, nullptr },  // 176: struct:NiTextKeyExtraDataKeys#4[u32]
-    { Kind::Struct, LenKind::None, 0, 657, 7, 0, 0, "NiTimeController" },  // 177: block:NiTimeController
-    { Kind::Struct, LenKind::None, 0, 664, 8, 0, 0, "NiTransformController" },  // 178: block:NiTransformController
-    { Kind::Struct, LenKind::None, 0, 672, 2, 0, 0, "NiTransformData" },  // 179: block:NiTransformData
-    { Kind::Struct, LenKind::None, 0, 674, 4, 0, 0, "NiTransformInterpolator" },  // 180: block:NiTransformInterpolator
-    { Kind::Ref, LenKind::None, 0, 0, 0, 33, 1, nullptr },  // 181: ref->NiTransformData
-    { Kind::Struct, LenKind::None, 0, 678, 7, 0, 0, "NiTriShape" },  // 182: block:NiTriShape
-    { Kind::Struct, LenKind::None, 0, 685, 1, 0, 0, "NiTriShapeData" },  // 183: block:NiTriShapeData
-    { Kind::Struct, LenKind::None, 0, 686, 1, 0, 0, "NiTriStripsData" },  // 184: block:NiTriStripsData
-    { Kind::Struct, LenKind::None, 0, 687, 8, 0, 0, "NiVisController" },  // 185: block:NiVisController
-    { Kind::Struct, LenKind::None, 0, 695, 1, 0, 0, "bhkBallAndSocketConstraint" },  // 186: block:bhkBallAndSocketConstraint
-    { Kind::Struct, LenKind::None, 0, 696, 1, 0, 0, "bhkBallSocketConstraintChain" },  // 187: block:bhkBallSocketConstraintChain
-    { Kind::Struct, LenKind::None, 0, 697, 1, 0, 0, "bhkBlendCollisionObject" },  // 188: block:bhkBlendCollisionObject
-    { Kind::Struct, LenKind::None, 0, 698, 3, 0, 0, "bhkBoxShape" },  // 189: block:bhkBoxShape
-    { Kind::Struct, LenKind::None, 0, 701, 1, 0, 0, "bhkBreakableConstraint" },  // 190: block:bhkBreakableConstraint
-    { Kind::Struct, LenKind::None, 0, 702, 3, 0, 0, "bhkCapsuleShape" },  // 191: block:bhkCapsuleShape
-    { Kind::Struct, LenKind::None, 0, 705, 3, 0, 0, "bhkCollisionObject" },  // 192: block:bhkCollisionObject
-    { Kind::Ref, LenKind::None, 0, 0, 0, 34, 3, nullptr },  // 193: ref->bhkRigidBody,bhkRigidBodyT,bhkSimpleShapePhantom
-    { Kind::Struct, LenKind::None, 0, 708, 2, 0, 0, "bhkCompressedMeshShape" },  // 194: block:bhkCompressedMeshShape
-    { Kind::Struct, LenKind::None, 0, 710, 1, 0, 0, "bhkCompressedMeshShapeData" },  // 195: block:bhkCompressedMeshShapeData
-    { Kind::Struct, LenKind::None, 0, 711, 2, 0, 0, "bhkConvexTransformShape" },  // 196: block:bhkConvexTransformShape
-    { Kind::Ref, LenKind::None, 0, 0, 0, 37, 12, nullptr },  // 197: ref->bhkBoxShape,bhkCapsuleShape,bhkCompressedMeshShape,bhkConvexTransformShape,bhkConvexVerticesShape,bhkCylinderShape,bhkListShape,bhkMoppBvTreeShape,bhkNiTriStripsShape,bhkPlaneShape,bhkSphereShape,bhkTransformShape
-    { Kind::Struct, LenKind::None, 0, 713, 3, 0, 0, "bhkConvexVerticesShape" },  // 198: block:bhkConvexVerticesShape
-    { Kind::Struct, LenKind::None, 0, 716, 3, 0, 0, "bhkCylinderShape" },  // 199: block:bhkCylinderShape
-    { Kind::Struct, LenKind::None, 0, 719, 1, 0, 0, "bhkHingeConstraint" },  // 200: block:bhkHingeConstraint
-    { Kind::Struct, LenKind::None, 0, 720, 1, 0, 0, "bhkLimitedHingeConstraint" },  // 201: block:bhkLimitedHingeConstraint
-    { Kind::Struct, LenKind::None, 0, 721, 2, 0, 0, "bhkListShape" },  // 202: block:bhkListShape
-    { Kind::Array, LenKind::Prefix32, 0, 197, 0, 0, 0, nullptr },  // 203: ref->bhkBoxShape,bhkCapsuleShape,bhkCompressedMeshShape,bhkConvexTransformShape,bhkConvexVerticesShape,bhkCylinderShape,bhkListShape,bhkMoppBvTreeShape,bhkNiTriStripsShape,bhkPlaneShape,bhkSphereShape,bhkTransformShape[u32]
-    { Kind::Struct, LenKind::None, 0, 723, 2, 0, 0, "bhkMoppBvTreeShape" },  // 204: block:bhkMoppBvTreeShape
-    { Kind::Struct, LenKind::None, 0, 725, 2, 0, 0, "bhkNiTriStripsShape" },  // 205: block:bhkNiTriStripsShape
-    { Kind::Struct, LenKind::None, 0, 727, 1, 0, 0, "bhkPlaneShape" },  // 206: block:bhkPlaneShape
-    { Kind::Struct, LenKind::None, 0, 728, 3, 0, 0, "bhkPrimitiveShape" },  // 207: block:bhkPrimitiveShape
-    { Kind::Struct, LenKind::None, 0, 731, 1, 0, 0, "bhkRagdollConstraint" },  // 208: block:bhkRagdollConstraint
-    { Kind::Struct, LenKind::None, 0, 732, 2, 0, 0, "bhkRigidBody" },  // 209: block:bhkRigidBody
-    { Kind::Struct, LenKind::None, 0, 734, 2, 0, 0, "bhkRigidBodyT" },  // 210: block:bhkRigidBodyT
-    { Kind::Struct, LenKind::None, 0, 736, 3, 0, 0, "bhkSPCollisionObject" },  // 211: block:bhkSPCollisionObject
-    { Kind::Struct, LenKind::None, 0, 739, 2, 0, 0, "bhkShapeWrapper" },  // 212: block:bhkShapeWrapper
-    { Kind::Struct, LenKind::None, 0, 741, 1, 0, 0, "bhkSimpleShapePhantom" },  // 213: block:bhkSimpleShapePhantom
-    { Kind::Struct, LenKind::None, 0, 742, 3, 0, 0, "bhkSphereShape" },  // 214: block:bhkSphereShape
-    { Kind::Struct, LenKind::None, 0, 745, 1, 0, 0, "bhkStiffSpringConstraint" },  // 215: block:bhkStiffSpringConstraint
-    { Kind::Struct, LenKind::None, 0, 746, 2, 0, 0, "bhkTransformShape" },  // 216: block:bhkTransformShape
+    { Kind::Struct, LenKind::None, 0, 3, 1, 0, 0, "BoolKeyDataConstant" },  // 2: struct:BoolKeyDataConstant#4
+    { Kind::U8, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 3: u8
+    { Kind::Struct, LenKind::None, 0, 4, 2, 0, 0, "BoolKey" },  // 4: struct:BoolKey#3
+    { Kind::Union, LenKind::None, 0, 0, 1, 0, 0, nullptr },  // 5: union#5
+    { Kind::Struct, LenKind::None, 0, 6, 3, 0, 0, "BoolKeyGroup" },  // 6: struct:BoolKeyGroup#1
+    { Kind::U32, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 7: u32
+    { Kind::Array, LenKind::Field, 0, 4, 0, 0, 0, nullptr },  // 8: struct:BoolKey#3[field]
+    { Kind::Struct, LenKind::None, 0, 9, 3, 0, 0, "KeyGroup" },  // 9: struct:KeyGroup#6
+    { Kind::Bytes, LenKind::Rest, 0, 0, 0, 0, 0, nullptr },  // 10: bytes
+    { Kind::Struct, LenKind::None, 0, 12, 1, 0, 0, "FloatKeyDataLinear" },  // 11: struct:FloatKeyDataLinear#10
+    { Kind::Struct, LenKind::None, 0, 13, 3, 0, 0, "FloatKeyDataQuadratic" },  // 12: struct:FloatKeyDataQuadratic#11
+    { Kind::Struct, LenKind::None, 0, 16, 4, 0, 0, "FloatKeyDataTbc" },  // 13: struct:FloatKeyDataTbc#12
+    { Kind::Struct, LenKind::None, 0, 20, 1, 0, 0, "FloatKeyDataConstant" },  // 14: struct:FloatKeyDataConstant#13
+    { Kind::Struct, LenKind::None, 0, 21, 2, 0, 0, "FloatKey" },  // 15: struct:FloatKey#9
+    { Kind::Union, LenKind::None, 0, 1, 4, 0, 0, nullptr },  // 16: union#14
+    { Kind::Struct, LenKind::None, 0, 23, 3, 0, 0, "FloatKeyGroup" },  // 17: struct:FloatKeyGroup#7
+    { Kind::Array, LenKind::Field, 0, 15, 0, 0, 0, nullptr },  // 18: struct:FloatKey#9[field]
+    { Kind::Struct, LenKind::None, 0, 26, 1, 0, 0, "Vec3KeyDataLinear" },  // 19: struct:Vec3KeyDataLinear#18
+    { Kind::Struct, LenKind::None, 0, 27, 3, 0, 0, "Vec3KeyDataQuadratic" },  // 20: struct:Vec3KeyDataQuadratic#19
+    { Kind::Struct, LenKind::None, 0, 30, 4, 0, 0, "Vec3KeyDataTbc" },  // 21: struct:Vec3KeyDataTbc#20
+    { Kind::Struct, LenKind::None, 0, 34, 1, 0, 0, "Vec3KeyDataConstant" },  // 22: struct:Vec3KeyDataConstant#21
+    { Kind::Struct, LenKind::None, 0, 35, 2, 0, 0, "Vec3Key" },  // 23: struct:Vec3Key#17
+    { Kind::Union, LenKind::None, 0, 5, 4, 0, 0, nullptr },  // 24: union#22
+    { Kind::Struct, LenKind::None, 0, 37, 3, 0, 0, "Vec3KeyGroup" },  // 25: struct:Vec3KeyGroup#15
+    { Kind::Array, LenKind::Field, 0, 23, 0, 0, 0, nullptr },  // 26: struct:Vec3Key#17[field]
+    { Kind::Struct, LenKind::None, 0, 40, 3, 0, 0, "NiTransformDataRotationsXyz" },  // 27: struct:NiTransformDataRotationsXyz#23
+    { Kind::Struct, LenKind::None, 0, 43, 4, 0, 0, "Quat" },  // 28: struct:Quat#26
+    { Kind::Struct, LenKind::None, 0, 47, 3, 0, 0, "QuatKeyTbcTbc" },  // 29: struct:QuatKeyTbcTbc#28
+    { Kind::Struct, LenKind::None, 0, 50, 3, 0, 0, "QuatKey" },  // 30: struct:QuatKey#27
+    { Kind::Union, LenKind::None, 0, 9, 2, 0, 0, nullptr },  // 31: union#29
+    { Kind::Struct, LenKind::None, 0, 53, 1, 0, 0, "NiTransformDataRotationsQuaternion" },  // 32: struct:NiTransformDataRotationsQuaternion#24
+    { Kind::Array, LenKind::Field, 0, 30, 0, 0, 0, nullptr },  // 33: struct:QuatKey#27[field]
+    { Kind::Struct, LenKind::None, 0, 54, 2, 0, 0, "BSBoneLODExtraDataBoneLODs" },  // 34: struct:BSBoneLODExtraDataBoneLODs#31
+    { Kind::StringRef, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 35: stringref
+    { Kind::Struct, LenKind::None, 0, 56, 2, 0, 0, "NiTextKeyExtraDataKeys" },  // 36: struct:NiTextKeyExtraDataKeys#32
+    { Kind::Struct, LenKind::None, 0, 58, 1, 0, 0, "Matrix33" },  // 37: struct:Matrix33#34
+    { Kind::Array, LenKind::Fixed, 9, 1, 0, 0, 0, nullptr },  // 38: f32[9]
+    { Kind::Struct, LenKind::None, 0, 59, 3, 0, 0, "AvTransform" },  // 39: struct:AvTransform#33
+    { Kind::Struct, LenKind::None, 0, 62, 2, 0, 0, "TexCoord" },  // 40: struct:TexCoord#37
+    { Kind::Half, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 41: half
+    { Kind::Struct, LenKind::None, 0, 64, 11, 0, 0, "BSVertex" },  // 42: struct:BSVertex#36
+    { Kind::Array, LenKind::Fixed, 3, 3, 0, 0, 0, nullptr },  // 43: u8[3]
+    { Kind::Array, LenKind::Fixed, 4, 3, 0, 0, 0, nullptr },  // 44: u8[4]
+    { Kind::Array, LenKind::Fixed, 4, 41, 0, 0, 0, nullptr },  // 45: half[4]
+    { Kind::Struct, LenKind::None, 0, 75, 3, 0, 0, "Triangle" },  // 46: struct:Triangle#38
+    { Kind::U16, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 47: u16
+    { Kind::Struct, LenKind::None, 0, 78, 4, 0, 0, "Vec4" },  // 48: struct:Vec4#39
+    { Kind::Struct, LenKind::None, 0, 82, 2, 0, 0, "Vec2" },  // 49: struct:Vec2#40
+    { Kind::Struct, LenKind::None, 0, 84, 2, 0, 0, "BSDismemberSkinInstancePartitions" },  // 50: struct:BSDismemberSkinInstancePartitions#42
+    { Kind::Struct, LenKind::None, 0, 86, 3, 0, 0, "NiTransform" },  // 51: struct:NiTransform#43
+    { Kind::Struct, LenKind::None, 0, 89, 2, 0, 0, "NiSkinDataBonesVertexWeights" },  // 52: struct:NiSkinDataBonesVertexWeights#45
+    { Kind::Struct, LenKind::None, 0, 91, 5, 0, 0, "NiSkinDataBones" },  // 53: struct:NiSkinDataBones#44
+    { Kind::Array, LenKind::Field, 0, 52, 0, 0, 0, nullptr },  // 54: struct:NiSkinDataBonesVertexWeights#45[field]
+    { Kind::Struct, LenKind::None, 0, 96, 11, 0, 0, "BSVertex" },  // 55: struct:BSVertex#47
+    { Kind::Struct, LenKind::None, 0, 107, 1, 0, 0, "SkinPartitionVertexWeights" },  // 56: struct:SkinPartitionVertexWeights#49
+    { Kind::Array, LenKind::Field, 0, 1, 0, 0, 0, nullptr },  // 57: f32[field]
+    { Kind::Struct, LenKind::None, 0, 108, 1, 0, 0, "SkinPartitionBoneIndices" },  // 58: struct:SkinPartitionBoneIndices#50
+    { Kind::Array, LenKind::Field, 0, 3, 0, 0, 0, nullptr },  // 59: u8[field]
+    { Kind::Struct, LenKind::None, 0, 109, 18, 0, 0, "SkinPartition" },  // 60: struct:SkinPartition#48
+    { Kind::Array, LenKind::Field, 0, 47, 0, 0, 0, nullptr },  // 61: u16[field]
+    { Kind::Array, LenKind::Field, 0, 56, 0, 0, 0, nullptr },  // 62: struct:SkinPartitionVertexWeights#49[field]
+    { Kind::Array, LenKind::Field, 0, 46, 0, 0, 0, nullptr },  // 63: struct:Triangle#38[field]
+    { Kind::Array, LenKind::Field, 0, 58, 0, 0, 0, nullptr },  // 64: struct:SkinPartitionBoneIndices#50[field]
+    { Kind::U64, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 65: u64
+    { Kind::Struct, LenKind::None, 0, 127, 3, 0, 0, "BSBehaviorGraphExtraData" },  // 66: block:BSBehaviorGraphExtraData
+    { Kind::Struct, LenKind::None, 0, 130, 7, 0, 0, "BSBlastNode" },  // 67: block:BSBlastNode
+    { Kind::Array, LenKind::Prefix32, 0, 69, 0, 0, 0, nullptr },  // 68: ref->NiExtraData[u32]
+    { Kind::Ref, LenKind::None, 0, 0, 0, 0, 1, nullptr },  // 69: ref->NiExtraData
+    { Kind::Ref, LenKind::None, 0, 0, 0, 1, 1, nullptr },  // 70: ref->NiTimeController
+    { Kind::Ref, LenKind::None, 0, 0, 0, 2, 2, nullptr },  // 71: ref->bhkBlendCollisionObject,bhkCollisionObject
+    { Kind::Struct, LenKind::None, 0, 137, 2, 0, 0, "BSBoneLODExtraData" },  // 72: block:BSBoneLODExtraData
+    { Kind::Array, LenKind::Prefix32, 0, 34, 0, 0, 0, nullptr },  // 73: struct:BSBoneLODExtraDataBoneLODs#31[u32]
+    { Kind::Struct, LenKind::None, 0, 139, 3, 0, 0, "BSBound" },  // 74: block:BSBound
+    { Kind::Struct, LenKind::None, 0, 142, 7, 0, 0, "BSDamageStage" },  // 75: block:BSDamageStage
+    { Kind::Struct, LenKind::None, 0, 149, 2, 0, 0, "BSDecalPlacementVectorExtraData" },  // 76: block:BSDecalPlacementVectorExtraData
+    { Kind::Struct, LenKind::None, 0, 151, 5, 0, 0, "BSDismemberSkinInstance" },  // 77: block:BSDismemberSkinInstance
+    { Kind::Ref, LenKind::None, 0, 0, 0, 4, 1, nullptr },  // 78: ref->NiSkinData
+    { Kind::Ref, LenKind::None, 0, 0, 0, 5, 1, nullptr },  // 79: ref->NiSkinPartition
+    { Kind::Ptr, LenKind::None, 0, 0, 0, 6, 1, nullptr },  // 80: ptr->NiNode
+    { Kind::Array, LenKind::Prefix32, 0, 80, 0, 0, 0, nullptr },  // 81: ptr->NiNode[u32]
+    { Kind::Array, LenKind::Prefix32, 0, 50, 0, 0, 0, nullptr },  // 82: struct:BSDismemberSkinInstancePartitions#42[u32]
+    { Kind::Struct, LenKind::None, 0, 156, 21, 0, 0, "BSDynamicTriShape" },  // 83: block:BSDynamicTriShape
+    { Kind::Ref, LenKind::None, 0, 0, 0, 7, 1, nullptr },  // 84: ref->NiSkinInstance
+    { Kind::Ref, LenKind::None, 0, 0, 0, 8, 4, nullptr },  // 85: ref->BSEffectShaderProperty,BSLightingShaderProperty,BSSkyShaderProperty,BSWaterShaderProperty
+    { Kind::Ref, LenKind::None, 0, 0, 0, 12, 1, nullptr },  // 86: ref->NiAlphaProperty
+    { Kind::Array, LenKind::Field, 0, 42, 0, 0, 0, nullptr },  // 87: struct:BSVertex#36[field]
+    { Kind::Array, LenKind::Window, 0, 48, 0, 0, 0, nullptr },  // 88: struct:Vec4#39[window]
+    { Kind::Struct, LenKind::None, 0, 177, 4, 0, 0, "BSEffectShaderProperty" },  // 89: block:BSEffectShaderProperty
+    { Kind::Struct, LenKind::None, 0, 181, 9, 0, 0, "BSEffectShaderPropertyColorController" },  // 90: block:BSEffectShaderPropertyColorController
+    { Kind::Ptr, LenKind::None, 0, 0, 0, 13, 2, nullptr },  // 91: ptr->BSLightingShaderProperty,NiObjectNET
+    { Kind::Ref, LenKind::None, 0, 0, 0, 15, 7, nullptr },  // 92: ref->NiBlendInterpolator,NiBoolInterpolator,NiFloatInterpolator,NiLookAtInterpolator,NiPathInterpolator,NiPoint3Interpolator,NiTransformInterpolator
+    { Kind::Struct, LenKind::None, 0, 190, 9, 0, 0, "BSEffectShaderPropertyFloatController" },  // 93: block:BSEffectShaderPropertyFloatController
+    { Kind::Struct, LenKind::None, 0, 199, 8, 0, 0, "BSFadeNode" },  // 94: block:BSFadeNode
+    { Kind::Array, LenKind::Prefix32, 0, 96, 0, 0, 0, nullptr },  // 95: ref->NiAVObject[u32]
+    { Kind::Ref, LenKind::None, 0, 0, 0, 22, 1, nullptr },  // 96: ref->NiAVObject
+    { Kind::Array, LenKind::Prefix32, 0, 98, 0, 0, 0, nullptr },  // 97: ref[u32]
+    { Kind::Ref, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 98: ref
+    { Kind::Struct, LenKind::None, 0, 207, 8, 0, 0, "BSFrustumFOVController" },  // 99: block:BSFrustumFOVController
+    { Kind::Struct, LenKind::None, 0, 215, 2, 0, 0, "BSFurnitureMarkerNode" },  // 100: block:BSFurnitureMarkerNode
+    { Kind::Struct, LenKind::None, 0, 217, 5, 0, 0, "BSInvMarker" },  // 101: block:BSInvMarker
+    { Kind::Struct, LenKind::None, 0, 222, 7, 0, 0, "BSLODTriShape" },  // 102: block:BSLODTriShape
+    { Kind::Struct, LenKind::None, 0, 229, 8, 0, 0, "BSLagBoneController" },  // 103: block:BSLagBoneController
+    { Kind::Struct, LenKind::None, 0, 237, 8, 0, 0, "BSLeafAnimNode" },  // 104: block:BSLeafAnimNode
+    { Kind::Struct, LenKind::None, 0, 245, 20, 0, 0, "BSLightingShaderProperty" },  // 105: block:BSLightingShaderProperty
+    { Kind::Ref, LenKind::None, 0, 0, 0, 23, 1, nullptr },  // 106: ref->BSShaderTextureSet
+    { Kind::Union, LenKind::None, 0, 11, 8, 0, 0, nullptr },  // 107: union#41
+    { Kind::Array, LenKind::Fixed, 1, 1, 0, 0, 0, nullptr },  // 108: f32[1]
+    { Kind::Array, LenKind::Fixed, 3, 1, 0, 0, 0, nullptr },  // 109: f32[3]
+    { Kind::Array, LenKind::Fixed, 5, 1, 0, 0, 0, nullptr },  // 110: f32[5]
+    { Kind::Array, LenKind::Fixed, 4, 1, 0, 0, 0, nullptr },  // 111: f32[4]
+    { Kind::Array, LenKind::Fixed, 7, 1, 0, 0, 0, nullptr },  // 112: f32[7]
+    { Kind::Struct, LenKind::None, 0, 265, 9, 0, 0, "BSLightingShaderPropertyColorController" },  // 113: block:BSLightingShaderPropertyColorController
+    { Kind::Struct, LenKind::None, 0, 274, 9, 0, 0, "BSLightingShaderPropertyFloatController" },  // 114: block:BSLightingShaderPropertyFloatController
+    { Kind::Struct, LenKind::None, 0, 283, 7, 0, 0, "BSMasterParticleSystem" },  // 115: block:BSMasterParticleSystem
+    { Kind::Struct, LenKind::None, 0, 290, 1, 0, 0, "BSMultiBound" },  // 116: block:BSMultiBound
+    { Kind::Struct, LenKind::None, 0, 291, 1, 0, 0, "BSMultiBoundAABB" },  // 117: block:BSMultiBoundAABB
+    { Kind::Struct, LenKind::None, 0, 292, 10, 0, 0, "BSMultiBoundNode" },  // 118: block:BSMultiBoundNode
+    { Kind::Ref, LenKind::None, 0, 0, 0, 24, 1, nullptr },  // 119: ref->BSMultiBound
+    { Kind::Struct, LenKind::None, 0, 302, 1, 0, 0, "BSMultiBoundOBB" },  // 120: block:BSMultiBoundOBB
+    { Kind::Struct, LenKind::None, 0, 303, 8, 0, 0, "BSNiAlphaPropertyTestRefController" },  // 121: block:BSNiAlphaPropertyTestRefController
+    { Kind::Struct, LenKind::None, 0, 311, 10, 0, 0, "BSOrderedNode" },  // 122: block:BSOrderedNode
+    { Kind::Struct, LenKind::None, 0, 321, 5, 0, 0, "BSPSysHavokUpdateModifier" },  // 123: block:BSPSysHavokUpdateModifier
+    { Kind::Ptr, LenKind::None, 0, 0, 0, 25, 3, nullptr },  // 124: ptr->BSStripParticleSystem,NiMeshParticleSystem,NiParticleSystem
+    { Kind::Struct, LenKind::None, 0, 326, 5, 0, 0, "BSPSysInheritVelocityModifier" },  // 125: block:BSPSysInheritVelocityModifier
+    { Kind::Struct, LenKind::None, 0, 331, 5, 0, 0, "BSPSysLODModifier" },  // 126: block:BSPSysLODModifier
+    { Kind::Struct, LenKind::None, 0, 336, 8, 0, 0, "BSPSysMultiTargetEmitterCtlr" },  // 127: block:BSPSysMultiTargetEmitterCtlr
+    { Kind::Struct, LenKind::None, 0, 344, 5, 0, 0, "BSPSysRecycleBoundModifier" },  // 128: block:BSPSysRecycleBoundModifier
+    { Kind::Struct, LenKind::None, 0, 349, 5, 0, 0, "BSPSysScaleModifier" },  // 129: block:BSPSysScaleModifier
+    { Kind::Struct, LenKind::None, 0, 354, 5, 0, 0, "BSPSysSimpleColorModifier" },  // 130: block:BSPSysSimpleColorModifier
+    { Kind::Struct, LenKind::None, 0, 359, 5, 0, 0, "BSPSysStripUpdateModifier" },  // 131: block:BSPSysStripUpdateModifier
+    { Kind::Struct, LenKind::None, 0, 364, 5, 0, 0, "BSPSysSubTexModifier" },  // 132: block:BSPSysSubTexModifier
+    { Kind::Struct, LenKind::None, 0, 369, 8, 0, 0, "BSProceduralLightningController" },  // 133: block:BSProceduralLightningController
+    { Kind::Struct, LenKind::None, 0, 377, 1, 0, 0, "BSShaderTextureSet" },  // 134: block:BSShaderTextureSet
+    { Kind::Array, LenKind::Prefix32, 0, 136, 0, 0, 0, nullptr },  // 135: sizedstring[u32]
+    { Kind::SizedString, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 136: sizedstring
+    { Kind::Struct, LenKind::None, 0, 378, 4, 0, 0, "BSSkyShaderProperty" },  // 137: block:BSSkyShaderProperty
+    { Kind::Struct, LenKind::None, 0, 382, 1, 0, 0, "BSStripPSysData" },  // 138: block:BSStripPSysData
+    { Kind::Struct, LenKind::None, 0, 383, 7, 0, 0, "BSStripParticleSystem" },  // 139: block:BSStripParticleSystem
+    { Kind::Struct, LenKind::None, 0, 390, 10, 0, 0, "BSTreeNode" },  // 140: block:BSTreeNode
+    { Kind::Array, LenKind::Prefix32, 0, 142, 0, 0, 0, nullptr },  // 141: ref->NiNode[u32]
+    { Kind::Ref, LenKind::None, 0, 0, 0, 6, 1, nullptr },  // 142: ref->NiNode
+    { Kind::Struct, LenKind::None, 0, 400, 19, 0, 0, "BSTriShape" },  // 143: block:BSTriShape
+    { Kind::Struct, LenKind::None, 0, 419, 10, 0, 0, "BSValueNode" },  // 144: block:BSValueNode
+    { Kind::Struct, LenKind::None, 0, 429, 4, 0, 0, "BSWaterShaderProperty" },  // 145: block:BSWaterShaderProperty
+    { Kind::Struct, LenKind::None, 0, 433, 5, 0, 0, "BSWindModifier" },  // 146: block:BSWindModifier
+    { Kind::Struct, LenKind::None, 0, 438, 2, 0, 0, "BSXFlags" },  // 147: block:BSXFlags
+    { Kind::Struct, LenKind::None, 0, 440, 6, 0, 0, "NiAVObject" },  // 148: block:NiAVObject
+    { Kind::Struct, LenKind::None, 0, 446, 5, 0, 0, "NiAlphaProperty" },  // 149: block:NiAlphaProperty
+    { Kind::Struct, LenKind::None, 0, 451, 8, 0, 0, "NiBSBoneLODController" },  // 150: block:NiBSBoneLODController
+    { Kind::Struct, LenKind::None, 0, 459, 9, 0, 0, "NiBillboardNode" },  // 151: block:NiBillboardNode
+    { Kind::Struct, LenKind::None, 0, 468, 3, 0, 0, "NiBinaryExtraData" },  // 152: block:NiBinaryExtraData
+    { Kind::Bytes, LenKind::Field, 0, 0, 0, 0, 0, nullptr },  // 153: bytes:field
+    { Kind::Struct, LenKind::None, 0, 471, 4, 0, 0, "NiBlendBoolInterpolator" },  // 154: block:NiBlendBoolInterpolator
+    { Kind::Struct, LenKind::None, 0, 475, 4, 0, 0, "NiBlendFloatInterpolator" },  // 155: block:NiBlendFloatInterpolator
+    { Kind::Struct, LenKind::None, 0, 479, 3, 0, 0, "NiBlendInterpolator" },  // 156: block:NiBlendInterpolator
+    { Kind::Struct, LenKind::None, 0, 482, 4, 0, 0, "NiBlendPoint3Interpolator" },  // 157: block:NiBlendPoint3Interpolator
+    { Kind::Struct, LenKind::None, 0, 486, 1, 0, 0, "NiBoolData" },  // 158: block:NiBoolData
+    { Kind::Struct, LenKind::None, 0, 487, 2, 0, 0, "NiBoolInterpolator" },  // 159: block:NiBoolInterpolator
+    { Kind::Ref, LenKind::None, 0, 0, 0, 28, 1, nullptr },  // 160: ref->NiBoolData
+    { Kind::Struct, LenKind::None, 0, 489, 2, 0, 0, "NiBoolTimelineInterpolator" },  // 161: block:NiBoolTimelineInterpolator
+    { Kind::Struct, LenKind::None, 0, 491, 2, 0, 0, "NiBooleanExtraData" },  // 162: block:NiBooleanExtraData
+    { Kind::Struct, LenKind::None, 0, 493, 7, 0, 0, "NiCamera" },  // 163: block:NiCamera
+    { Kind::Struct, LenKind::None, 0, 500, 1, 0, 0, "NiColorData" },  // 164: block:NiColorData
+    { Kind::Struct, LenKind::None, 0, 501, 10, 0, 0, "NiControllerManager" },  // 165: block:NiControllerManager
+    { Kind::Array, LenKind::Prefix32, 0, 167, 0, 0, 0, nullptr },  // 166: ref->NiControllerSequence[u32]
+    { Kind::Ref, LenKind::None, 0, 0, 0, 29, 1, nullptr },  // 167: ref->NiControllerSequence
+    { Kind::Ref, LenKind::None, 0, 0, 0, 30, 1, nullptr },  // 168: ref->NiDefaultAVObjectPalette
+    { Kind::Struct, LenKind::None, 0, 511, 3, 0, 0, "NiControllerSequence" },  // 169: block:NiControllerSequence
+    { Kind::Struct, LenKind::None, 0, 514, 1, 0, 0, "NiDefaultAVObjectPalette" },  // 170: block:NiDefaultAVObjectPalette
+    { Kind::Struct, LenKind::None, 0, 515, 1, 0, 0, "NiExtraData" },  // 171: block:NiExtraData
+    { Kind::Struct, LenKind::None, 0, 516, 1, 0, 0, "NiFloatData" },  // 172: block:NiFloatData
+    { Kind::Struct, LenKind::None, 0, 517, 2, 0, 0, "NiFloatExtraData" },  // 173: block:NiFloatExtraData
+    { Kind::Struct, LenKind::None, 0, 519, 8, 0, 0, "NiFloatExtraDataController" },  // 174: block:NiFloatExtraDataController
+    { Kind::Struct, LenKind::None, 0, 527, 2, 0, 0, "NiFloatInterpolator" },  // 175: block:NiFloatInterpolator
+    { Kind::Ref, LenKind::None, 0, 0, 0, 31, 1, nullptr },  // 176: ref->NiFloatData
+    { Kind::Struct, LenKind::None, 0, 529, 2, 0, 0, "NiIntegerExtraData" },  // 177: block:NiIntegerExtraData
+    { Kind::Struct, LenKind::None, 0, 531, 1, 0, 0, "NiLookAtInterpolator" },  // 178: block:NiLookAtInterpolator
+    { Kind::Struct, LenKind::None, 0, 532, 1, 0, 0, "NiMeshPSysData" },  // 179: block:NiMeshPSysData
+    { Kind::Struct, LenKind::None, 0, 533, 7, 0, 0, "NiMeshParticleSystem" },  // 180: block:NiMeshParticleSystem
+    { Kind::Struct, LenKind::None, 0, 540, 8, 0, 0, "NiMultiTargetTransformController" },  // 181: block:NiMultiTargetTransformController
+    { Kind::Array, LenKind::Prefix16, 0, 80, 0, 0, 0, nullptr },  // 182: ptr->NiNode[u16]
+    { Kind::Struct, LenKind::None, 0, 548, 8, 0, 0, "NiNode" },  // 183: block:NiNode
+    { Kind::Struct, LenKind::None, 0, 556, 0, 0, 0, "NiObject" },  // 184: block:NiObject
+    { Kind::Struct, LenKind::None, 0, 556, 3, 0, 0, "NiObjectNET" },  // 185: block:NiObjectNET
+    { Kind::Struct, LenKind::None, 0, 559, 5, 0, 0, "NiPSysAgeDeathModifier" },  // 186: block:NiPSysAgeDeathModifier
+    { Kind::Struct, LenKind::None, 0, 564, 5, 0, 0, "NiPSysBombModifier" },  // 187: block:NiPSysBombModifier
+    { Kind::Struct, LenKind::None, 0, 569, 5, 0, 0, "NiPSysBoundUpdateModifier" },  // 188: block:NiPSysBoundUpdateModifier
+    { Kind::Struct, LenKind::None, 0, 574, 5, 0, 0, "NiPSysBoxEmitter" },  // 189: block:NiPSysBoxEmitter
+    { Kind::Struct, LenKind::None, 0, 579, 5, 0, 0, "NiPSysColliderManager" },  // 190: block:NiPSysColliderManager
+    { Kind::Struct, LenKind::None, 0, 584, 5, 0, 0, "NiPSysCylinderEmitter" },  // 191: block:NiPSysCylinderEmitter
+    { Kind::Struct, LenKind::None, 0, 589, 1, 0, 0, "NiPSysData" },  // 192: block:NiPSysData
+    { Kind::Struct, LenKind::None, 0, 590, 5, 0, 0, "NiPSysDragModifier" },  // 193: block:NiPSysDragModifier
+    { Kind::Struct, LenKind::None, 0, 595, 8, 0, 0, "NiPSysEmitterCtlr" },  // 194: block:NiPSysEmitterCtlr
+    { Kind::Struct, LenKind::None, 0, 603, 8, 0, 0, "NiPSysEmitterDeclinationCtlr" },  // 195: block:NiPSysEmitterDeclinationCtlr
+    { Kind::Struct, LenKind::None, 0, 611, 8, 0, 0, "NiPSysEmitterInitialRadiusCtlr" },  // 196: block:NiPSysEmitterInitialRadiusCtlr
+    { Kind::Struct, LenKind::None, 0, 619, 8, 0, 0, "NiPSysEmitterLifeSpanCtlr" },  // 197: block:NiPSysEmitterLifeSpanCtlr
+    { Kind::Struct, LenKind::None, 0, 627, 8, 0, 0, "NiPSysEmitterPlanarAngleCtlr" },  // 198: block:NiPSysEmitterPlanarAngleCtlr
+    { Kind::Struct, LenKind::None, 0, 635, 8, 0, 0, "NiPSysEmitterSpeedCtlr" },  // 199: block:NiPSysEmitterSpeedCtlr
+    { Kind::Struct, LenKind::None, 0, 643, 5, 0, 0, "NiPSysGravityModifier" },  // 200: block:NiPSysGravityModifier
+    { Kind::Struct, LenKind::None, 0, 648, 8, 0, 0, "NiPSysGravityStrengthCtlr" },  // 201: block:NiPSysGravityStrengthCtlr
+    { Kind::Struct, LenKind::None, 0, 656, 8, 0, 0, "NiPSysInitialRotSpeedCtlr" },  // 202: block:NiPSysInitialRotSpeedCtlr
+    { Kind::Struct, LenKind::None, 0, 664, 5, 0, 0, "NiPSysMeshEmitter" },  // 203: block:NiPSysMeshEmitter
+    { Kind::Struct, LenKind::None, 0, 669, 4, 0, 0, "NiPSysModifier" },  // 204: block:NiPSysModifier
+    { Kind::Struct, LenKind::None, 0, 673, 8, 0, 0, "NiPSysModifierActiveCtlr" },  // 205: block:NiPSysModifierActiveCtlr
+    { Kind::Struct, LenKind::None, 0, 681, 1, 0, 0, "NiPSysPlanarCollider" },  // 206: block:NiPSysPlanarCollider
+    { Kind::Struct, LenKind::None, 0, 682, 5, 0, 0, "NiPSysPositionModifier" },  // 207: block:NiPSysPositionModifier
+    { Kind::Struct, LenKind::None, 0, 687, 5, 0, 0, "NiPSysRotationModifier" },  // 208: block:NiPSysRotationModifier
+    { Kind::Struct, LenKind::None, 0, 692, 5, 0, 0, "NiPSysSpawnModifier" },  // 209: block:NiPSysSpawnModifier
+    { Kind::Struct, LenKind::None, 0, 697, 5, 0, 0, "NiPSysSphereEmitter" },  // 210: block:NiPSysSphereEmitter
+    { Kind::Struct, LenKind::None, 0, 702, 1, 0, 0, "NiPSysSphericalCollider" },  // 211: block:NiPSysSphericalCollider
+    { Kind::Struct, LenKind::None, 0, 703, 8, 0, 0, "NiPSysUpdateCtlr" },  // 212: block:NiPSysUpdateCtlr
+    { Kind::Struct, LenKind::None, 0, 711, 7, 0, 0, "NiParticleSystem" },  // 213: block:NiParticleSystem
+    { Kind::Struct, LenKind::None, 0, 718, 1, 0, 0, "NiPathInterpolator" },  // 214: block:NiPathInterpolator
+    { Kind::Struct, LenKind::None, 0, 719, 2, 0, 0, "NiPoint3Interpolator" },  // 215: block:NiPoint3Interpolator
+    { Kind::Ref, LenKind::None, 0, 0, 0, 32, 1, nullptr },  // 216: ref->NiPosData
+    { Kind::Struct, LenKind::None, 0, 721, 1, 0, 0, "NiPosData" },  // 217: block:NiPosData
+    { Kind::Struct, LenKind::None, 0, 722, 8, 0, 0, "NiSingleInterpController" },  // 218: block:NiSingleInterpController
+    { Kind::Struct, LenKind::None, 0, 730, 4, 0, 0, "NiSkinData" },  // 219: block:NiSkinData
+    { Kind::Array, LenKind::Field, 0, 53, 0, 0, 0, nullptr },  // 220: struct:NiSkinDataBones#44[field]
+    { Kind::Struct, LenKind::None, 0, 734, 4, 0, 0, "NiSkinInstance" },  // 221: block:NiSkinInstance
+    { Kind::Struct, LenKind::None, 0, 738, 6, 0, 0, "NiSkinPartition" },  // 222: block:NiSkinPartition
+    { Kind::Array, LenKind::Window, 0, 55, 0, 0, 0, nullptr },  // 223: struct:BSVertex#47[window]
+    { Kind::Array, LenKind::Field, 0, 60, 0, 0, 0, nullptr },  // 224: struct:SkinPartition#48[field]
+    { Kind::Struct, LenKind::None, 0, 744, 2, 0, 0, "NiStringExtraData" },  // 225: block:NiStringExtraData
+    { Kind::Struct, LenKind::None, 0, 746, 2, 0, 0, "NiStringsExtraData" },  // 226: block:NiStringsExtraData
+    { Kind::Struct, LenKind::None, 0, 748, 10, 0, 0, "NiSwitchNode" },  // 227: block:NiSwitchNode
+    { Kind::Struct, LenKind::None, 0, 758, 2, 0, 0, "NiTextKeyExtraData" },  // 228: block:NiTextKeyExtraData
+    { Kind::Array, LenKind::Prefix32, 0, 36, 0, 0, 0, nullptr },  // 229: struct:NiTextKeyExtraDataKeys#32[u32]
+    { Kind::Struct, LenKind::None, 0, 760, 7, 0, 0, "NiTimeController" },  // 230: block:NiTimeController
+    { Kind::Struct, LenKind::None, 0, 767, 8, 0, 0, "NiTransformController" },  // 231: block:NiTransformController
+    { Kind::Struct, LenKind::None, 0, 775, 5, 0, 0, "NiTransformData" },  // 232: block:NiTransformData
+    { Kind::Union, LenKind::None, 0, 19, 2, 0, 0, nullptr },  // 233: union#30
+    { Kind::Struct, LenKind::None, 0, 780, 4, 0, 0, "NiTransformInterpolator" },  // 234: block:NiTransformInterpolator
+    { Kind::Ref, LenKind::None, 0, 0, 0, 33, 1, nullptr },  // 235: ref->NiTransformData
+    { Kind::Struct, LenKind::None, 0, 784, 7, 0, 0, "NiTriShape" },  // 236: block:NiTriShape
+    { Kind::Struct, LenKind::None, 0, 791, 1, 0, 0, "NiTriShapeData" },  // 237: block:NiTriShapeData
+    { Kind::Struct, LenKind::None, 0, 792, 1, 0, 0, "NiTriStripsData" },  // 238: block:NiTriStripsData
+    { Kind::Struct, LenKind::None, 0, 793, 8, 0, 0, "NiVisController" },  // 239: block:NiVisController
+    { Kind::Struct, LenKind::None, 0, 801, 1, 0, 0, "bhkBallAndSocketConstraint" },  // 240: block:bhkBallAndSocketConstraint
+    { Kind::Struct, LenKind::None, 0, 802, 1, 0, 0, "bhkBallSocketConstraintChain" },  // 241: block:bhkBallSocketConstraintChain
+    { Kind::Struct, LenKind::None, 0, 803, 1, 0, 0, "bhkBlendCollisionObject" },  // 242: block:bhkBlendCollisionObject
+    { Kind::Struct, LenKind::None, 0, 804, 3, 0, 0, "bhkBoxShape" },  // 243: block:bhkBoxShape
+    { Kind::Struct, LenKind::None, 0, 807, 1, 0, 0, "bhkBreakableConstraint" },  // 244: block:bhkBreakableConstraint
+    { Kind::Struct, LenKind::None, 0, 808, 3, 0, 0, "bhkCapsuleShape" },  // 245: block:bhkCapsuleShape
+    { Kind::Struct, LenKind::None, 0, 811, 3, 0, 0, "bhkCollisionObject" },  // 246: block:bhkCollisionObject
+    { Kind::Ref, LenKind::None, 0, 0, 0, 34, 3, nullptr },  // 247: ref->bhkRigidBody,bhkRigidBodyT,bhkSimpleShapePhantom
+    { Kind::Struct, LenKind::None, 0, 814, 2, 0, 0, "bhkCompressedMeshShape" },  // 248: block:bhkCompressedMeshShape
+    { Kind::Struct, LenKind::None, 0, 816, 1, 0, 0, "bhkCompressedMeshShapeData" },  // 249: block:bhkCompressedMeshShapeData
+    { Kind::Struct, LenKind::None, 0, 817, 2, 0, 0, "bhkConvexTransformShape" },  // 250: block:bhkConvexTransformShape
+    { Kind::Ref, LenKind::None, 0, 0, 0, 37, 12, nullptr },  // 251: ref->bhkBoxShape,bhkCapsuleShape,bhkCompressedMeshShape,bhkConvexTransformShape,bhkConvexVerticesShape,bhkCylinderShape,bhkListShape,bhkMoppBvTreeShape,bhkNiTriStripsShape,bhkPlaneShape,bhkSphereShape,bhkTransformShape
+    { Kind::Struct, LenKind::None, 0, 819, 3, 0, 0, "bhkConvexVerticesShape" },  // 252: block:bhkConvexVerticesShape
+    { Kind::Struct, LenKind::None, 0, 822, 3, 0, 0, "bhkCylinderShape" },  // 253: block:bhkCylinderShape
+    { Kind::Struct, LenKind::None, 0, 825, 1, 0, 0, "bhkHingeConstraint" },  // 254: block:bhkHingeConstraint
+    { Kind::Struct, LenKind::None, 0, 826, 1, 0, 0, "bhkLimitedHingeConstraint" },  // 255: block:bhkLimitedHingeConstraint
+    { Kind::Struct, LenKind::None, 0, 827, 2, 0, 0, "bhkListShape" },  // 256: block:bhkListShape
+    { Kind::Array, LenKind::Prefix32, 0, 251, 0, 0, 0, nullptr },  // 257: ref->bhkBoxShape,bhkCapsuleShape,bhkCompressedMeshShape,bhkConvexTransformShape,bhkConvexVerticesShape,bhkCylinderShape,bhkListShape,bhkMoppBvTreeShape,bhkNiTriStripsShape,bhkPlaneShape,bhkSphereShape,bhkTransformShape[u32]
+    { Kind::Struct, LenKind::None, 0, 829, 2, 0, 0, "bhkMoppBvTreeShape" },  // 258: block:bhkMoppBvTreeShape
+    { Kind::Struct, LenKind::None, 0, 831, 2, 0, 0, "bhkNiTriStripsShape" },  // 259: block:bhkNiTriStripsShape
+    { Kind::Struct, LenKind::None, 0, 833, 1, 0, 0, "bhkPlaneShape" },  // 260: block:bhkPlaneShape
+    { Kind::Struct, LenKind::None, 0, 834, 3, 0, 0, "bhkPrimitiveShape" },  // 261: block:bhkPrimitiveShape
+    { Kind::Struct, LenKind::None, 0, 837, 1, 0, 0, "bhkRagdollConstraint" },  // 262: block:bhkRagdollConstraint
+    { Kind::Struct, LenKind::None, 0, 838, 2, 0, 0, "bhkRigidBody" },  // 263: block:bhkRigidBody
+    { Kind::Struct, LenKind::None, 0, 840, 2, 0, 0, "bhkRigidBodyT" },  // 264: block:bhkRigidBodyT
+    { Kind::Struct, LenKind::None, 0, 842, 3, 0, 0, "bhkSPCollisionObject" },  // 265: block:bhkSPCollisionObject
+    { Kind::Struct, LenKind::None, 0, 845, 2, 0, 0, "bhkShapeWrapper" },  // 266: block:bhkShapeWrapper
+    { Kind::Struct, LenKind::None, 0, 847, 1, 0, 0, "bhkSimpleShapePhantom" },  // 267: block:bhkSimpleShapePhantom
+    { Kind::Struct, LenKind::None, 0, 848, 3, 0, 0, "bhkSphereShape" },  // 268: block:bhkSphereShape
+    { Kind::Struct, LenKind::None, 0, 851, 1, 0, 0, "bhkStiffSpringConstraint" },  // 269: block:bhkStiffSpringConstraint
+    { Kind::Struct, LenKind::None, 0, 852, 2, 0, 0, "bhkTransformShape" },  // 270: block:bhkTransformShape
 };
 
 inline constexpr FieldDef kFields[] = {
-    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 0
-    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 1
-    { "z", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 2
-    { "numKeys", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 3
-    { "interpolation", 3, 0, kNoField, CondOp::Min, 0, 0, 1ll, 0, kNoField, 0ull },  // 4
-    { "keys", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 5
-    { "w", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 6
-    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 7
-    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 8
-    { "z", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 9
-    { "distance", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 10
-    { "boneName", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 11
-    { "time", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 12
-    { "value", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 13
-    { "m", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 14
-    { "translation", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 15
-    { "rotation", 9, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 16
-    { "scale", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 17
-    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 18
-    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 19
-    { "z", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 20
-    { "w", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 21
-    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 22
-    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 23
-    { "partFlag", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 24
-    { "bodyPart", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 25
-    { "rotation", 9, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 26
-    { "translation", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 27
-    { "scale", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 28
-    { "index", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 29
-    { "weight", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 30
-    { "transform", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 31
-    { "boundingOffset", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 32
-    { "boundingRadius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 33
-    { "numVertices", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 34
-    { "vertexWeights", 19, 0, 3, CondOp::Ne, 1, 2, 0ll, 0, kNoField, 0ull },  // 35
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 36
-    { "behaviorGraphFile", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 37
-    { "controlsBaseSkeleton", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 38
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 39
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 40
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 41
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 42
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 43
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 44
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 45
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 46
-    { "boneLODs", 28, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 47
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 48
-    { "center", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 49
-    { "dimensions", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 50
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 51
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 52
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 53
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 54
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 55
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 56
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 57
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 58
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 59
-    { "data", 33, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 60
-    { "skinPartition", 34, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 61
-    { "skeletonRoot", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 62
-    { "bones", 36, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 63
-    { "partitions", 37, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 64
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 65
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 66
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 67
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 68
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 69
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 70
-    { "boundCenter", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 71
-    { "boundRadius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 72
-    { "skin", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 73
-    { "shaderProperty", 40, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 74
-    { "alphaProperty", 41, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 75
-    { "vertexDesc", 42, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 76
-    { "numTriangles", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 77
-    { "numVertices", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 78
-    { "dataSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 79
-    { "geometryData", 43, 0, 14, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 80
-    { "particleDataSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 81
-    { "particleData", 44, 0, 16, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 82
-    { "dynamicDataSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 83
-    { "dynamicData", 43, 0, 18, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 84
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 85
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 86
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 87
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 88
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 89
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 90
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 91
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 92
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 93
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 94
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 95
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 96
-    { "targetVariable", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 97
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 98
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 99
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 100
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 101
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 102
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 103
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 104
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 105
-    { "targetVariable", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 106
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 107
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 108
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 109
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 110
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 111
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 112
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 113
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 114
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 115
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 116
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 117
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 118
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 119
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 120
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 121
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 122
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 123
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 124
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 125
-    { "rotationX", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 126
-    { "rotationY", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 127
-    { "rotationZ", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 128
-    { "zoom", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 129
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 130
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 131
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 132
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 133
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 134
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 135
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 136
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 137
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 138
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 139
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 140
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 141
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 142
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 143
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 144
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 145
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 146
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 147
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 148
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 149
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 150
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 151
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 152
-    { "shaderType", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 153
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 154
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 155
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 156
-    { "shaderFlags1", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 157
-    { "shaderFlags2", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 158
-    { "uvOffset", 13, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 159
-    { "uvScale", 13, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 160
-    { "textureSet", 62, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 161
-    { "materialTail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 162
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 163
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 164
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 165
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 166
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 167
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 168
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 169
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 170
-    { "targetVariable", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 171
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 172
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 173
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 174
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 175
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 176
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 177
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 178
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 179
-    { "targetVariable", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 180
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 181
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 182
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 183
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 184
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 185
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 186
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 187
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 188
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 189
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 190
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 191
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 192
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 193
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 194
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 195
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 196
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 197
-    { "multiBound", 69, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 198
-    { "cullingMode", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 199
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 200
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 201
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 202
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 203
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 204
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 205
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 206
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 207
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 208
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 209
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 210
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 211
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 212
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 213
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 214
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 215
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 216
-    { "alphaSortBound", 12, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 217
-    { "staticBound", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 218
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 219
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 220
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 221
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 222
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 223
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 224
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 225
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 226
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 227
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 228
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 229
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 230
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 231
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 232
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 233
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 234
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 235
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 236
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 237
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 238
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 239
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 240
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 241
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 242
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 243
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 244
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 245
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 246
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 247
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 248
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 249
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 250
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 251
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 252
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 253
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 254
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 255
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 256
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 257
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 258
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 259
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 260
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 261
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 262
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 263
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 264
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 265
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 266
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 267
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 268
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 269
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 270
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 271
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 272
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 273
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 274
-    { "textures", 85, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 275
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 276
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 277
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 278
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 279
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 280
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 281
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 282
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 283
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 284
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 285
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 286
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 287
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 288
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 289
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 290
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 291
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 292
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 293
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 294
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 295
-    { "bones1", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 296
-    { "bones2", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 297
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 298
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 299
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 300
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 301
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 302
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 303
-    { "boundCenter", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 304
-    { "boundRadius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 305
-    { "skin", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 306
-    { "shaderProperty", 40, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 307
-    { "alphaProperty", 41, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 308
-    { "vertexDesc", 42, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 309
-    { "numTriangles", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 310
-    { "numVertices", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 311
-    { "dataSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 312
-    { "geometryData", 43, 0, 14, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 313
-    { "particleDataSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 314
-    { "particleData", 44, 0, 16, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 315
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 316
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 317
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 318
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 319
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 320
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 321
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 322
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 323
-    { "value", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 324
-    { "valueNodeFlags", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 325
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 326
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 327
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 328
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 329
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 330
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 331
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 332
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 333
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 334
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 335
-    { "integerData", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 336
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 337
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 338
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 339
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 340
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 341
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 342
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 343
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 344
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 345
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 346
-    { "threshold", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 347
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 348
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 349
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 350
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 351
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 352
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 353
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 354
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 355
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 356
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 357
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 358
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 359
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 360
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 361
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 362
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 363
-    { "billboardMode", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 364
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 365
-    { "dataSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 366
-    { "binaryData", 43, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 367
-    { "flags", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 368
-    { "arraySize", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 369
-    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 370
-    { "value", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 371
-    { "flags", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 372
-    { "arraySize", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 373
-    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 374
-    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 375
-    { "flags", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 376
-    { "arraySize", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 377
-    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 378
-    { "flags", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 379
-    { "arraySize", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 380
-    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 381
-    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 382
-    { "keys", 2, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 383
-    { "value", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 384
-    { "data", 109, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 385
-    { "value", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 386
-    { "data", 109, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 387
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 388
-    { "booleanData", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 389
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 390
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 391
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 392
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 393
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 394
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 395
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 396
-    { "keys", 2, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 397
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 398
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 399
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 400
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 401
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 402
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 403
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 404
-    { "cumulative", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 405
-    { "controllerSequences", 115, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 406
-    { "objectPalette", 117, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 407
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 408
-    { "numControlledBlocks", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 409
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 410
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 411
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 412
-    { "keys", 2, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 413
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 414
-    { "floatData", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 415
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 416
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 417
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 418
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 419
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 420
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 421
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 422
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 423
-    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 424
-    { "data", 125, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 425
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 426
-    { "integerData", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 427
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 428
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 429
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 430
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 431
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 432
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 433
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 434
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 435
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 436
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 437
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 438
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 439
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 440
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 441
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 442
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 443
-    { "extraTargets", 131, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 444
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 445
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 446
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 447
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 448
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 449
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 450
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 451
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 452
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 453
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 454
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 455
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 456
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 457
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 458
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 459
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 460
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 461
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 462
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 463
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 464
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 465
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 466
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 467
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 468
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 469
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 470
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 471
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 472
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 473
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 474
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 475
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 476
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 477
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 478
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 479
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 480
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 481
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 482
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 483
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 484
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 485
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 486
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 487
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 488
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 489
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 490
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 491
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 492
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 493
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 494
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 495
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 496
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 497
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 498
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 499
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 500
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 501
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 502
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 503
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 504
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 505
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 506
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 507
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 508
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 509
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 510
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 511
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 512
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 513
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 514
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 515
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 516
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 517
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 518
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 519
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 520
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 521
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 522
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 523
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 524
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 525
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 526
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 527
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 528
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 529
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 530
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 531
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 532
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 533
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 534
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 535
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 536
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 537
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 538
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 539
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 540
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 541
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 542
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 543
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 544
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 545
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 546
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 547
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 548
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 549
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 550
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 551
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 552
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 553
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 554
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 555
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 556
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 557
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 558
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 559
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 560
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 561
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 562
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 563
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 564
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 565
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 566
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 567
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 568
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 569
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 570
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 571
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 572
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 573
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 574
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 575
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 576
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 577
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 578
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 579
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 580
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 581
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 582
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 583
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 584
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 585
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 586
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 587
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 588
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 589
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 590
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 591
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 592
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 593
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 594
-    { "order", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 595
-    { "target", 74, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 596
-    { "active", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 597
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 598
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 599
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 600
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 601
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 602
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 603
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 604
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 605
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 606
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 607
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 608
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 609
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 610
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 611
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 612
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 613
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 614
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 615
-    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 616
-    { "data", 165, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 617
-    { "keys", 2, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 618
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 619
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 620
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 621
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 622
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 623
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 624
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 625
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 626
-    { "skinTransform", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 627
-    { "numBones", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 628
-    { "hasVertexWeights", 21, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 629
-    { "bones", 169, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 630
-    { "data", 33, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 631
-    { "skinPartition", 34, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 632
-    { "skeletonRoot", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 633
-    { "bones", 36, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 634
-    { "numPartitions", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 635
-    { "dataSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 636
-    { "vertexSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 637
-    { "vertexDesc", 42, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 638
-    { "vertexData", 43, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 639
-    { "partitionData", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 640
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 641
-    { "stringData", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 642
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 643
-    { "data", 85, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 644
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 645
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 646
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 647
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 648
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 649
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 650
-    { "children", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 651
-    { "effects", 53, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 652
-    { "switchFlags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 653
-    { "index", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 654
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 655
-    { "keys", 176, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 656
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 657
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 658
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 659
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 660
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 661
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 662
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 663
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 664
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 665
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 666
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 667
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 668
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 669
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 670
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 671
-    { "numRotationKeys", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 672
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 673
-    { "translation", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 674
-    { "rotation", 5, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 675
-    { "scale", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 676
-    { "data", 181, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 677
-    { "name", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 678
-    { "extraData", 23, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 679
-    { "controller", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 680
-    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 681
-    { "transform", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 682
-    { "collisionObject", 26, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 683
-    { "tail", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 684
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 685
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 686
-    { "nextController", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 687
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 688
-    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 689
-    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 690
-    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 691
-    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 692
-    { "target", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 693
-    { "interpolator", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 694
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 695
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 696
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 697
-    { "material", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 698
-    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 699
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 700
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 701
-    { "material", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 702
-    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 703
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 704
-    { "target", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 705
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 706
-    { "body", 193, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 707
-    { "target", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 708
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 709
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 710
-    { "shape", 197, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 711
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 712
-    { "material", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 713
-    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 714
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 715
-    { "material", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 716
-    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 717
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 718
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 719
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 720
-    { "subShapes", 203, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 721
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 722
-    { "shape", 197, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 723
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 724
-    { "unknown0", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 725
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 726
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 727
-    { "material", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 728
-    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 729
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 730
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 731
-    { "shape", 197, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 732
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 733
-    { "shape", 197, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 734
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 735
-    { "target", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 736
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 737
-    { "body", 193, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 738
-    { "shape", 197, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 739
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 740
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 741
-    { "material", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 742
-    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 743
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 744
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 745
-    { "shape", 197, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 746
-    { "data", 4, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull },  // 747
+    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 0
+    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1
+    { "z", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 2
+    { "value", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 3
+    { "time", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 4
+    { "data", 5, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 1, 1, 0ull, false },  // 5
+    { "numKeys", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 6
+    { "interpolation", 7, 0, kNoField, CondOp::Min, 0, 0, 1ll, 0, kNoField, 0ull, false },  // 7
+    { "keys", 8, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 8
+    { "numKeys", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 9
+    { "interpolation", 7, 0, kNoField, CondOp::Min, 0, 0, 1ll, 0, kNoField, 0ull, false },  // 10
+    { "keys", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 11
+    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 12
+    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 13
+    { "forward", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 14
+    { "backward", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 15
+    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 16
+    { "tension", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 17
+    { "bias", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 18
+    { "continuity", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 19
+    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 20
+    { "time", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 21
+    { "data", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 1, 1, 0ull, false },  // 22
+    { "numKeys", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 23
+    { "interpolation", 7, 0, kNoField, CondOp::Min, 0, 0, 1ll, 0, kNoField, 0ull, false },  // 24
+    { "keys", 18, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 25
+    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 26
+    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 27
+    { "forward", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 28
+    { "backward", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 29
+    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 30
+    { "tension", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 31
+    { "bias", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 32
+    { "continuity", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 33
+    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 34
+    { "time", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 35
+    { "data", 24, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 1, 1, 0ull, false },  // 36
+    { "numKeys", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 37
+    { "interpolation", 7, 0, kNoField, CondOp::Min, 0, 0, 1ll, 0, kNoField, 0ull, false },  // 38
+    { "keys", 26, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 39
+    { "x", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 40
+    { "y", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 41
+    { "z", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 42
+    { "w", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 43
+    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 44
+    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 45
+    { "z", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 46
+    { "tension", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 47
+    { "bias", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 48
+    { "continuity", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 49
+    { "time", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 50
+    { "value", 28, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 51
+    { "tbc", 31, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 2, 1, 0ull, false },  // 52
+    { "keys", 33, 1, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 53
+    { "distance", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 54
+    { "boneName", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 55
+    { "time", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 56
+    { "value", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 57
+    { "m", 38, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 58
+    { "translation", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 59
+    { "rotation", 37, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 60
+    { "scale", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 61
+    { "u", 41, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 62
+    { "v", 41, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 63
+    { "position", 0, 0, kNoField, CondOp::Mask, 1, 11, 17592186044416ll, 0, kNoField, 0ull, false },  // 64
+    { "positionW", 1, 0, kNoField, CondOp::Mask, 1, 11, 17592186044416ll, 0, kNoField, 0ull, false },  // 65
+    { "uv", 40, 0, kNoField, CondOp::Mask, 1, 11, 35184372088832ll, 0, kNoField, 0ull, false },  // 66
+    { "normal", 43, 0, kNoField, CondOp::Mask, 1, 11, 140737488355328ll, 0, kNoField, 0ull, false },  // 67
+    { "normalW", 3, 0, kNoField, CondOp::Mask, 1, 11, 140737488355328ll, 0, kNoField, 0ull, false },  // 68
+    { "tangent", 43, 0, kNoField, CondOp::Mask, 1, 11, 281474976710656ll, 0, kNoField, 0ull, false },  // 69
+    { "tangentW", 3, 0, kNoField, CondOp::Mask, 1, 11, 281474976710656ll, 0, kNoField, 0ull, false },  // 70
+    { "color", 44, 0, kNoField, CondOp::Mask, 1, 11, 562949953421312ll, 0, kNoField, 0ull, false },  // 71
+    { "boneWeights", 45, 0, kNoField, CondOp::Mask, 1, 11, 1125899906842624ll, 0, kNoField, 0ull, false },  // 72
+    { "boneIndices", 44, 0, kNoField, CondOp::Mask, 1, 11, 1125899906842624ll, 0, kNoField, 0ull, false },  // 73
+    { "eye", 1, 0, kNoField, CondOp::Mask, 1, 11, 4503599627370496ll, 0, kNoField, 0ull, false },  // 74
+    { "a", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 75
+    { "b", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 76
+    { "c", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 77
+    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 78
+    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 79
+    { "z", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 80
+    { "w", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 81
+    { "x", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 82
+    { "y", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 83
+    { "partFlag", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 84
+    { "bodyPart", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 85
+    { "rotation", 37, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 86
+    { "translation", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 87
+    { "scale", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 88
+    { "index", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 89
+    { "weight", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 90
+    { "transform", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 91
+    { "boundingOffset", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 92
+    { "boundingRadius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 93
+    { "numVertices", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 94
+    { "vertexWeights", 54, 0, 3, CondOp::Ne, 1, 2, 0ll, 0, kNoField, 0ull, true },  // 95
+    { "position", 0, 0, kNoField, CondOp::Mask, 1, 3, 17592186044416ll, 0, kNoField, 0ull, false },  // 96
+    { "positionW", 1, 0, kNoField, CondOp::Mask, 1, 3, 17592186044416ll, 0, kNoField, 0ull, false },  // 97
+    { "uv", 40, 0, kNoField, CondOp::Mask, 1, 3, 35184372088832ll, 0, kNoField, 0ull, false },  // 98
+    { "normal", 43, 0, kNoField, CondOp::Mask, 1, 3, 140737488355328ll, 0, kNoField, 0ull, false },  // 99
+    { "normalW", 3, 0, kNoField, CondOp::Mask, 1, 3, 140737488355328ll, 0, kNoField, 0ull, false },  // 100
+    { "tangent", 43, 0, kNoField, CondOp::Mask, 1, 3, 281474976710656ll, 0, kNoField, 0ull, false },  // 101
+    { "tangentW", 3, 0, kNoField, CondOp::Mask, 1, 3, 281474976710656ll, 0, kNoField, 0ull, false },  // 102
+    { "color", 44, 0, kNoField, CondOp::Mask, 1, 3, 562949953421312ll, 0, kNoField, 0ull, false },  // 103
+    { "boneWeights", 45, 0, kNoField, CondOp::Mask, 1, 3, 1125899906842624ll, 0, kNoField, 0ull, false },  // 104
+    { "boneIndices", 44, 0, kNoField, CondOp::Mask, 1, 3, 1125899906842624ll, 0, kNoField, 0ull, false },  // 105
+    { "eye", 1, 0, kNoField, CondOp::Mask, 1, 3, 4503599627370496ll, 0, kNoField, 0ull, false },  // 106
+    { "weights", 57, 1, 4, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 107
+    { "indices", 59, 1, 4, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 108
+    { "numVertices", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 109
+    { "numTriangles", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 110
+    { "numBones", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 111
+    { "numStrips", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 112
+    { "numWeightsPerVertex", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 113
+    { "bones", 61, 0, 2, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 114
+    { "hasVertexMap", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 115
+    { "vertexMap", 61, 0, 0, CondOp::Ne, 0, 6, 0ll, 0, kNoField, 0ull, true },  // 116
+    { "hasVertexWeights", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 117
+    { "vertexWeights", 62, 0, 0, CondOp::Ne, 0, 8, 0ll, 0, kNoField, 0ull, true },  // 118
+    { "stripLengths", 61, 0, 3, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 119
+    { "hasFaces", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 120
+    { "triangles", 63, 0, 1, CondOp::Ne, 0, 11, 0ll, 0, kNoField, 0ull, true },  // 121
+    { "hasBoneIndices", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 122
+    { "boneIndices", 64, 0, 0, CondOp::Ne, 0, 13, 0ll, 0, kNoField, 0ull, true },  // 123
+    { "unknownShort", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 124
+    { "vertexDesc", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 125
+    { "trueTriangles", 63, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 126
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 127
+    { "behaviorGraphFile", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 128
+    { "controlsBaseSkeleton", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 129
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 130
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 131
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 132
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 133
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 134
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 135
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 136
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 137
+    { "boneLODs", 73, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 138
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 139
+    { "center", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 140
+    { "dimensions", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 141
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 142
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 143
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 144
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 145
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 146
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 147
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 148
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 149
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 150
+    { "data", 78, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 151
+    { "skinPartition", 79, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 152
+    { "skeletonRoot", 80, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 153
+    { "bones", 81, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 154
+    { "partitions", 82, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 155
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 156
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 157
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 158
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 159
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 160
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 161
+    { "boundCenter", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 162
+    { "boundRadius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 163
+    { "skin", 84, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 164
+    { "shaderProperty", 85, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 165
+    { "alphaProperty", 86, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 166
+    { "vertexDesc", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 167
+    { "numTriangles", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 168
+    { "numVertices", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 169
+    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 170
+    { "vertices", 87, 0, 13, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 171
+    { "triangles", 63, 0, 12, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 172
+    { "particleDataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 173
+    { "particleData", 61, 0, 17, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 174
+    { "dynamicDataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 175
+    { "dynamicData", 88, 0, 19, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 176
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 177
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 178
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 179
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 180
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 181
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 182
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 183
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 184
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 185
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 186
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 187
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 188
+    { "targetVariable", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 189
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 190
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 191
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 192
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 193
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 194
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 195
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 196
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 197
+    { "targetVariable", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 198
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 199
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 200
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 201
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 202
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 203
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 204
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 205
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 206
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 207
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 208
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 209
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 210
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 211
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 212
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 213
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 214
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 215
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 216
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 217
+    { "rotationX", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 218
+    { "rotationY", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 219
+    { "rotationZ", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 220
+    { "zoom", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 221
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 222
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 223
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 224
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 225
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 226
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 227
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 228
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 229
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 230
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 231
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 232
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 233
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 234
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 235
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 236
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 237
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 238
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 239
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 240
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 241
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 242
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 243
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 244
+    { "shaderType", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 245
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 246
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 247
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 248
+    { "shaderFlags1", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 249
+    { "shaderFlags2", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 250
+    { "uvOffset", 49, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 251
+    { "uvScale", 49, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 252
+    { "textureSet", 106, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 253
+    { "emissiveColor", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 254
+    { "emissiveMultiple", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 255
+    { "unknown0", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 256
+    { "unknown1", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 257
+    { "unknown2", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 258
+    { "glossiness", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 259
+    { "specularColor", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 260
+    { "specularStrength", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 261
+    { "unknown3", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 262
+    { "unknown4", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 263
+    { "typeData", 107, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, 0, 0ull, false },  // 264
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 265
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 266
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 267
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 268
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 269
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 270
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 271
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 272
+    { "targetVariable", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 273
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 274
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 275
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 276
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 277
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 278
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 279
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 280
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 281
+    { "targetVariable", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 282
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 283
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 284
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 285
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 286
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 287
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 288
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 289
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 290
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 291
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 292
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 293
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 294
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 295
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 296
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 297
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 298
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 299
+    { "multiBound", 119, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 300
+    { "cullingMode", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 301
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 302
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 303
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 304
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 305
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 306
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 307
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 308
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 309
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 310
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 311
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 312
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 313
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 314
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 315
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 316
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 317
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 318
+    { "alphaSortBound", 48, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 319
+    { "staticBound", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 320
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 321
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 322
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 323
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 324
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 325
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 326
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 327
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 328
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 329
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 330
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 331
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 332
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 333
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 334
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 335
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 336
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 337
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 338
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 339
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 340
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 341
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 342
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 343
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 344
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 345
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 346
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 347
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 348
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 349
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 350
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 351
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 352
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 353
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 354
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 355
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 356
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 357
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 358
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 359
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 360
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 361
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 362
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 363
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 364
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 365
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 366
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 367
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 368
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 369
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 370
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 371
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 372
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 373
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 374
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 375
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 376
+    { "textures", 135, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 377
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 378
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 379
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 380
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 381
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 382
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 383
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 384
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 385
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 386
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 387
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 388
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 389
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 390
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 391
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 392
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 393
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 394
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 395
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 396
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 397
+    { "bones1", 141, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 398
+    { "bones2", 141, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 399
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 400
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 401
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 402
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 403
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 404
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 405
+    { "boundCenter", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 406
+    { "boundRadius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 407
+    { "skin", 84, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 408
+    { "shaderProperty", 85, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 409
+    { "alphaProperty", 86, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 410
+    { "vertexDesc", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 411
+    { "numTriangles", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 412
+    { "numVertices", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 413
+    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 414
+    { "vertices", 87, 0, 13, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 415
+    { "triangles", 63, 0, 12, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 416
+    { "particleDataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 417
+    { "particleData", 61, 0, 17, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 418
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 419
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 420
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 421
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 422
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 423
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 424
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 425
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 426
+    { "value", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 427
+    { "valueNodeFlags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 428
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 429
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 430
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 431
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 432
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 433
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 434
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 435
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 436
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 437
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 438
+    { "integerData", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 439
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 440
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 441
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 442
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 443
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 444
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 445
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 446
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 447
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 448
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 449
+    { "threshold", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 450
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 451
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 452
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 453
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 454
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 455
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 456
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 457
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 458
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 459
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 460
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 461
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 462
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 463
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 464
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 465
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 466
+    { "billboardMode", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 467
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 468
+    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 469
+    { "binaryData", 153, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 470
+    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 471
+    { "arraySize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 472
+    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 473
+    { "value", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 474
+    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 475
+    { "arraySize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 476
+    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 477
+    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 478
+    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 479
+    { "arraySize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 480
+    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 481
+    { "flags", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 482
+    { "arraySize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 483
+    { "weightThreshold", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 484
+    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 485
+    { "keys", 6, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 486
+    { "value", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 487
+    { "data", 160, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 488
+    { "value", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 489
+    { "data", 160, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 490
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 491
+    { "booleanData", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 492
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 493
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 494
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 495
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 496
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 497
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 498
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 499
+    { "keys", 9, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 500
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 501
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 502
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 503
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 504
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 505
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 506
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 507
+    { "cumulative", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 508
+    { "controllerSequences", 166, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 509
+    { "objectPalette", 168, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 510
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 511
+    { "numControlledBlocks", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 512
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 513
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 514
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 515
+    { "keys", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 516
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 517
+    { "floatData", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 518
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 519
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 520
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 521
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 522
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 523
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 524
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 525
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 526
+    { "value", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 527
+    { "data", 176, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 528
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 529
+    { "integerData", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 530
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 531
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 532
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 533
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 534
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 535
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 536
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 537
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 538
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 539
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 540
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 541
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 542
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 543
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 544
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 545
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 546
+    { "extraTargets", 182, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 547
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 548
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 549
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 550
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 551
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 552
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 553
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 554
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 555
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 556
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 557
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 558
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 559
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 560
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 561
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 562
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 563
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 564
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 565
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 566
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 567
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 568
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 569
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 570
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 571
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 572
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 573
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 574
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 575
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 576
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 577
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 578
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 579
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 580
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 581
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 582
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 583
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 584
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 585
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 586
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 587
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 588
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 589
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 590
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 591
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 592
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 593
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 594
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 595
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 596
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 597
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 598
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 599
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 600
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 601
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 602
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 603
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 604
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 605
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 606
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 607
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 608
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 609
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 610
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 611
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 612
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 613
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 614
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 615
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 616
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 617
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 618
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 619
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 620
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 621
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 622
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 623
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 624
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 625
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 626
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 627
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 628
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 629
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 630
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 631
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 632
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 633
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 634
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 635
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 636
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 637
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 638
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 639
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 640
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 641
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 642
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 643
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 644
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 645
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 646
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 647
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 648
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 649
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 650
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 651
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 652
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 653
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 654
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 655
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 656
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 657
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 658
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 659
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 660
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 661
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 662
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 663
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 664
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 665
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 666
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 667
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 668
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 669
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 670
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 671
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 672
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 673
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 674
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 675
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 676
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 677
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 678
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 679
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 680
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 681
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 682
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 683
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 684
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 685
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 686
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 687
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 688
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 689
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 690
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 691
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 692
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 693
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 694
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 695
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 696
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 697
+    { "order", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 698
+    { "target", 124, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 699
+    { "active", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 700
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 701
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 702
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 703
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 704
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 705
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 706
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 707
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 708
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 709
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 710
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 711
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 712
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 713
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 714
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 715
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 716
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 717
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 718
+    { "value", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 719
+    { "data", 216, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 720
+    { "keys", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 721
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 722
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 723
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 724
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 725
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 726
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 727
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 728
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 729
+    { "skinTransform", 51, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 730
+    { "numBones", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 731
+    { "hasVertexWeights", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 732
+    { "bones", 220, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 733
+    { "data", 78, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 734
+    { "skinPartition", 79, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 735
+    { "skeletonRoot", 80, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 736
+    { "bones", 81, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 737
+    { "numPartitions", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 738
+    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 739
+    { "vertexSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 740
+    { "vertexDesc", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 741
+    { "vertexData", 223, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 742
+    { "partitions", 224, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 743
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 744
+    { "stringData", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 745
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 746
+    { "data", 135, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 747
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 748
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 749
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 750
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 751
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 752
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 753
+    { "children", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 754
+    { "effects", 97, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 755
+    { "switchFlags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 756
+    { "index", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 757
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 758
+    { "keys", 229, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 759
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 760
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 761
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 762
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 763
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 764
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 765
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 766
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 767
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 768
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 769
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 770
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 771
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 772
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 773
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 774
+    { "numRotationKeys", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 775
+    { "rotationType", 7, 0, kNoField, CondOp::Min, 0, 0, 1ll, 0, kNoField, 0ull, false },  // 776
+    { "rotations", 233, 0, kNoField, CondOp::Min, 0, 0, 1ll, 0, 1, 0ull, false },  // 777
+    { "translations", 25, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 778
+    { "scales", 17, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 779
+    { "translation", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 780
+    { "rotation", 28, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 781
+    { "scale", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 782
+    { "data", 235, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 783
+    { "name", 35, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 784
+    { "extraData", 68, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 785
+    { "controller", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 786
+    { "flags", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 787
+    { "transform", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 788
+    { "collisionObject", 71, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 789
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 790
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 791
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 792
+    { "nextController", 70, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 793
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 794
+    { "frequency", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 795
+    { "phase", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 796
+    { "startTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 797
+    { "stopTime", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 798
+    { "target", 91, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 799
+    { "interpolator", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 800
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 801
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 802
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 803
+    { "material", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 804
+    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 805
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 806
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 807
+    { "material", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 808
+    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 809
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 810
+    { "target", 80, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 811
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 812
+    { "body", 247, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 813
+    { "target", 80, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 814
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 815
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 816
+    { "shape", 251, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 817
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 818
+    { "material", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 819
+    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 820
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 821
+    { "material", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 822
+    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 823
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 824
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 825
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 826
+    { "subShapes", 257, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 827
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 828
+    { "shape", 251, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 829
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 830
+    { "unknown0", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 831
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 832
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 833
+    { "material", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 834
+    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 835
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 836
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 837
+    { "shape", 251, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 838
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 839
+    { "shape", 251, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 840
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 841
+    { "target", 80, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 842
+    { "flags", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 843
+    { "body", 247, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 844
+    { "shape", 251, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 845
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 846
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 847
+    { "material", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 848
+    { "radius", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 849
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 850
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 851
+    { "shape", 251, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 852
+    { "data", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 853
 };
 
+inline constexpr CaseDef kCases[] = {
+    { "constant", 2, 0, 1, false },  // 0
+    { "linear", 11, 1, 1, false },  // 1
+    { "quadratic", 12, 2, 1, false },  // 2
+    { "tbc", 13, 3, 1, false },  // 3
+    { "constant", 14, 4, 1, false },  // 4
+    { "linear", 19, 5, 1, false },  // 5
+    { "quadratic", 20, 6, 1, false },  // 6
+    { "tbc", 21, 7, 1, false },  // 7
+    { "constant", 22, 8, 1, false },  // 8
+    { "linear", kNoField, 9, 1, false },  // 9
+    { "tbc", 29, 10, 1, false },  // 10
+    { "none", kNoField, 11, 4, false },  // 11
+    { "type1", 108, 15, 1, false },  // 12
+    { "type5", 109, 16, 1, false },  // 13
+    { "type6", 109, 17, 1, false },  // 14
+    { "type11", 110, 18, 1, false },  // 15
+    { "type14", 111, 19, 1, false },  // 16
+    { "type16", 112, 20, 1, false },  // 17
+    { "unknown", 10, 21, 0, true },  // 18
+    { "xyz", 27, 21, 1, false },  // 19
+    { "quaternion", 32, 22, 2, false },  // 20
+};
+inline constexpr int64_t kWhens[] = { 5ll, 1ll, 2ll, 3ll, 5ll, 1ll, 2ll, 3ll, 5ll, 1ll, 3ll, 0ll, 2ll, 3ll, 4ll, 1ll, 5ll, 6ll, 11ll, 14ll, 16ll, 4ll, 1ll, 3ll };
 inline constexpr uint16_t kLinks[] = { 66, 118, 128, 132, 111, 113, 76, 112, 8, 18, 39, 45, 49, 18, 78, 55, 58, 70, 72, 107, 108, 121, 48, 38, 22, 41, 74, 106, 57, 64, 65, 67, 109, 120, 146, 147, 150, 129, 131, 133, 135, 136, 137, 140, 141, 142, 143, 151, 153 };
 
 inline constexpr BlockDef kBlocks[] = {
-    { "BSBehaviorGraphExtraData", 66, 20, 1, false },  // 0
-    { "BSBlastNode", 48, 22, 6, false },  // 1
-    { "BSBoneLODExtraData", 66, 27, 1, false },  // 2
-    { "BSBound", 66, 29, 1, false },  // 3
-    { "BSDamageStage", 48, 30, 6, false },  // 4
-    { "BSDecalPlacementVectorExtraData", 66, 31, 1, false },  // 5
-    { "BSDismemberSkinInstance", 112, 32, 4, false },  // 6
-    { "BSDynamicTriShape", 43, 38, 18, false },  // 7
-    { "BSEffectShaderProperty", 78, 45, 3, false },  // 8
-    { "BSEffectShaderPropertyColorController", 110, 46, 8, false },  // 9
-    { "BSEffectShaderPropertyFloatController", 110, 49, 8, false },  // 10
-    { "BSFadeNode", 76, 50, 8, false },  // 11
-    { "BSFrustumFOVController", 118, 55, 7, false },  // 12
-    { "BSFurnitureMarkerNode", 66, 56, 1, false },  // 13
-    { "BSInvMarker", 66, 57, 1, false },  // 14
-    { "BSLODTriShape", 48, 58, 6, false },  // 15
-    { "BSLagBoneController", 118, 59, 7, false },  // 16
-    { "BSLeafAnimNode", 76, 60, 8, false },  // 17
-    { "BSLightingShaderProperty", 77, 61, 0, false },  // 18
-    { "BSLightingShaderPropertyColorController", 110, 63, 8, false },  // 19
-    { "BSLightingShaderPropertyFloatController", 110, 64, 8, false },  // 20
-    { "BSMasterParticleSystem", 48, 65, 6, false },  // 21
-    { "BSMultiBound", 77, 66, 0, false },  // 22
-    { "BSMultiBoundAABB", 77, 67, 0, false },  // 23
-    { "BSMultiBoundNode", 76, 68, 8, false },  // 24
-    { "BSMultiBoundOBB", 77, 70, 0, false },  // 25
-    { "BSNiAlphaPropertyTestRefController", 110, 71, 8, false },  // 26
-    { "BSOrderedNode", 76, 72, 8, false },  // 27
-    { "BSPSysHavokUpdateModifier", 97, 73, 4, false },  // 28
-    { "BSPSysInheritVelocityModifier", 97, 75, 4, false },  // 29
-    { "BSPSysLODModifier", 97, 76, 4, false },  // 30
-    { "BSPSysMultiTargetEmitterCtlr", 118, 77, 7, false },  // 31
-    { "BSPSysRecycleBoundModifier", 97, 78, 4, false },  // 32
-    { "BSPSysScaleModifier", 97, 79, 4, false },  // 33
-    { "BSPSysSimpleColorModifier", 97, 80, 4, false },  // 34
-    { "BSPSysStripUpdateModifier", 97, 81, 4, false },  // 35
-    { "BSPSysSubTexModifier", 97, 82, 4, false },  // 36
-    { "BSProceduralLightningController", 118, 83, 7, false },  // 37
-    { "BSShaderTextureSet", 77, 84, 0, false },  // 38
-    { "BSSkyShaderProperty", 78, 87, 3, false },  // 39
-    { "BSStripPSysData", 77, 88, 0, false },  // 40
-    { "BSStripParticleSystem", 48, 89, 6, false },  // 41
-    { "BSTreeNode", 76, 90, 8, false },  // 42
-    { "BSTriShape", 48, 93, 6, false },  // 43
-    { "BSValueNode", 76, 94, 8, false },  // 44
-    { "BSWaterShaderProperty", 78, 95, 3, false },  // 45
-    { "BSWindModifier", 97, 96, 4, false },  // 46
-    { "BSXFlags", 66, 97, 1, false },  // 47
-    { "NiAVObject", 78, 98, 3, true },  // 48
-    { "NiAlphaProperty", 78, 99, 3, false },  // 49
-    { "NiBSBoneLODController", 118, 100, 7, false },  // 50
-    { "NiBillboardNode", 76, 101, 8, false },  // 51
-    { "NiBinaryExtraData", 66, 102, 1, false },  // 52
-    { "NiBlendBoolInterpolator", 55, 103, 3, false },  // 53
-    { "NiBlendFloatInterpolator", 55, 104, 3, false },  // 54
-    { "NiBlendInterpolator", 77, 105, 0, true },  // 55
-    { "NiBlendPoint3Interpolator", 55, 106, 3, false },  // 56
-    { "NiBoolData", 77, 107, 0, false },  // 57
-    { "NiBoolInterpolator", 77, 108, 0, false },  // 58
-    { "NiBoolTimelineInterpolator", 77, 110, 0, false },  // 59
-    { "NiBooleanExtraData", 66, 111, 1, false },  // 60
-    { "NiCamera", 48, 112, 6, false },  // 61
-    { "NiColorData", 77, 113, 0, false },  // 62
-    { "NiControllerManager", 118, 114, 7, false },  // 63
-    { "NiControllerSequence", 77, 118, 0, false },  // 64
-    { "NiDefaultAVObjectPalette", 77, 119, 0, false },  // 65
-    { "NiExtraData", 77, 120, 0, true },  // 66
-    { "NiFloatData", 77, 121, 0, false },  // 67
-    { "NiFloatExtraData", 66, 122, 1, false },  // 68
-    { "NiFloatExtraDataController", 118, 123, 7, false },  // 69
-    { "NiFloatInterpolator", 77, 124, 0, false },  // 70
-    { "NiIntegerExtraData", 66, 126, 1, false },  // 71
-    { "NiLookAtInterpolator", 77, 127, 0, false },  // 72
-    { "NiMeshPSysData", 77, 128, 0, false },  // 73
-    { "NiMeshParticleSystem", 48, 129, 6, false },  // 74
-    { "NiMultiTargetTransformController", 118, 130, 7, false },  // 75
-    { "NiNode", 48, 132, 6, false },  // 76
-    { "NiObject", -1, 133, 0, true },  // 77
-    { "NiObjectNET", 77, 134, 0, true },  // 78
-    { "NiPSysAgeDeathModifier", 97, 135, 4, false },  // 79
-    { "NiPSysBombModifier", 97, 136, 4, false },  // 80
-    { "NiPSysBoundUpdateModifier", 97, 137, 4, false },  // 81
-    { "NiPSysBoxEmitter", 97, 138, 4, false },  // 82
-    { "NiPSysColliderManager", 97, 139, 4, false },  // 83
-    { "NiPSysCylinderEmitter", 97, 140, 4, false },  // 84
-    { "NiPSysData", 77, 141, 0, false },  // 85
-    { "NiPSysDragModifier", 97, 142, 4, false },  // 86
-    { "NiPSysEmitterCtlr", 118, 143, 7, false },  // 87
-    { "NiPSysEmitterDeclinationCtlr", 118, 144, 7, false },  // 88
-    { "NiPSysEmitterInitialRadiusCtlr", 118, 145, 7, false },  // 89
-    { "NiPSysEmitterLifeSpanCtlr", 118, 146, 7, false },  // 90
-    { "NiPSysEmitterPlanarAngleCtlr", 118, 147, 7, false },  // 91
-    { "NiPSysEmitterSpeedCtlr", 118, 148, 7, false },  // 92
-    { "NiPSysGravityModifier", 97, 149, 4, false },  // 93
-    { "NiPSysGravityStrengthCtlr", 118, 150, 7, false },  // 94
-    { "NiPSysInitialRotSpeedCtlr", 118, 151, 7, false },  // 95
-    { "NiPSysMeshEmitter", 97, 152, 4, false },  // 96
-    { "NiPSysModifier", 77, 153, 0, true },  // 97
-    { "NiPSysModifierActiveCtlr", 118, 154, 7, false },  // 98
-    { "NiPSysPlanarCollider", 77, 155, 0, false },  // 99
-    { "NiPSysPositionModifier", 97, 156, 4, false },  // 100
-    { "NiPSysRotationModifier", 97, 157, 4, false },  // 101
-    { "NiPSysSpawnModifier", 97, 158, 4, false },  // 102
-    { "NiPSysSphereEmitter", 97, 159, 4, false },  // 103
-    { "NiPSysSphericalCollider", 77, 160, 0, false },  // 104
-    { "NiPSysUpdateCtlr", 118, 161, 7, false },  // 105
-    { "NiParticleSystem", 48, 162, 6, false },  // 106
-    { "NiPathInterpolator", 77, 163, 0, false },  // 107
-    { "NiPoint3Interpolator", 77, 164, 0, false },  // 108
-    { "NiPosData", 77, 166, 0, false },  // 109
-    { "NiSingleInterpController", 118, 167, 7, true },  // 110
-    { "NiSkinData", 77, 168, 0, false },  // 111
-    { "NiSkinInstance", 77, 170, 0, false },  // 112
-    { "NiSkinPartition", 77, 171, 0, false },  // 113
-    { "NiStringExtraData", 66, 172, 1, false },  // 114
-    { "NiStringsExtraData", 66, 173, 1, false },  // 115
-    { "NiSwitchNode", 76, 174, 8, false },  // 116
-    { "NiTextKeyExtraData", 66, 175, 1, false },  // 117
-    { "NiTimeController", 77, 177, 0, true },  // 118
-    { "NiTransformController", 110, 178, 8, false },  // 119
-    { "NiTransformData", 77, 179, 0, false },  // 120
-    { "NiTransformInterpolator", 77, 180, 0, false },  // 121
-    { "NiTriShape", 48, 182, 6, false },  // 122
-    { "NiTriShapeData", 77, 183, 0, false },  // 123
-    { "NiTriStripsData", 77, 184, 0, false },  // 124
-    { "NiVisController", 110, 185, 8, false },  // 125
-    { "bhkBallAndSocketConstraint", 77, 186, 0, false },  // 126
-    { "bhkBallSocketConstraintChain", 77, 187, 0, false },  // 127
-    { "bhkBlendCollisionObject", 77, 188, 0, false },  // 128
-    { "bhkBoxShape", 144, 189, 3, false },  // 129
-    { "bhkBreakableConstraint", 77, 190, 0, false },  // 130
-    { "bhkCapsuleShape", 144, 191, 3, false },  // 131
-    { "bhkCollisionObject", 77, 192, 0, false },  // 132
-    { "bhkCompressedMeshShape", 77, 194, 0, false },  // 133
-    { "bhkCompressedMeshShapeData", 77, 195, 0, false },  // 134
-    { "bhkConvexTransformShape", 149, 196, 2, false },  // 135
-    { "bhkConvexVerticesShape", 144, 198, 3, false },  // 136
-    { "bhkCylinderShape", 144, 199, 3, false },  // 137
-    { "bhkHingeConstraint", 77, 200, 0, false },  // 138
-    { "bhkLimitedHingeConstraint", 77, 201, 0, false },  // 139
-    { "bhkListShape", 77, 202, 0, false },  // 140
-    { "bhkMoppBvTreeShape", 149, 204, 2, false },  // 141
-    { "bhkNiTriStripsShape", 77, 205, 0, false },  // 142
-    { "bhkPlaneShape", 77, 206, 0, false },  // 143
-    { "bhkPrimitiveShape", 77, 207, 0, true },  // 144
-    { "bhkRagdollConstraint", 77, 208, 0, false },  // 145
-    { "bhkRigidBody", 149, 209, 2, false },  // 146
-    { "bhkRigidBodyT", 149, 210, 2, false },  // 147
-    { "bhkSPCollisionObject", 132, 211, 3, false },  // 148
-    { "bhkShapeWrapper", 77, 212, 0, true },  // 149
-    { "bhkSimpleShapePhantom", 77, 213, 0, false },  // 150
-    { "bhkSphereShape", 144, 214, 3, false },  // 151
-    { "bhkStiffSpringConstraint", 77, 215, 0, false },  // 152
-    { "bhkTransformShape", 149, 216, 2, false },  // 153
+    { "BSBehaviorGraphExtraData", 66, 66, 1, false },  // 0
+    { "BSBlastNode", 48, 67, 6, false },  // 1
+    { "BSBoneLODExtraData", 66, 72, 1, false },  // 2
+    { "BSBound", 66, 74, 1, false },  // 3
+    { "BSDamageStage", 48, 75, 6, false },  // 4
+    { "BSDecalPlacementVectorExtraData", 66, 76, 1, false },  // 5
+    { "BSDismemberSkinInstance", 112, 77, 4, false },  // 6
+    { "BSDynamicTriShape", 43, 83, 19, false },  // 7
+    { "BSEffectShaderProperty", 78, 89, 3, false },  // 8
+    { "BSEffectShaderPropertyColorController", 110, 90, 8, false },  // 9
+    { "BSEffectShaderPropertyFloatController", 110, 93, 8, false },  // 10
+    { "BSFadeNode", 76, 94, 8, false },  // 11
+    { "BSFrustumFOVController", 118, 99, 7, false },  // 12
+    { "BSFurnitureMarkerNode", 66, 100, 1, false },  // 13
+    { "BSInvMarker", 66, 101, 1, false },  // 14
+    { "BSLODTriShape", 48, 102, 6, false },  // 15
+    { "BSLagBoneController", 118, 103, 7, false },  // 16
+    { "BSLeafAnimNode", 76, 104, 8, false },  // 17
+    { "BSLightingShaderProperty", 77, 105, 0, false },  // 18
+    { "BSLightingShaderPropertyColorController", 110, 113, 8, false },  // 19
+    { "BSLightingShaderPropertyFloatController", 110, 114, 8, false },  // 20
+    { "BSMasterParticleSystem", 48, 115, 6, false },  // 21
+    { "BSMultiBound", 77, 116, 0, false },  // 22
+    { "BSMultiBoundAABB", 77, 117, 0, false },  // 23
+    { "BSMultiBoundNode", 76, 118, 8, false },  // 24
+    { "BSMultiBoundOBB", 77, 120, 0, false },  // 25
+    { "BSNiAlphaPropertyTestRefController", 110, 121, 8, false },  // 26
+    { "BSOrderedNode", 76, 122, 8, false },  // 27
+    { "BSPSysHavokUpdateModifier", 97, 123, 4, false },  // 28
+    { "BSPSysInheritVelocityModifier", 97, 125, 4, false },  // 29
+    { "BSPSysLODModifier", 97, 126, 4, false },  // 30
+    { "BSPSysMultiTargetEmitterCtlr", 118, 127, 7, false },  // 31
+    { "BSPSysRecycleBoundModifier", 97, 128, 4, false },  // 32
+    { "BSPSysScaleModifier", 97, 129, 4, false },  // 33
+    { "BSPSysSimpleColorModifier", 97, 130, 4, false },  // 34
+    { "BSPSysStripUpdateModifier", 97, 131, 4, false },  // 35
+    { "BSPSysSubTexModifier", 97, 132, 4, false },  // 36
+    { "BSProceduralLightningController", 118, 133, 7, false },  // 37
+    { "BSShaderTextureSet", 77, 134, 0, false },  // 38
+    { "BSSkyShaderProperty", 78, 137, 3, false },  // 39
+    { "BSStripPSysData", 77, 138, 0, false },  // 40
+    { "BSStripParticleSystem", 48, 139, 6, false },  // 41
+    { "BSTreeNode", 76, 140, 8, false },  // 42
+    { "BSTriShape", 48, 143, 6, false },  // 43
+    { "BSValueNode", 76, 144, 8, false },  // 44
+    { "BSWaterShaderProperty", 78, 145, 3, false },  // 45
+    { "BSWindModifier", 97, 146, 4, false },  // 46
+    { "BSXFlags", 66, 147, 1, false },  // 47
+    { "NiAVObject", 78, 148, 3, true },  // 48
+    { "NiAlphaProperty", 78, 149, 3, false },  // 49
+    { "NiBSBoneLODController", 118, 150, 7, false },  // 50
+    { "NiBillboardNode", 76, 151, 8, false },  // 51
+    { "NiBinaryExtraData", 66, 152, 1, false },  // 52
+    { "NiBlendBoolInterpolator", 55, 154, 3, false },  // 53
+    { "NiBlendFloatInterpolator", 55, 155, 3, false },  // 54
+    { "NiBlendInterpolator", 77, 156, 0, true },  // 55
+    { "NiBlendPoint3Interpolator", 55, 157, 3, false },  // 56
+    { "NiBoolData", 77, 158, 0, false },  // 57
+    { "NiBoolInterpolator", 77, 159, 0, false },  // 58
+    { "NiBoolTimelineInterpolator", 77, 161, 0, false },  // 59
+    { "NiBooleanExtraData", 66, 162, 1, false },  // 60
+    { "NiCamera", 48, 163, 6, false },  // 61
+    { "NiColorData", 77, 164, 0, false },  // 62
+    { "NiControllerManager", 118, 165, 7, false },  // 63
+    { "NiControllerSequence", 77, 169, 0, false },  // 64
+    { "NiDefaultAVObjectPalette", 77, 170, 0, false },  // 65
+    { "NiExtraData", 77, 171, 0, true },  // 66
+    { "NiFloatData", 77, 172, 0, false },  // 67
+    { "NiFloatExtraData", 66, 173, 1, false },  // 68
+    { "NiFloatExtraDataController", 118, 174, 7, false },  // 69
+    { "NiFloatInterpolator", 77, 175, 0, false },  // 70
+    { "NiIntegerExtraData", 66, 177, 1, false },  // 71
+    { "NiLookAtInterpolator", 77, 178, 0, false },  // 72
+    { "NiMeshPSysData", 77, 179, 0, false },  // 73
+    { "NiMeshParticleSystem", 48, 180, 6, false },  // 74
+    { "NiMultiTargetTransformController", 118, 181, 7, false },  // 75
+    { "NiNode", 48, 183, 6, false },  // 76
+    { "NiObject", -1, 184, 0, true },  // 77
+    { "NiObjectNET", 77, 185, 0, true },  // 78
+    { "NiPSysAgeDeathModifier", 97, 186, 4, false },  // 79
+    { "NiPSysBombModifier", 97, 187, 4, false },  // 80
+    { "NiPSysBoundUpdateModifier", 97, 188, 4, false },  // 81
+    { "NiPSysBoxEmitter", 97, 189, 4, false },  // 82
+    { "NiPSysColliderManager", 97, 190, 4, false },  // 83
+    { "NiPSysCylinderEmitter", 97, 191, 4, false },  // 84
+    { "NiPSysData", 77, 192, 0, false },  // 85
+    { "NiPSysDragModifier", 97, 193, 4, false },  // 86
+    { "NiPSysEmitterCtlr", 118, 194, 7, false },  // 87
+    { "NiPSysEmitterDeclinationCtlr", 118, 195, 7, false },  // 88
+    { "NiPSysEmitterInitialRadiusCtlr", 118, 196, 7, false },  // 89
+    { "NiPSysEmitterLifeSpanCtlr", 118, 197, 7, false },  // 90
+    { "NiPSysEmitterPlanarAngleCtlr", 118, 198, 7, false },  // 91
+    { "NiPSysEmitterSpeedCtlr", 118, 199, 7, false },  // 92
+    { "NiPSysGravityModifier", 97, 200, 4, false },  // 93
+    { "NiPSysGravityStrengthCtlr", 118, 201, 7, false },  // 94
+    { "NiPSysInitialRotSpeedCtlr", 118, 202, 7, false },  // 95
+    { "NiPSysMeshEmitter", 97, 203, 4, false },  // 96
+    { "NiPSysModifier", 77, 204, 0, true },  // 97
+    { "NiPSysModifierActiveCtlr", 118, 205, 7, false },  // 98
+    { "NiPSysPlanarCollider", 77, 206, 0, false },  // 99
+    { "NiPSysPositionModifier", 97, 207, 4, false },  // 100
+    { "NiPSysRotationModifier", 97, 208, 4, false },  // 101
+    { "NiPSysSpawnModifier", 97, 209, 4, false },  // 102
+    { "NiPSysSphereEmitter", 97, 210, 4, false },  // 103
+    { "NiPSysSphericalCollider", 77, 211, 0, false },  // 104
+    { "NiPSysUpdateCtlr", 118, 212, 7, false },  // 105
+    { "NiParticleSystem", 48, 213, 6, false },  // 106
+    { "NiPathInterpolator", 77, 214, 0, false },  // 107
+    { "NiPoint3Interpolator", 77, 215, 0, false },  // 108
+    { "NiPosData", 77, 217, 0, false },  // 109
+    { "NiSingleInterpController", 118, 218, 7, true },  // 110
+    { "NiSkinData", 77, 219, 0, false },  // 111
+    { "NiSkinInstance", 77, 221, 0, false },  // 112
+    { "NiSkinPartition", 77, 222, 0, false },  // 113
+    { "NiStringExtraData", 66, 225, 1, false },  // 114
+    { "NiStringsExtraData", 66, 226, 1, false },  // 115
+    { "NiSwitchNode", 76, 227, 8, false },  // 116
+    { "NiTextKeyExtraData", 66, 228, 1, false },  // 117
+    { "NiTimeController", 77, 230, 0, true },  // 118
+    { "NiTransformController", 110, 231, 8, false },  // 119
+    { "NiTransformData", 77, 232, 0, false },  // 120
+    { "NiTransformInterpolator", 77, 234, 0, false },  // 121
+    { "NiTriShape", 48, 236, 6, false },  // 122
+    { "NiTriShapeData", 77, 237, 0, false },  // 123
+    { "NiTriStripsData", 77, 238, 0, false },  // 124
+    { "NiVisController", 110, 239, 8, false },  // 125
+    { "bhkBallAndSocketConstraint", 77, 240, 0, false },  // 126
+    { "bhkBallSocketConstraintChain", 77, 241, 0, false },  // 127
+    { "bhkBlendCollisionObject", 77, 242, 0, false },  // 128
+    { "bhkBoxShape", 144, 243, 3, false },  // 129
+    { "bhkBreakableConstraint", 77, 244, 0, false },  // 130
+    { "bhkCapsuleShape", 144, 245, 3, false },  // 131
+    { "bhkCollisionObject", 77, 246, 0, false },  // 132
+    { "bhkCompressedMeshShape", 77, 248, 0, false },  // 133
+    { "bhkCompressedMeshShapeData", 77, 249, 0, false },  // 134
+    { "bhkConvexTransformShape", 149, 250, 2, false },  // 135
+    { "bhkConvexVerticesShape", 144, 252, 3, false },  // 136
+    { "bhkCylinderShape", 144, 253, 3, false },  // 137
+    { "bhkHingeConstraint", 77, 254, 0, false },  // 138
+    { "bhkLimitedHingeConstraint", 77, 255, 0, false },  // 139
+    { "bhkListShape", 77, 256, 0, false },  // 140
+    { "bhkMoppBvTreeShape", 149, 258, 2, false },  // 141
+    { "bhkNiTriStripsShape", 77, 259, 0, false },  // 142
+    { "bhkPlaneShape", 77, 260, 0, false },  // 143
+    { "bhkPrimitiveShape", 77, 261, 0, true },  // 144
+    { "bhkRagdollConstraint", 77, 262, 0, false },  // 145
+    { "bhkRigidBody", 149, 263, 2, false },  // 146
+    { "bhkRigidBodyT", 149, 264, 2, false },  // 147
+    { "bhkSPCollisionObject", 132, 265, 3, false },  // 148
+    { "bhkShapeWrapper", 77, 266, 0, true },  // 149
+    { "bhkSimpleShapePhantom", 77, 267, 0, false },  // 150
+    { "bhkSphereShape", 144, 268, 3, false },  // 151
+    { "bhkStiffSpringConstraint", 77, 269, 0, false },  // 152
+    { "bhkTransformShape", 149, 270, 2, false },  // 153
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, std::span<const CaseDef>{}, std::span<const int64_t>{}, kLinks, kBlocks, "0.1.0", "0.2" };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kBlocks, "0.1.0", "0.2" };
 
 }  // namespace niffer::schema::tables

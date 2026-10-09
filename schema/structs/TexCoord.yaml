@@ -1,0 +1,5 @@
+struct: TexCoord
+size: 4
+fields:
+  - { name: u, type: half }
+  - { name: v, type: half }

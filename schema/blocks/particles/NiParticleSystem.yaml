@@ -1,6 +1,18 @@
 block: NiParticleSystem
 inherits: NiAVObject
 doc: >-
-  Typed structurally: the NiAVObject fields are decoded and the rest is kept raw.
+  A particle system node. All SSE instances (1,547, plus 179 BSStripParticleSystem and 3
+  NiMeshParticleSystem with the same layout) parse exactly. The fields after NiAVObject sit where
+  BSTriShape's do up to vertexDesc; then come the particle data and the modifier list.
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: boundCenter, type: Vec3 }
+  - { name: boundRadius, type: f32 }
+  - { name: skin, type: ref, doc: "Always null in the corpus." }
+  - { name: shaderProperty, type: ref, to: [BSEffectShaderProperty] }
+  - { name: alphaProperty, type: ref, to: [NiAlphaProperty] }
+  - { name: vertexDesc, type: u64 }
+  - { name: unknown0, type: u32, doc: "Always 0 in the corpus." }
+  - { name: unknown1, type: u32, doc: "Usually 0; otherwise values such as 0x0019004B." }
+  - { name: data, type: ref, to: [NiPSysData, NiMeshPSysData] }
+  - { name: unknown2, type: u8, doc: "1 or 0." }
+  - { name: modifiers, type: "ref[count: u32]", to: [NiPSysModifier] }

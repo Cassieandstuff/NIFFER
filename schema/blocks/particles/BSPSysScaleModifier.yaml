@@ -1,4 +1,5 @@
 block: BSPSysScaleModifier
 inherits: NiPSysModifier
+doc: "A scale curve: all 1,506 SSE instances are a u32 count and that many floats."
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: scales, type: "f32[count: u32]", packed: true }

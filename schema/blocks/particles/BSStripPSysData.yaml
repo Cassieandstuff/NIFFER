@@ -1,4 +1,10 @@
 block: BSStripPSysData
-inherits: NiObject
+inherits: NiPSysData
+doc: >-
+  NiPSysData's layout plus 11 bytes: all 179 SSE instances parse exactly, and the shared part
+  varies the way NiPSysData's does.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: stripUnknown0, type: u16, doc: "17, 31, 33, 65... in the corpus." }
+  - { name: stripUnknown1, type: f32 }
+  - { name: stripUnknown2, type: f32 }
+  - { name: stripUnknown3, type: u8 }

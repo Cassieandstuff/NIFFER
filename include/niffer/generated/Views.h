@@ -29,6 +29,7 @@ class GeometryDataUvSets;
 class KeyGroup;
 class Matrix33;
 class NiControllerSequenceControlledBlocks;
+class NiDefaultAVObjectPaletteObjects;
 class NiSkinDataBones;
 class NiSkinDataBonesVertexWeights;
 class NiTextKeyExtraDataKeys;
@@ -709,6 +710,22 @@ public:
     // parameter — Empty, or a parameter name such as BirthRate or EmitterActive.
     ::niffer::NiStringRef Parameter() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(7)).value_or(::niffer::NiStringRef{}); }
     bool SetParameter(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(7), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class NiDefaultAVObjectPaletteObjects {
+public:
+    NiDefaultAVObjectPaletteObjects(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // name
+    std::string Name() const { return b_->GetAt<std::string>(p_.Child(0)).value_or(std::string{}); }
+    bool SetName(const std::string& v) const { return b_->SetAt<std::string>(p_.Child(0), v); }
+    // object
+    ::niffer::NiRef<::niffer::view::NiAVObject> Object() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAVObject>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiAVObject>{}); }
+    bool SetObject(const ::niffer::NiRef<::niffer::view::NiAVObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAVObject>>(p_.Child(1), v); }
 private:
     ::niffer::Block* b_;
     ::niffer::RelPath p_;
@@ -1760,18 +1777,21 @@ protected:
     explicit BSLightingShaderPropertyFloatController(::niffer::Block& b) : NiSingleInterpController(b) {}
 };
 
-class BSMasterParticleSystem : public NiAVObject {
+class BSMasterParticleSystem : public NiNode {
 public:
     static constexpr uint16_t kBlock = 21;
     static std::optional<BSMasterParticleSystem> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSMasterParticleSystem(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
+    // unknown0 — Always 20 in the corpus.
+    uint16_t Unknown0() const { return b_->GetAt<uint16_t>(p_.Child(8)).value_or(uint16_t{}); }
+    bool SetUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(8), v); }
+    // particleSystems
+    std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>> ParticleSystems() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>>(p_.Child(9)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>{}); }
+    bool SetParticleSystems(const std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>>(p_.Child(9), v); }
 protected:
-    explicit BSMasterParticleSystem(::niffer::Block& b) : NiAVObject(b) {}
+    explicit BSMasterParticleSystem(::niffer::Block& b) : NiNode(b) {}
 };
 
 class BSMultiBound : public NiObject {
@@ -1874,8 +1894,8 @@ public:
     uint32_t Order() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetOrder(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // target
-    ::niffer::NiRef<::niffer::view::NiAVObject> Target() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAVObject>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiAVObject>{}); }
-    bool SetTarget(const ::niffer::NiRef<::niffer::view::NiAVObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAVObject>>(p_.Child(2), v); }
+    ::niffer::NiRef<::niffer::view::NiParticleSystem> Target() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiParticleSystem>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiParticleSystem>{}); }
+    bool SetTarget(const ::niffer::NiRef<::niffer::view::NiParticleSystem>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiParticleSystem>>(p_.Child(2), v); }
     // active
     uint8_t Active() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetActive(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
@@ -1960,9 +1980,9 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSPSysScaleModifier(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // scales
+    std::vector<float> Scales() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
+    bool SetScales(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
 protected:
     explicit BSPSysScaleModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -1974,9 +1994,15 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSPSysSimpleColorModifier(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
+    // unknownFloats — Fractions in [0, 1]; meanings not established.
+    std::vector<float> UnknownFloats() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
+    bool SetUnknownFloats(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
+    // color1
+    ::niffer::view::Vec4 Color1() const { return ::niffer::view::Vec4(*b_, p_.Child(5)); }
+    // color2
+    ::niffer::view::Vec4 Color2() const { return ::niffer::view::Vec4(*b_, p_.Child(6)); }
+    // color3
+    ::niffer::view::Vec4 Color3() const { return ::niffer::view::Vec4(*b_, p_.Child(7)); }
 protected:
     explicit BSPSysSimpleColorModifier(::niffer::Block& b) : NiPSysModifier(b) {}
 };
@@ -2051,32 +2077,159 @@ protected:
     explicit BSSkyShaderProperty(::niffer::Block& b) : NiObjectNET(b) {}
 };
 
-class BSStripPSysData : public NiObject {
+class NiPSysData : public NiObject {
+public:
+    static constexpr uint16_t kBlock = 85;
+    static std::optional<NiPSysData> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return NiPSysData(b);
+        return std::nullopt;
+    }
+    // unknown0 — Always 0 in the corpus.
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // unknown1 — A count-like value (40, 50, 62...); doesn't affect the layout.
+    uint16_t Unknown1() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetUnknown1(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // unknown2 — Always 0 in the corpus.
+    uint16_t Unknown2() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetUnknown2(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+    // unknown3 — Always 1, 0, 0 in the corpus.
+    std::vector<uint8_t> Unknown3() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(3)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown3(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(3), v); }
+    // unknown4 — Always 0 in the corpus.
+    uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
+    // unknown5 — Always 0 in the corpus.
+    uint8_t Unknown5() const { return b_->GetAt<uint8_t>(p_.Child(5)).value_or(uint8_t{}); }
+    bool SetUnknown5(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(5), v); }
+    // boundCenter
+    ::niffer::view::Vec3 BoundCenter() const { return ::niffer::view::Vec3(*b_, p_.Child(6)); }
+    // boundRadius
+    float BoundRadius() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
+    bool SetBoundRadius(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
+    // unknown6 — 1 or 0.
+    uint8_t Unknown6() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
+    bool SetUnknown6(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
+    // unknown7 — Always 0 in the corpus.
+    uint16_t Unknown7() const { return b_->GetAt<uint16_t>(p_.Child(9)).value_or(uint16_t{}); }
+    bool SetUnknown7(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(9), v); }
+    // unknown8 — Always -1 in the corpus.
+    int32_t Unknown8() const { return b_->GetAt<int32_t>(p_.Child(10)).value_or(int32_t{}); }
+    bool SetUnknown8(const int32_t& v) const { return b_->SetAt<int32_t>(p_.Child(10), v); }
+    // unknown9 — 1, 0, 0, 1, 0, (0|1), 0, (0|1) in the corpus.
+    std::vector<uint8_t> Unknown9() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(11)).value_or(std::vector<uint8_t>{}); }
+    bool SetUnknown9(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(11), v); }
+    // numUvRects
+    uint32_t NumUvRects() const { return b_->GetAt<uint32_t>(p_.Child(12)).value_or(uint32_t{}); }
+    bool SetNumUvRects(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(12), v); }
+    // uvRects
+    std::vector<::niffer::view::Vec4> UvRects() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(13));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(13).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // unknown10
+    float Unknown10() const { return b_->GetAt<float>(p_.Child(14)).value_or(float{}); }
+    bool SetUnknown10(const float& v) const { return b_->SetAt<float>(p_.Child(14), v); }
+    // unknown11
+    uint8_t Unknown11() const { return b_->GetAt<uint8_t>(p_.Child(15)).value_or(uint8_t{}); }
+    bool SetUnknown11(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(15), v); }
+    // unknown12
+    uint8_t Unknown12() const { return b_->GetAt<uint8_t>(p_.Child(16)).value_or(uint8_t{}); }
+    bool SetUnknown12(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(16), v); }
+    // unknown13
+    float Unknown13() const { return b_->GetAt<float>(p_.Child(17)).value_or(float{}); }
+    bool SetUnknown13(const float& v) const { return b_->SetAt<float>(p_.Child(17), v); }
+    // unknown14
+    float Unknown14() const { return b_->GetAt<float>(p_.Child(18)).value_or(float{}); }
+    bool SetUnknown14(const float& v) const { return b_->SetAt<float>(p_.Child(18), v); }
+    // unknown15
+    float Unknown15() const { return b_->GetAt<float>(p_.Child(19)).value_or(float{}); }
+    bool SetUnknown15(const float& v) const { return b_->SetAt<float>(p_.Child(19), v); }
+    // unknown16
+    uint8_t Unknown16() const { return b_->GetAt<uint8_t>(p_.Child(20)).value_or(uint8_t{}); }
+    bool SetUnknown16(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(20), v); }
+protected:
+    explicit NiPSysData(::niffer::Block& b) : NiObject(b) {}
+};
+
+class BSStripPSysData : public NiPSysData {
 public:
     static constexpr uint16_t kBlock = 40;
     static std::optional<BSStripPSysData> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSStripPSysData(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // stripUnknown0 — 17, 31, 33, 65... in the corpus.
+    uint16_t StripUnknown0() const { return b_->GetAt<uint16_t>(p_.Child(21)).value_or(uint16_t{}); }
+    bool SetStripUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(21), v); }
+    // stripUnknown1
+    float StripUnknown1() const { return b_->GetAt<float>(p_.Child(22)).value_or(float{}); }
+    bool SetStripUnknown1(const float& v) const { return b_->SetAt<float>(p_.Child(22), v); }
+    // stripUnknown2
+    float StripUnknown2() const { return b_->GetAt<float>(p_.Child(23)).value_or(float{}); }
+    bool SetStripUnknown2(const float& v) const { return b_->SetAt<float>(p_.Child(23), v); }
+    // stripUnknown3
+    uint8_t StripUnknown3() const { return b_->GetAt<uint8_t>(p_.Child(24)).value_or(uint8_t{}); }
+    bool SetStripUnknown3(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(24), v); }
 protected:
-    explicit BSStripPSysData(::niffer::Block& b) : NiObject(b) {}
+    explicit BSStripPSysData(::niffer::Block& b) : NiPSysData(b) {}
 };
 
-class BSStripParticleSystem : public NiAVObject {
+class NiParticleSystem : public NiAVObject {
+public:
+    static constexpr uint16_t kBlock = 106;
+    static std::optional<NiParticleSystem> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return NiParticleSystem(b);
+        return std::nullopt;
+    }
+    // boundCenter
+    ::niffer::view::Vec3 BoundCenter() const { return ::niffer::view::Vec3(*b_, p_.Child(6)); }
+    // boundRadius
+    float BoundRadius() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
+    bool SetBoundRadius(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
+    // skin — Always null in the corpus.
+    ::niffer::NiRef<::niffer::view::NiObject> Skin() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(8)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetSkin(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(8), v); }
+    // shaderProperty
+    ::niffer::NiRef<::niffer::view::BSEffectShaderProperty> ShaderProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::BSEffectShaderProperty>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::BSEffectShaderProperty>{}); }
+    bool SetShaderProperty(const ::niffer::NiRef<::niffer::view::BSEffectShaderProperty>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::BSEffectShaderProperty>>(p_.Child(9), v); }
+    // alphaProperty
+    ::niffer::NiRef<::niffer::view::NiAlphaProperty> AlphaProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10)).value_or(::niffer::NiRef<::niffer::view::NiAlphaProperty>{}); }
+    bool SetAlphaProperty(const ::niffer::NiRef<::niffer::view::NiAlphaProperty>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10), v); }
+    // vertexDesc
+    uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(11)).value_or(uint64_t{}); }
+    bool SetVertexDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(11), v); }
+    // unknown0 — Always 0 in the corpus.
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(12)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(12), v); }
+    // unknown1 — Usually 0; otherwise values such as 0x0019004B.
+    uint32_t Unknown1() const { return b_->GetAt<uint32_t>(p_.Child(13)).value_or(uint32_t{}); }
+    bool SetUnknown1(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(13), v); }
+    // data
+    ::niffer::NiRef<::niffer::view::NiObject> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(14)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetData(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(14), v); }
+    // unknown2 — 1 or 0.
+    uint8_t Unknown2() const { return b_->GetAt<uint8_t>(p_.Child(15)).value_or(uint8_t{}); }
+    bool SetUnknown2(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(15), v); }
+    // modifiers
+    std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>> Modifiers() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>>(p_.Child(16)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>{}); }
+    bool SetModifiers(const std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>>(p_.Child(16), v); }
+protected:
+    explicit NiParticleSystem(::niffer::Block& b) : NiAVObject(b) {}
+};
+
+class BSStripParticleSystem : public NiParticleSystem {
 public:
     static constexpr uint16_t kBlock = 41;
     static std::optional<BSStripParticleSystem> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return BSStripParticleSystem(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
-    explicit BSStripParticleSystem(::niffer::Block& b) : NiAVObject(b) {}
+    explicit BSStripParticleSystem(::niffer::Block& b) : NiParticleSystem(b) {}
 };
 
 class BSTreeNode : public NiNode {
@@ -2448,9 +2601,20 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiDefaultAVObjectPalette(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // scene
+    ::niffer::NiRef<::niffer::view::NiNode> Scene() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
+    bool SetScene(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0), v); }
+    // numObjects
+    uint32_t NumObjects() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetNumObjects(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // objects
+    std::vector<::niffer::view::NiDefaultAVObjectPaletteObjects> Objects() const {
+        std::vector<::niffer::view::NiDefaultAVObjectPaletteObjects> out;
+        const size_t n = b_->Count(p_.Child(2));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(2).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
 protected:
     explicit NiDefaultAVObjectPalette(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2555,18 +2719,15 @@ protected:
     explicit NiMeshPSysData(::niffer::Block& b) : NiObject(b) {}
 };
 
-class NiMeshParticleSystem : public NiAVObject {
+class NiMeshParticleSystem : public NiParticleSystem {
 public:
     static constexpr uint16_t kBlock = 74;
     static std::optional<NiMeshParticleSystem> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return NiMeshParticleSystem(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
-    explicit NiMeshParticleSystem(::niffer::Block& b) : NiAVObject(b) {}
+    explicit NiMeshParticleSystem(::niffer::Block& b) : NiParticleSystem(b) {}
 };
 
 class NiMultiTargetTransformController : public NiTimeController {
@@ -2665,20 +2826,6 @@ public:
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
     explicit NiPSysCylinderEmitter(::niffer::Block& b) : NiPSysModifier(b) {}
-};
-
-class NiPSysData : public NiObject {
-public:
-    static constexpr uint16_t kBlock = 85;
-    static std::optional<NiPSysData> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return NiPSysData(b);
-        return std::nullopt;
-    }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
-protected:
-    explicit NiPSysData(::niffer::Block& b) : NiObject(b) {}
 };
 
 class NiPSysDragModifier : public NiPSysModifier {
@@ -2945,20 +3092,6 @@ public:
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
 protected:
     explicit NiPSysUpdateCtlr(::niffer::Block& b) : NiTimeController(b) {}
-};
-
-class NiParticleSystem : public NiAVObject {
-public:
-    static constexpr uint16_t kBlock = 106;
-    static std::optional<NiParticleSystem> From(::niffer::Block& b) {
-        if (b.Modeled() && b.IsA(kBlock)) return NiParticleSystem(b);
-        return std::nullopt;
-    }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
-protected:
-    explicit NiParticleSystem(::niffer::Block& b) : NiAVObject(b) {}
 };
 
 class NiPathInterpolator : public NiObject {

@@ -1,4 +1,10 @@
 block: BSPSysSimpleColorModifier
 inherits: NiPSysModifier
+doc: >-
+  All 1,691 SSE instances are 18 floats: six fractions, then three RGBA colors (every component of
+  the colors lies in [0, 1]).
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknownFloats, type: "f32[6]", doc: "Fractions in [0, 1]; meanings not established." }
+  - { name: color1, type: Vec4 }
+  - { name: color2, type: Vec4 }
+  - { name: color3, type: Vec4 }

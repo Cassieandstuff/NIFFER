@@ -342,9 +342,10 @@ namespace BSLightingShaderPropertyFloatController {
     inline constexpr ::niffer::FieldRef<uint32_t> targetVariable{ 20, { { 8 }, 1 } };
 }
 
-// BSMasterParticleSystem : NiAVObject
+// BSMasterParticleSystem : NiNode
 namespace BSMasterParticleSystem {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 21, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknown0{ 21, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>> particleSystems{ 21, { { 9 }, 1 } };
 }
 
 // BSMultiBound : NiObject
@@ -407,12 +408,33 @@ namespace BSPSysRecycleBoundModifier {
 
 // BSPSysScaleModifier : NiPSysModifier
 namespace BSPSysScaleModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 33, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<float>> scales{ 33, { { 4 }, 1 } };
 }
 
 // BSPSysSimpleColorModifier : NiPSysModifier
 namespace BSPSysSimpleColorModifier {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 34, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<float>> unknownFloats{ 34, { { 4 }, 1 } };
+    namespace color1 {
+        inline constexpr ::niffer::StructRef self{ 34, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 34, { { 5, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 34, { { 5, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 34, { { 5, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 34, { { 5, 3 }, 2 } };
+    }
+    namespace color2 {
+        inline constexpr ::niffer::StructRef self{ 34, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 34, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 34, { { 6, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 34, { { 6, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 34, { { 6, 3 }, 2 } };
+    }
+    namespace color3 {
+        inline constexpr ::niffer::StructRef self{ 34, { { 7 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 34, { { 7, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 34, { { 7, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 34, { { 7, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 34, { { 7, 3 }, 2 } };
+    }
 }
 
 // BSPSysStripUpdateModifier : NiPSysModifier
@@ -440,14 +462,12 @@ namespace BSSkyShaderProperty {
     inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 39, { { 3 }, 1 } };
 }
 
-// BSStripPSysData : NiObject
+// BSStripPSysData : NiPSysData
 namespace BSStripPSysData {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 40, { { 0 }, 1 } };
-}
-
-// BSStripParticleSystem : NiAVObject
-namespace BSStripParticleSystem {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 41, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> stripUnknown0{ 40, { { 21 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> stripUnknown1{ 40, { { 22 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> stripUnknown2{ 40, { { 23 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> stripUnknown3{ 40, { { 24 }, 1 } };
 }
 
 // BSTreeNode : NiNode
@@ -636,7 +656,9 @@ namespace NiControllerSequence {
 
 // NiDefaultAVObjectPalette : NiObject
 namespace NiDefaultAVObjectPalette {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 65, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiNode>> scene{ 65, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> numObjects{ 65, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> objects{ 65, { { 2 }, 1 } };
 }
 
 // NiExtraData : NiObject
@@ -683,11 +705,6 @@ namespace NiLookAtInterpolator {
 // NiMeshPSysData : NiObject
 namespace NiMeshPSysData {
     inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 73, { { 0 }, 1 } };
-}
-
-// NiMeshParticleSystem : NiAVObject
-namespace NiMeshParticleSystem {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 74, { { 6 }, 1 } };
 }
 
 // NiMultiTargetTransformController : NiTimeController
@@ -740,7 +757,32 @@ namespace NiPSysCylinderEmitter {
 
 // NiPSysData : NiObject
 namespace NiPSysData {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 85, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 85, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknown1{ 85, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknown2{ 85, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown3{ 85, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown4{ 85, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown5{ 85, { { 5 }, 1 } };
+    namespace boundCenter {
+        inline constexpr ::niffer::StructRef self{ 85, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 85, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 85, { { 6, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 85, { { 6, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> boundRadius{ 85, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown6{ 85, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknown7{ 85, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<int32_t> unknown8{ 85, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown9{ 85, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> numUvRects{ 85, { { 12 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> uvRects{ 85, { { 13 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown10{ 85, { { 14 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown11{ 85, { { 15 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown12{ 85, { { 16 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown13{ 85, { { 17 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown14{ 85, { { 18 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown15{ 85, { { 19 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown16{ 85, { { 20 }, 1 } };
 }
 
 // NiPSysDragModifier : NiPSysModifier
@@ -802,7 +844,7 @@ namespace NiPSysMeshEmitter {
 namespace NiPSysModifier {
     inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> name{ 97, { { 0 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint32_t> order{ 97, { { 1 }, 1 } };
-    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiAVObject>> target{ 97, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiParticleSystem>> target{ 97, { { 2 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint8_t> active{ 97, { { 3 }, 1 } };
 }
 
@@ -848,7 +890,22 @@ namespace NiPSysUpdateCtlr {
 
 // NiParticleSystem : NiAVObject
 namespace NiParticleSystem {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 106, { { 6 }, 1 } };
+    namespace boundCenter {
+        inline constexpr ::niffer::StructRef self{ 106, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 106, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 106, { { 6, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 106, { { 6, 2 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> boundRadius{ 106, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> skin{ 106, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::BSEffectShaderProperty>> shaderProperty{ 106, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiAlphaProperty>> alphaProperty{ 106, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint64_t> vertexDesc{ 106, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 106, { { 12 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown1{ 106, { { 13 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiObject>> data{ 106, { { 14 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown2{ 106, { { 15 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>> modifiers{ 106, { { 16 }, 1 } };
 }
 
 // NiPathInterpolator : NiObject

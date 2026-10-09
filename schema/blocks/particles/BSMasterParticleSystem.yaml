@@ -1,6 +1,8 @@
 block: BSMasterParticleSystem
-inherits: NiAVObject
+inherits: NiNode
 doc: >-
-  Typed structurally: the NiAVObject fields are decoded and the rest is kept raw.
+  A node that also lists particle systems. All 93 SSE instances parse as a NiNode followed by a
+  u16 (always 20) and a counted list of NiParticleSystem pointers.
 fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+  - { name: unknown0, type: u16, doc: "Always 20 in the corpus." }
+  - { name: particleSystems, type: "ptr[count: u32]", to: [NiParticleSystem] }

@@ -4545,7 +4545,7 @@
   },
   {
    "name": "BSMasterParticleSystem",
-   "parent": "NiAVObject",
+   "parent": "NiNode",
    "abstract": false,
    "layout": [
     {
@@ -4661,15 +4661,54 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "children",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiAVObject"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "effects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref"
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiNode"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u16"
      },
      "declaredBy": "BSMasterParticleSystem",
-     "doc": "Not yet decoded."
+     "doc": "Always 20 in the corpus."
+    },
+    {
+     "name": "particleSystems",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ptr",
+       "to": [
+        "NiParticleSystem"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "BSMasterParticleSystem"
     }
    ],
-   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "A node that also lists particle systems. All 93 SSE instances parse as a NiNode followed by a u16 (always 20) and a counted list of NiParticleSystem pointers."
   },
   {
    "name": "BSMultiBound",
@@ -5444,14 +5483,19 @@
      "declaredBy": "NiPSysModifier"
     },
     {
-     "name": "tail",
+     "name": "scales",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "countPrefix": "u32"
      },
-     "declaredBy": "BSPSysScaleModifier",
-     "doc": "Not yet decoded."
+     "packed": true,
+     "declaredBy": "BSPSysScaleModifier"
     }
-   ]
+   ],
+   "doc": "A scale curve: all 1,506 SSE instances are a u32 count and that many floats."
   },
   {
    "name": "BSPSysSimpleColorModifier",
@@ -5492,14 +5536,121 @@
      "declaredBy": "NiPSysModifier"
     },
     {
-     "name": "tail",
+     "name": "unknownFloats",
      "type": {
-      "kind": "bytes"
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "count": 6
      },
      "declaredBy": "BSPSysSimpleColorModifier",
-     "doc": "Not yet decoded."
+     "doc": "Fractions in [0, 1]; meanings not established."
+    },
+    {
+     "name": "color1",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSPSysSimpleColorModifier"
+    },
+    {
+     "name": "color2",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSPSysSimpleColorModifier"
+    },
+    {
+     "name": "color3",
+     "type": {
+      "kind": "struct",
+      "name": "Vec4",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "w",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSPSysSimpleColorModifier"
     }
-   ]
+   ],
+   "doc": "All 1,691 SSE instances are 18 floats: six fractions, then three RGBA colors (every component of the colors lies in [0, 1])."
   },
   {
    "name": "BSPSysStripUpdateModifier",
@@ -5740,22 +5891,262 @@
   },
   {
    "name": "BSStripPSysData",
-   "parent": "NiObject",
+   "parent": "NiPSysData",
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "A count-like value (40, 50, 62...); doesn't affect the layout."
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown3",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 1, 0, 0 in the corpus."
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown5",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "boundCenter",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown6",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "1 or 0."
+    },
+    {
+     "name": "unknown7",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "i32"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always -1 in the corpus."
+    },
+    {
+     "name": "unknown9",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 8
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "1, 0, 0, 1, 0, (0|1), 0, (0|1) in the corpus."
+    },
+    {
+     "name": "numUvRects",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "uvRects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countField": "numUvRects"
+     },
+     "packed": true,
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown10",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown11",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown13",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown14",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown15",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "stripUnknown0",
+     "type": {
+      "kind": "u16"
      },
      "declaredBy": "BSStripPSysData",
-     "doc": "Not yet decoded."
+     "doc": "17, 31, 33, 65... in the corpus."
+    },
+    {
+     "name": "stripUnknown1",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSStripPSysData"
+    },
+    {
+     "name": "stripUnknown2",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "BSStripPSysData"
+    },
+    {
+     "name": "stripUnknown3",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSStripPSysData"
     }
-   ]
+   ],
+   "doc": "NiPSysData's layout plus 11 bytes: all 179 SSE instances parse exactly, and the shared part varies the way NiPSysData's does."
   },
   {
    "name": "BSStripParticleSystem",
-   "parent": "NiAVObject",
+   "parent": "NiParticleSystem",
    "abstract": false,
    "layout": [
     {
@@ -5871,15 +6262,126 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "boundCenter",
      "type": {
-      "kind": "bytes"
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
      },
-     "declaredBy": "BSStripParticleSystem",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "skin",
+     "type": {
+      "kind": "ref"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Always null in the corpus."
+    },
+    {
+     "name": "shaderProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSEffectShaderProperty"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "alphaProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiAlphaProperty"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "vertexDesc",
+     "type": {
+      "kind": "u64"
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Usually 0; otherwise values such as 0x0019004B."
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiMeshPSysData",
+       "NiPSysData"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "1 or 0."
+    },
+    {
+     "name": "modifiers",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiPSysModifier"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiParticleSystem"
     }
    ],
-   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "Same layout as NiParticleSystem (every SSE instance parses with it)."
   },
   {
    "name": "BSTreeNode",
@@ -7980,14 +8482,53 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "scene",
      "type": {
-      "kind": "bytes"
+      "kind": "ptr",
+      "to": [
+       "NiNode"
+      ]
      },
-     "declaredBy": "NiDefaultAVObjectPalette",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiDefaultAVObjectPalette"
+    },
+    {
+     "name": "numObjects",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiDefaultAVObjectPalette"
+    },
+    {
+     "name": "objects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "NiDefaultAVObjectPaletteObjects",
+       "fields": [
+        {
+         "name": "name",
+         "type": {
+          "kind": "sizedstring"
+         }
+        },
+        {
+         "name": "object",
+         "type": {
+          "kind": "ptr",
+          "to": [
+           "NiAVObject"
+          ]
+         }
+        }
+       ]
+      },
+      "countField": "numObjects"
+     },
+     "declaredBy": "NiDefaultAVObjectPalette"
     }
-   ]
+   ],
+   "doc": "A name -> object map. All 1,312 SSE instances parse exactly; the first field always points at the root node, and every entry's name equals the name of the object it points at (26,005 of 26,005)."
   },
   {
    "name": "NiExtraData",
@@ -8340,7 +8881,7 @@
   },
   {
    "name": "NiMeshParticleSystem",
-   "parent": "NiAVObject",
+   "parent": "NiParticleSystem",
    "abstract": false,
    "layout": [
     {
@@ -8456,15 +8997,126 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "boundCenter",
      "type": {
-      "kind": "bytes"
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
      },
-     "declaredBy": "NiMeshParticleSystem",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "skin",
+     "type": {
+      "kind": "ref"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Always null in the corpus."
+    },
+    {
+     "name": "shaderProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSEffectShaderProperty"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "alphaProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiAlphaProperty"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "vertexDesc",
+     "type": {
+      "kind": "u64"
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Usually 0; otherwise values such as 0x0019004B."
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiMeshPSysData",
+       "NiPSysData"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "1 or 0."
+    },
+    {
+     "name": "modifiers",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiPSysModifier"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiParticleSystem"
     }
    ],
-   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "Same layout as NiParticleSystem (every SSE instance parses with it)."
   },
   {
    "name": "NiMultiTargetTransformController",
@@ -9031,14 +9683,225 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
      "declaredBy": "NiPSysData",
-     "doc": "Not yet decoded."
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "A count-like value (40, 50, 62...); doesn't affect the layout."
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown3",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 3
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 1, 0, 0 in the corpus."
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown5",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "boundCenter",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown6",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "1 or 0."
+    },
+    {
+     "name": "unknown7",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown8",
+     "type": {
+      "kind": "i32"
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "Always -1 in the corpus."
+    },
+    {
+     "name": "unknown9",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u8"
+      },
+      "count": 8
+     },
+     "declaredBy": "NiPSysData",
+     "doc": "1, 0, 0, 1, 0, (0|1), 0, (0|1) in the corpus."
+    },
+    {
+     "name": "numUvRects",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "uvRects",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countField": "numUvRects"
+     },
+     "packed": true,
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown10",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown11",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown12",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown13",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown14",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown15",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiPSysData"
+    },
+    {
+     "name": "unknown16",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiPSysData"
     }
-   ]
+   ],
+   "doc": "Particle-system data. All 1,547 SSE instances are a 51-byte head, a u32 count of Vec4 rectangles (every component within [0, 1]: sub-texture UV rectangles), and a 19-byte tail. Its head has a bounding sphere at the same offset as legacy geometry's (radius never negative), but none of the per-particle arrays are stored. Words without an established meaning are unknownN."
   },
   {
    "name": "NiPSysDragModifier",
@@ -10285,15 +11148,126 @@
      "declaredBy": "NiAVObject"
     },
     {
-     "name": "tail",
+     "name": "boundCenter",
      "type": {
-      "kind": "bytes"
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "skin",
+     "type": {
+      "kind": "ref"
      },
      "declaredBy": "NiParticleSystem",
-     "doc": "Not yet decoded."
+     "doc": "Always null in the corpus."
+    },
+    {
+     "name": "shaderProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "BSEffectShaderProperty"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "alphaProperty",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiAlphaProperty"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "vertexDesc",
+     "type": {
+      "kind": "u64"
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "Usually 0; otherwise values such as 0x0019004B."
+    },
+    {
+     "name": "data",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiMeshPSysData",
+       "NiPSysData"
+      ]
+     },
+     "declaredBy": "NiParticleSystem"
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiParticleSystem",
+     "doc": "1 or 0."
+    },
+    {
+     "name": "modifiers",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "ref",
+       "to": [
+        "NiPSysModifier"
+       ]
+      },
+      "countPrefix": "u32"
+     },
+     "declaredBy": "NiParticleSystem"
     }
    ],
-   "doc": "Typed structurally: the NiAVObject fields are decoded and the rest is kept raw."
+   "doc": "A particle system node. All SSE instances (1,547, plus 179 BSStripParticleSystem and 3 NiMeshParticleSystem with the same layout) parse exactly. The fields after NiAVObject sit where BSTriShape's do up to vertexDesc; then come the particle data and the modifier list."
   },
   {
    "name": "NiPathInterpolator",

@@ -1,4 +1,14 @@
 block: NiDefaultAVObjectPalette
 inherits: NiObject
+doc: >-
+  A name -> object map. All 1,312 SSE instances parse exactly; the first field always points at
+  the root node, and every entry's name equals the name of the object it points at (26,005 of
+  26,005).
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: scene, type: ptr, to: [NiNode] }
+  - { name: numObjects, type: u32 }
+  - name: objects
+    array: "count: numObjects"
+    fields:
+      - { name: name, type: sizedstring }
+      - { name: object, type: ptr, to: [NiAVObject] }

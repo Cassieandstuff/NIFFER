@@ -1,6 +1,3 @@
 block: BSStripParticleSystem
-inherits: NiAVObject
-doc: >-
-  Typed structurally: the NiAVObject fields are decoded and the rest is kept raw.
-fields:
-  - { name: tail, type: bytes, doc: Not yet decoded. }
+inherits: NiParticleSystem
+doc: "Same layout as NiParticleSystem (every SSE instance parses with it)."

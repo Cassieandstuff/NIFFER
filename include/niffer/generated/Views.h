@@ -24,14 +24,18 @@ class FloatKeyDataLinear;
 class FloatKeyDataQuadratic;
 class FloatKeyDataTbc;
 class FloatKeyGroup;
+class GeometryData;
+class GeometryDataUvSets;
 class KeyGroup;
 class Matrix33;
+class NiControllerSequenceControlledBlocks;
 class NiSkinDataBones;
 class NiSkinDataBonesVertexWeights;
 class NiTextKeyExtraDataKeys;
 class NiTransform;
 class NiTransformDataRotationsQuaternion;
 class NiTransformDataRotationsXyz;
+class NiTriShapeDataVertexGroups;
 class Quat;
 class QuatKey;
 class QuatKeyTbcTbc;
@@ -505,6 +509,158 @@ private:
     ::niffer::RelPath p_;
 };
 
+class Vec4 {
+public:
+    Vec4(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // x
+    float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // y
+    float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+    // z
+    float Z() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
+    bool SetZ(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
+    // w
+    float W() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
+    bool SetW(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class Vec2 {
+public:
+    Vec2(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // x
+    float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
+    bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
+    // y
+    float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
+    bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class GeometryDataUvSets {
+public:
+    GeometryDataUvSets(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // coords
+    std::vector<::niffer::view::Vec2> Coords() const {
+        std::vector<::niffer::view::Vec2> out;
+        const size_t n = b_->Count(p_.Child(0));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(0).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class GeometryData {
+public:
+    GeometryData(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // unknown0 — Always 0 in the corpus.
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
+    // numVertices
+    uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // unknown1 — Always 0 in the corpus.
+    uint16_t Unknown1() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetUnknown1(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+    // hasVertices
+    uint8_t HasVertices() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
+    bool SetHasVertices(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
+    // vertices
+    std::vector<::niffer::view::Vec3> Vertices() const {
+        std::vector<::niffer::view::Vec3> out;
+        const size_t n = b_->Count(p_.Child(4));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(4).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // uvSetCount — 0 or 1 in the corpus.
+    uint8_t UvSetCount() const { return b_->GetAt<uint8_t>(p_.Child(5)).value_or(uint8_t{}); }
+    bool SetUvSetCount(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(5), v); }
+    // vectorFlags — 0x10: tangent arrays present. Only 0 and 0x10 occur.
+    uint8_t VectorFlags() const { return b_->GetAt<uint8_t>(p_.Child(6)).value_or(uint8_t{}); }
+    bool SetVectorFlags(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
+    // unknown2 — 0, or a hash-like value.
+    uint32_t Unknown2() const { return b_->GetAt<uint32_t>(p_.Child(7)).value_or(uint32_t{}); }
+    bool SetUnknown2(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(7), v); }
+    // hasNormals
+    uint8_t HasNormals() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
+    bool SetHasNormals(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
+    // normals
+    std::vector<::niffer::view::Vec3> Normals() const {
+        std::vector<::niffer::view::Vec3> out;
+        const size_t n = b_->Count(p_.Child(9));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(9).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // tangents
+    std::vector<::niffer::view::Vec3> Tangents() const {
+        std::vector<::niffer::view::Vec3> out;
+        const size_t n = b_->Count(p_.Child(10));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(10).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // bitangents
+    std::vector<::niffer::view::Vec3> Bitangents() const {
+        std::vector<::niffer::view::Vec3> out;
+        const size_t n = b_->Count(p_.Child(11));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(11).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // boundCenter
+    ::niffer::view::Vec3 BoundCenter() const { return ::niffer::view::Vec3(*b_, p_.Child(12)); }
+    // boundRadius
+    float BoundRadius() const { return b_->GetAt<float>(p_.Child(13)).value_or(float{}); }
+    bool SetBoundRadius(const float& v) const { return b_->SetAt<float>(p_.Child(13), v); }
+    // hasVertexColors
+    uint8_t HasVertexColors() const { return b_->GetAt<uint8_t>(p_.Child(14)).value_or(uint8_t{}); }
+    bool SetHasVertexColors(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(14), v); }
+    // vertexColors — RGBA floats.
+    std::vector<::niffer::view::Vec4> VertexColors() const {
+        std::vector<::niffer::view::Vec4> out;
+        const size_t n = b_->Count(p_.Child(15));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(15).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // uvSets
+    std::vector<::niffer::view::GeometryDataUvSets> UvSets() const {
+        std::vector<::niffer::view::GeometryDataUvSets> out;
+        const size_t n = b_->Count(p_.Child(16));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(16).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // unknown3 — Always 0x4000 in the corpus.
+    uint16_t Unknown3() const { return b_->GetAt<uint16_t>(p_.Child(17)).value_or(uint16_t{}); }
+    bool SetUnknown3(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(17), v); }
+    // unknown4 — Always -1 in the corpus.
+    int32_t Unknown4() const { return b_->GetAt<int32_t>(p_.Child(18)).value_or(int32_t{}); }
+    bool SetUnknown4(const int32_t& v) const { return b_->SetAt<int32_t>(p_.Child(18), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
 class KeyGroup {
 public:
     KeyGroup(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -519,6 +675,40 @@ public:
     // keys — The keys, raw.
     std::vector<uint8_t> Keys() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
     bool SetKeys(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
+class NiControllerSequenceControlledBlocks {
+public:
+    NiControllerSequenceControlledBlocks(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // interpolator
+    ::niffer::NiRef<::niffer::view::NiObject> Interpolator() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
+    bool SetInterpolator(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0), v); }
+    // controller
+    ::niffer::NiRef<::niffer::view::NiTimeController> Controller() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiTimeController>{}); }
+    bool SetController(const ::niffer::NiRef<::niffer::view::NiTimeController>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(1), v); }
+    // unknown0 — Always 0 in the corpus.
+    uint8_t Unknown0() const { return b_->GetAt<uint8_t>(p_.Child(2)).value_or(uint8_t{}); }
+    bool SetUnknown0(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(2), v); }
+    // nodeName — The name of a node in the file (63,607 of 63,644).
+    ::niffer::NiStringRef NodeName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(3)).value_or(::niffer::NiStringRef{}); }
+    bool SetNodeName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(3), v); }
+    // propertyType — Empty, or a block class name.
+    ::niffer::NiStringRef PropertyType() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(4)).value_or(::niffer::NiStringRef{}); }
+    bool SetPropertyType(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(4), v); }
+    // controllerType — A controller class name.
+    ::niffer::NiStringRef ControllerType() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(5)).value_or(::niffer::NiStringRef{}); }
+    bool SetControllerType(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(5), v); }
+    // variable — Empty, or a short numeric string.
+    ::niffer::NiStringRef Variable() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(6)).value_or(::niffer::NiStringRef{}); }
+    bool SetVariable(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(6), v); }
+    // parameter — Empty, or a parameter name such as BirthRate or EmitterActive.
+    ::niffer::NiStringRef Parameter() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(7)).value_or(::niffer::NiStringRef{}); }
+    bool SetParameter(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(7), v); }
 private:
     ::niffer::Block* b_;
     ::niffer::RelPath p_;
@@ -695,6 +885,22 @@ private:
     ::niffer::RelPath p_;
 };
 
+class NiTriShapeDataVertexGroups {
+public:
+    NiTriShapeDataVertexGroups(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
+    ::niffer::Block& block() const { return *b_; }
+    ::niffer::RelPath path() const { return p_; }
+    // count
+    uint16_t Count() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
+    bool SetCount(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
+    // indices
+    std::vector<uint16_t> Indices() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(1)).value_or(std::vector<uint16_t>{}); }
+    bool SetIndices(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(1), v); }
+private:
+    ::niffer::Block* b_;
+    ::niffer::RelPath p_;
+};
+
 class SkinPartitionVertexWeights {
 public:
     SkinPartitionVertexWeights(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -824,22 +1030,6 @@ private:
     ::niffer::RelPath p_;
 };
 
-class Vec2 {
-public:
-    Vec2(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
-    ::niffer::Block& block() const { return *b_; }
-    ::niffer::RelPath path() const { return p_; }
-    // x
-    float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
-    bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
-    // y
-    float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
-    bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
-private:
-    ::niffer::Block* b_;
-    ::niffer::RelPath p_;
-};
-
 class Vec3KeyDataLinear {
 public:
     Vec3KeyDataLinear(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
@@ -939,28 +1129,6 @@ public:
         for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(2).Child(static_cast<uint16_t>(e)));
         return out;
     }
-private:
-    ::niffer::Block* b_;
-    ::niffer::RelPath p_;
-};
-
-class Vec4 {
-public:
-    Vec4(::niffer::Block& b, ::niffer::RelPath p) : b_(&b), p_(p) {}
-    ::niffer::Block& block() const { return *b_; }
-    ::niffer::RelPath path() const { return p_; }
-    // x
-    float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
-    bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
-    // y
-    float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
-    bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
-    // z
-    float Z() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
-    bool SetZ(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
-    // w
-    float W() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
-    bool SetW(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
 private:
     ::niffer::Block* b_;
     ::niffer::RelPath p_;
@@ -1256,9 +1424,37 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return BSEffectShaderProperty(b);
         return std::nullopt;
     }
-    // tail — Not yet decoded.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(3)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(3), v); }
+    // shaderFlags1
+    uint32_t ShaderFlags1() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
+    bool SetShaderFlags1(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
+    // shaderFlags2
+    uint32_t ShaderFlags2() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
+    bool SetShaderFlags2(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
+    // uvOffset
+    ::niffer::view::Vec2 UvOffset() const { return ::niffer::view::Vec2(*b_, p_.Child(5)); }
+    // uvScale
+    ::niffer::view::Vec2 UvScale() const { return ::niffer::view::Vec2(*b_, p_.Child(6)); }
+    // texture — A .dds path, or empty.
+    std::string Texture() const { return b_->GetAt<std::string>(p_.Child(7)).value_or(std::string{}); }
+    bool SetTexture(const std::string& v) const { return b_->SetAt<std::string>(p_.Child(7), v); }
+    // unknown0 — 3, 2 or 0 in the corpus.
+    uint8_t Unknown0() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
+    bool SetUnknown0(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
+    // unknown1 — 0-255; 255 in most blocks.
+    uint8_t Unknown1() const { return b_->GetAt<uint8_t>(p_.Child(9)).value_or(uint8_t{}); }
+    bool SetUnknown1(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(9), v); }
+    // unknown2 — Always 0 in the corpus.
+    uint8_t Unknown2() const { return b_->GetAt<uint8_t>(p_.Child(10)).value_or(uint8_t{}); }
+    bool SetUnknown2(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(10), v); }
+    // unknown3 — Always 0 in the corpus.
+    uint8_t Unknown3() const { return b_->GetAt<uint8_t>(p_.Child(11)).value_or(uint8_t{}); }
+    bool SetUnknown3(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(11), v); }
+    // unknownFloats — Mostly within [0, 1]; the last is often 100.
+    std::vector<float> UnknownFloats() const { return b_->GetAt<std::vector<float>>(p_.Child(12)).value_or(std::vector<float>{}); }
+    bool SetUnknownFloats(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(12), v); }
+    // texture2 — A .dds path, or empty.
+    std::string Texture2() const { return b_->GetAt<std::string>(p_.Child(13)).value_or(std::string{}); }
+    bool SetTexture2(const std::string& v) const { return b_->SetAt<std::string>(p_.Child(13), v); }
 protected:
     explicit BSEffectShaderProperty(::niffer::Block& b) : NiObjectNET(b) {}
 };
@@ -2203,9 +2399,44 @@ public:
     // numControlledBlocks
     uint32_t NumControlledBlocks() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetNumControlledBlocks(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
-    // tail — The controlled blocks and sequence parameters, raw.
-    std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
-    bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
+    // unknown0 — Always 1 in the corpus.
+    uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // controlledBlocks
+    std::vector<::niffer::view::NiControllerSequenceControlledBlocks> ControlledBlocks() const {
+        std::vector<::niffer::view::NiControllerSequenceControlledBlocks> out;
+        const size_t n = b_->Count(p_.Child(3));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(3).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // unknown1 — Always 1.0 in the corpus.
+    float Unknown1() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
+    bool SetUnknown1(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
+    // textKeys
+    ::niffer::NiRef<::niffer::view::NiTextKeyExtraData> TextKeys() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTextKeyExtraData>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiTextKeyExtraData>{}); }
+    bool SetTextKeys(const ::niffer::NiRef<::niffer::view::NiTextKeyExtraData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTextKeyExtraData>>(p_.Child(5), v); }
+    // unknown2 — 2 or 0 in the corpus.
+    uint32_t Unknown2() const { return b_->GetAt<uint32_t>(p_.Child(6)).value_or(uint32_t{}); }
+    bool SetUnknown2(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(6), v); }
+    // unknown3 — Always 1.0 in the corpus.
+    float Unknown3() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
+    bool SetUnknown3(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
+    // startTime
+    float StartTime() const { return b_->GetAt<float>(p_.Child(8)).value_or(float{}); }
+    bool SetStartTime(const float& v) const { return b_->SetAt<float>(p_.Child(8), v); }
+    // stopTime — Never below startTime in the corpus.
+    float StopTime() const { return b_->GetAt<float>(p_.Child(9)).value_or(float{}); }
+    bool SetStopTime(const float& v) const { return b_->SetAt<float>(p_.Child(9), v); }
+    // manager
+    ::niffer::NiRef<::niffer::view::NiControllerManager> Manager() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiControllerManager>>(p_.Child(10)).value_or(::niffer::NiRef<::niffer::view::NiControllerManager>{}); }
+    bool SetManager(const ::niffer::NiRef<::niffer::view::NiControllerManager>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiControllerManager>>(p_.Child(10), v); }
+    // rootNodeName — A node's name (4,699 of 4,943).
+    ::niffer::NiStringRef RootNodeName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(11)).value_or(::niffer::NiStringRef{}); }
+    bool SetRootNodeName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(11), v); }
+    // unknown4 — Always 0 in the corpus.
+    uint16_t Unknown4() const { return b_->GetAt<uint16_t>(p_.Child(12)).value_or(uint16_t{}); }
+    bool SetUnknown4(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(12), v); }
 protected:
     explicit NiControllerSequence(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2981,9 +3212,36 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiTriShapeData(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // geometry
+    ::niffer::view::GeometryData Geometry() const { return ::niffer::view::GeometryData(*b_, p_.Child(0)); }
+    // numTriangles
+    uint16_t NumTriangles() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetNumTriangles(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // numTrianglePoints — 3 * numTriangles.
+    uint32_t NumTrianglePoints() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
+    bool SetNumTrianglePoints(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
+    // hasTriangles
+    uint8_t HasTriangles() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
+    bool SetHasTriangles(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
+    // triangles
+    std::vector<::niffer::view::Triangle> Triangles() const {
+        std::vector<::niffer::view::Triangle> out;
+        const size_t n = b_->Count(p_.Child(4));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(4).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
+    // numVertexGroups
+    uint16_t NumVertexGroups() const { return b_->GetAt<uint16_t>(p_.Child(5)).value_or(uint16_t{}); }
+    bool SetNumVertexGroups(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(5), v); }
+    // vertexGroups
+    std::vector<::niffer::view::NiTriShapeDataVertexGroups> VertexGroups() const {
+        std::vector<::niffer::view::NiTriShapeDataVertexGroups> out;
+        const size_t n = b_->Count(p_.Child(6));
+        out.reserve(n);
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(6).Child(static_cast<uint16_t>(e)));
+        return out;
+    }
 protected:
     explicit NiTriShapeData(::niffer::Block& b) : NiObject(b) {}
 };
@@ -2995,9 +3253,23 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return NiTriStripsData(b);
         return std::nullopt;
     }
-    // data — Not yet decoded.
-    std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
-    bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
+    // geometry
+    ::niffer::view::GeometryData Geometry() const { return ::niffer::view::GeometryData(*b_, p_.Child(0)); }
+    // numTriangles
+    uint16_t NumTriangles() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
+    bool SetNumTriangles(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
+    // numStrips
+    uint16_t NumStrips() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    bool SetNumStrips(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
+    // stripLengths
+    std::vector<uint16_t> StripLengths() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(3)).value_or(std::vector<uint16_t>{}); }
+    bool SetStripLengths(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(3), v); }
+    // hasPoints
+    uint8_t HasPoints() const { return b_->GetAt<uint8_t>(p_.Child(4)).value_or(uint8_t{}); }
+    bool SetHasPoints(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
+    // points
+    std::optional<std::vector<uint16_t>> Points() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)); }
+    bool SetPoints(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
 protected:
     explicit NiTriStripsData(::niffer::Block& b) : NiObject(b) {}
 };

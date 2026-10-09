@@ -1,0 +1,29 @@
+struct: GeometryData
+doc: >-
+  The vertex data shared by legacy NiTriShapeData and NiTriStripsData. Measured on every instance in
+  the SSE corpus (286 + 31): all parse exactly; the bound sphere encloses every position; normals
+  are unit vectors; when vectorFlags has bit 0x10, two more vector arrays follow that are
+  orthogonal to the normals (tangent space); colors lie in [0, 1].
+fields:
+  - { name: unknown0, type: u32, doc: "Always 0 in the corpus." }
+  - { name: numVertices, type: u16 }
+  - { name: unknown1, type: u16, doc: "Always 0 in the corpus." }
+  - { name: hasVertices, type: u8 }
+  - { name: vertices, type: "Vec3[count: numVertices]", if: { field: hasVertices, ne: 0 }, packed: true }
+  - { name: uvSetCount, type: u8, doc: "0 or 1 in the corpus." }
+  - { name: vectorFlags, type: u8, doc: "0x10: tangent arrays present. Only 0 and 0x10 occur." }
+  - { name: unknown2, type: u32, doc: "0, or a hash-like value." }
+  - { name: hasNormals, type: u8 }
+  - { name: normals, type: "Vec3[count: numVertices]", if: { field: hasNormals, ne: 0 }, packed: true }
+  - { name: tangents, type: "Vec3[count: numVertices]", if: { field: vectorFlags, mask: 16 }, packed: true }
+  - { name: bitangents, type: "Vec3[count: numVertices]", if: { field: vectorFlags, mask: 16 }, packed: true }
+  - { name: boundCenter, type: Vec3 }
+  - { name: boundRadius, type: f32 }
+  - { name: hasVertexColors, type: u8 }
+  - { name: vertexColors, type: "Vec4[count: numVertices]", if: { field: hasVertexColors, ne: 0 }, packed: true, doc: "RGBA floats." }
+  - name: uvSets
+    array: "count: uvSetCount"
+    fields:
+      - { name: coords, type: "Vec2[count: numVertices]", packed: true }
+  - { name: unknown3, type: u16, doc: "Always 0x4000 in the corpus." }
+  - { name: unknown4, type: i32, doc: "Always -1 in the corpus." }

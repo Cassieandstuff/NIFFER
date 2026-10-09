@@ -1,4 +1,17 @@
 block: NiTriShapeData
 inherits: NiObject
+doc: >-
+  Legacy triangle-list geometry. All 286 SSE instances parse exactly; numTrianglePoints is always
+  3 * numTriangles, and every triangle and vertex-group index is below numVertices.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: geometry, type: GeometryData }
+  - { name: numTriangles, type: u16 }
+  - { name: numTrianglePoints, type: u32, doc: "3 * numTriangles." }
+  - { name: hasTriangles, type: u8 }
+  - { name: triangles, type: "Triangle[count: numTriangles]", if: { field: hasTriangles, ne: 0 }, packed: true }
+  - { name: numVertexGroups, type: u16 }
+  - name: vertexGroups
+    array: "count: numVertexGroups"
+    fields:
+      - { name: count, type: u16 }
+      - { name: indices, type: "u16[count: count]" }

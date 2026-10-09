@@ -623,6 +623,343 @@
    ]
   },
   {
+   "name": "GeometryData",
+   "fields": [
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u32"
+     },
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "numVertices",
+     "type": {
+      "kind": "u16"
+     }
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u16"
+     },
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "hasVertices",
+     "type": {
+      "kind": "u8"
+     }
+    },
+    {
+     "name": "vertices",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec3",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "hasVertices",
+      "ne": 0
+     },
+     "packed": true
+    },
+    {
+     "name": "uvSetCount",
+     "type": {
+      "kind": "u8"
+     },
+     "doc": "0 or 1 in the corpus."
+    },
+    {
+     "name": "vectorFlags",
+     "type": {
+      "kind": "u8"
+     },
+     "doc": "0x10: tangent arrays present. Only 0 and 0x10 occur."
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u32"
+     },
+     "doc": "0, or a hash-like value."
+    },
+    {
+     "name": "hasNormals",
+     "type": {
+      "kind": "u8"
+     }
+    },
+    {
+     "name": "normals",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec3",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "hasNormals",
+      "ne": 0
+     },
+     "packed": true
+    },
+    {
+     "name": "tangents",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec3",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "vectorFlags",
+      "mask": 16
+     },
+     "packed": true
+    },
+    {
+     "name": "bitangents",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec3",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "vectorFlags",
+      "mask": 16
+     },
+     "packed": true
+    },
+    {
+     "name": "boundCenter",
+     "type": {
+      "kind": "struct",
+      "name": "Vec3",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "z",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     }
+    },
+    {
+     "name": "boundRadius",
+     "type": {
+      "kind": "f32"
+     }
+    },
+    {
+     "name": "hasVertexColors",
+     "type": {
+      "kind": "u8"
+     }
+    },
+    {
+     "name": "vertexColors",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Vec4",
+       "fields": [
+        {
+         "name": "x",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "y",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "z",
+         "type": {
+          "kind": "f32"
+         }
+        },
+        {
+         "name": "w",
+         "type": {
+          "kind": "f32"
+         }
+        }
+       ]
+      },
+      "countField": "numVertices"
+     },
+     "if": {
+      "field": "hasVertexColors",
+      "ne": 0
+     },
+     "packed": true,
+     "doc": "RGBA floats."
+    },
+    {
+     "name": "uvSets",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "GeometryDataUvSets",
+       "fields": [
+        {
+         "name": "coords",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "struct",
+           "name": "Vec2",
+           "fields": [
+            {
+             "name": "x",
+             "type": {
+              "kind": "f32"
+             }
+            },
+            {
+             "name": "y",
+             "type": {
+              "kind": "f32"
+             }
+            }
+           ]
+          },
+          "countField": "numVertices"
+         },
+         "packed": true
+        }
+       ]
+      },
+      "countField": "uvSetCount"
+     }
+    },
+    {
+     "name": "unknown3",
+     "type": {
+      "kind": "u16"
+     },
+     "doc": "Always 0x4000 in the corpus."
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "i32"
+     },
+     "doc": "Always -1 in the corpus."
+    }
+   ]
+  },
+  {
    "name": "KeyGroup",
    "fields": [
     {
@@ -2768,15 +3105,125 @@
      "declaredBy": "NiObjectNET"
     },
     {
-     "name": "tail",
+     "name": "shaderFlags1",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
+     },
+     "declaredBy": "BSEffectShaderProperty"
+    },
+    {
+     "name": "shaderFlags2",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "BSEffectShaderProperty"
+    },
+    {
+     "name": "uvOffset",
+     "type": {
+      "kind": "struct",
+      "name": "Vec2",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSEffectShaderProperty"
+    },
+    {
+     "name": "uvScale",
+     "type": {
+      "kind": "struct",
+      "name": "Vec2",
+      "fields": [
+       {
+        "name": "x",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "y",
+        "type": {
+         "kind": "f32"
+        }
+       }
+      ]
+     },
+     "declaredBy": "BSEffectShaderProperty"
+    },
+    {
+     "name": "texture",
+     "type": {
+      "kind": "sizedstring"
      },
      "declaredBy": "BSEffectShaderProperty",
-     "doc": "Not yet decoded."
+     "doc": "A .dds path, or empty."
+    },
+    {
+     "name": "unknown0",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSEffectShaderProperty",
+     "doc": "3, 2 or 0 in the corpus."
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSEffectShaderProperty",
+     "doc": "0-255; 255 in most blocks."
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSEffectShaderProperty",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknown3",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "BSEffectShaderProperty",
+     "doc": "Always 0 in the corpus."
+    },
+    {
+     "name": "unknownFloats",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "f32"
+      },
+      "count": 10
+     },
+     "declaredBy": "BSEffectShaderProperty",
+     "doc": "Mostly within [0, 1]; the last is often 100."
+    },
+    {
+     "name": "texture2",
+     "type": {
+      "kind": "sizedstring"
+     },
+     "declaredBy": "BSEffectShaderProperty",
+     "doc": "A .dds path, or empty."
     }
    ],
-   "doc": "Typed structurally: the NiObjectNET fields are decoded and the rest is kept raw."
+   "doc": "The effect (unlit) shader. All 8,362 SSE instances parse exactly. The flags and UV fields sit where BSLightingShaderProperty's do; both strings are .dds paths or empty."
   },
   {
    "name": "BSEffectShaderPropertyColorController",
@@ -7363,14 +7810,169 @@
      "declaredBy": "NiControllerSequence"
     },
     {
-     "name": "tail",
+     "name": "unknown0",
      "type": {
-      "kind": "bytes"
+      "kind": "u32"
      },
      "declaredBy": "NiControllerSequence",
-     "doc": "The controlled blocks and sequence parameters, raw."
+     "doc": "Always 1 in the corpus."
+    },
+    {
+     "name": "controlledBlocks",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "NiControllerSequenceControlledBlocks",
+       "fields": [
+        {
+         "name": "interpolator",
+         "type": {
+          "kind": "ref",
+          "to": [
+           "NiBoolInterpolator",
+           "NiBoolTimelineInterpolator",
+           "NiFloatInterpolator",
+           "NiPathInterpolator",
+           "NiPoint3Interpolator",
+           "NiTransformInterpolator"
+          ]
+         }
+        },
+        {
+         "name": "controller",
+         "type": {
+          "kind": "ptr",
+          "to": [
+           "NiTimeController"
+          ]
+         }
+        },
+        {
+         "name": "unknown0",
+         "type": {
+          "kind": "u8"
+         },
+         "doc": "Always 0 in the corpus."
+        },
+        {
+         "name": "nodeName",
+         "type": {
+          "kind": "stringref"
+         },
+         "doc": "The name of a node in the file (63,607 of 63,644)."
+        },
+        {
+         "name": "propertyType",
+         "type": {
+          "kind": "stringref"
+         },
+         "doc": "Empty, or a block class name."
+        },
+        {
+         "name": "controllerType",
+         "type": {
+          "kind": "stringref"
+         },
+         "doc": "A controller class name."
+        },
+        {
+         "name": "variable",
+         "type": {
+          "kind": "stringref"
+         },
+         "doc": "Empty, or a short numeric string."
+        },
+        {
+         "name": "parameter",
+         "type": {
+          "kind": "stringref"
+         },
+         "doc": "Empty, or a parameter name such as BirthRate or EmitterActive."
+        }
+       ]
+      },
+      "countField": "numControlledBlocks"
+     },
+     "declaredBy": "NiControllerSequence"
+    },
+    {
+     "name": "unknown1",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiControllerSequence",
+     "doc": "Always 1.0 in the corpus."
+    },
+    {
+     "name": "textKeys",
+     "type": {
+      "kind": "ref",
+      "to": [
+       "NiTextKeyExtraData"
+      ]
+     },
+     "declaredBy": "NiControllerSequence"
+    },
+    {
+     "name": "unknown2",
+     "type": {
+      "kind": "u32"
+     },
+     "declaredBy": "NiControllerSequence",
+     "doc": "2 or 0 in the corpus."
+    },
+    {
+     "name": "unknown3",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiControllerSequence",
+     "doc": "Always 1.0 in the corpus."
+    },
+    {
+     "name": "startTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiControllerSequence"
+    },
+    {
+     "name": "stopTime",
+     "type": {
+      "kind": "f32"
+     },
+     "declaredBy": "NiControllerSequence",
+     "doc": "Never below startTime in the corpus."
+    },
+    {
+     "name": "manager",
+     "type": {
+      "kind": "ptr",
+      "to": [
+       "NiControllerManager"
+      ]
+     },
+     "declaredBy": "NiControllerSequence"
+    },
+    {
+     "name": "rootNodeName",
+     "type": {
+      "kind": "stringref"
+     },
+     "declaredBy": "NiControllerSequence",
+     "doc": "A node's name (4,699 of 4,943)."
+    },
+    {
+     "name": "unknown4",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiControllerSequence",
+     "doc": "Always 0 in the corpus."
     }
-   ]
+   ],
+   "doc": "An animation sequence. Every SSE instance (4,943) is 12 bytes, 29 per controlled block, then a 38-byte tail. Field names follow what each slot holds across the corpus."
   },
   {
    "name": "NiDefaultAVObjectPalette",
@@ -12570,14 +13172,445 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "geometry",
      "type": {
-      "kind": "bytes"
+      "kind": "struct",
+      "name": "GeometryData",
+      "fields": [
+       {
+        "name": "unknown0",
+        "type": {
+         "kind": "u32"
+        },
+        "doc": "Always 0 in the corpus."
+       },
+       {
+        "name": "numVertices",
+        "type": {
+         "kind": "u16"
+        }
+       },
+       {
+        "name": "unknown1",
+        "type": {
+         "kind": "u16"
+        },
+        "doc": "Always 0 in the corpus."
+       },
+       {
+        "name": "hasVertices",
+        "type": {
+         "kind": "u8"
+        }
+       },
+       {
+        "name": "vertices",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "hasVertices",
+         "ne": 0
+        },
+        "packed": true
+       },
+       {
+        "name": "uvSetCount",
+        "type": {
+         "kind": "u8"
+        },
+        "doc": "0 or 1 in the corpus."
+       },
+       {
+        "name": "vectorFlags",
+        "type": {
+         "kind": "u8"
+        },
+        "doc": "0x10: tangent arrays present. Only 0 and 0x10 occur."
+       },
+       {
+        "name": "unknown2",
+        "type": {
+         "kind": "u32"
+        },
+        "doc": "0, or a hash-like value."
+       },
+       {
+        "name": "hasNormals",
+        "type": {
+         "kind": "u8"
+        }
+       },
+       {
+        "name": "normals",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "hasNormals",
+         "ne": 0
+        },
+        "packed": true
+       },
+       {
+        "name": "tangents",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "vectorFlags",
+         "mask": 16
+        },
+        "packed": true
+       },
+       {
+        "name": "bitangents",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "vectorFlags",
+         "mask": 16
+        },
+        "packed": true
+       },
+       {
+        "name": "boundCenter",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "boundRadius",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "hasVertexColors",
+        "type": {
+         "kind": "u8"
+        }
+       },
+       {
+        "name": "vertexColors",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "hasVertexColors",
+         "ne": 0
+        },
+        "packed": true,
+        "doc": "RGBA floats."
+       },
+       {
+        "name": "uvSets",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "GeometryDataUvSets",
+          "fields": [
+           {
+            "name": "coords",
+            "type": {
+             "kind": "array",
+             "element": {
+              "kind": "struct",
+              "name": "Vec2",
+              "fields": [
+               {
+                "name": "x",
+                "type": {
+                 "kind": "f32"
+                }
+               },
+               {
+                "name": "y",
+                "type": {
+                 "kind": "f32"
+                }
+               }
+              ]
+             },
+             "countField": "numVertices"
+            },
+            "packed": true
+           }
+          ]
+         },
+         "countField": "uvSetCount"
+        }
+       },
+       {
+        "name": "unknown3",
+        "type": {
+         "kind": "u16"
+        },
+        "doc": "Always 0x4000 in the corpus."
+       },
+       {
+        "name": "unknown4",
+        "type": {
+         "kind": "i32"
+        },
+        "doc": "Always -1 in the corpus."
+       }
+      ]
+     },
+     "declaredBy": "NiTriShapeData"
+    },
+    {
+     "name": "numTriangles",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTriShapeData"
+    },
+    {
+     "name": "numTrianglePoints",
+     "type": {
+      "kind": "u32"
      },
      "declaredBy": "NiTriShapeData",
-     "doc": "Not yet decoded."
+     "doc": "3 * numTriangles."
+    },
+    {
+     "name": "hasTriangles",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiTriShapeData"
+    },
+    {
+     "name": "triangles",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "Triangle",
+       "fields": [
+        {
+         "name": "a",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "b",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "c",
+         "type": {
+          "kind": "u16"
+         }
+        }
+       ]
+      },
+      "countField": "numTriangles"
+     },
+     "if": {
+      "field": "hasTriangles",
+      "ne": 0
+     },
+     "packed": true,
+     "declaredBy": "NiTriShapeData"
+    },
+    {
+     "name": "numVertexGroups",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTriShapeData"
+    },
+    {
+     "name": "vertexGroups",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "struct",
+       "name": "NiTriShapeDataVertexGroups",
+       "fields": [
+        {
+         "name": "count",
+         "type": {
+          "kind": "u16"
+         }
+        },
+        {
+         "name": "indices",
+         "type": {
+          "kind": "array",
+          "element": {
+           "kind": "u16"
+          },
+          "countField": "count"
+         }
+        }
+       ]
+      },
+      "countField": "numVertexGroups"
+     },
+     "declaredBy": "NiTriShapeData"
     }
-   ]
+   ],
+   "doc": "Legacy triangle-list geometry. All 286 SSE instances parse exactly; numTrianglePoints is always 3 * numTriangles, and every triangle and vertex-group index is below numVertices."
   },
   {
    "name": "NiTriStripsData",
@@ -12585,14 +13618,396 @@
    "abstract": false,
    "layout": [
     {
-     "name": "data",
+     "name": "geometry",
      "type": {
-      "kind": "bytes"
+      "kind": "struct",
+      "name": "GeometryData",
+      "fields": [
+       {
+        "name": "unknown0",
+        "type": {
+         "kind": "u32"
+        },
+        "doc": "Always 0 in the corpus."
+       },
+       {
+        "name": "numVertices",
+        "type": {
+         "kind": "u16"
+        }
+       },
+       {
+        "name": "unknown1",
+        "type": {
+         "kind": "u16"
+        },
+        "doc": "Always 0 in the corpus."
+       },
+       {
+        "name": "hasVertices",
+        "type": {
+         "kind": "u8"
+        }
+       },
+       {
+        "name": "vertices",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "hasVertices",
+         "ne": 0
+        },
+        "packed": true
+       },
+       {
+        "name": "uvSetCount",
+        "type": {
+         "kind": "u8"
+        },
+        "doc": "0 or 1 in the corpus."
+       },
+       {
+        "name": "vectorFlags",
+        "type": {
+         "kind": "u8"
+        },
+        "doc": "0x10: tangent arrays present. Only 0 and 0x10 occur."
+       },
+       {
+        "name": "unknown2",
+        "type": {
+         "kind": "u32"
+        },
+        "doc": "0, or a hash-like value."
+       },
+       {
+        "name": "hasNormals",
+        "type": {
+         "kind": "u8"
+        }
+       },
+       {
+        "name": "normals",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "hasNormals",
+         "ne": 0
+        },
+        "packed": true
+       },
+       {
+        "name": "tangents",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "vectorFlags",
+         "mask": 16
+        },
+        "packed": true
+       },
+       {
+        "name": "bitangents",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec3",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "vectorFlags",
+         "mask": 16
+        },
+        "packed": true
+       },
+       {
+        "name": "boundCenter",
+        "type": {
+         "kind": "struct",
+         "name": "Vec3",
+         "fields": [
+          {
+           "name": "x",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "y",
+           "type": {
+            "kind": "f32"
+           }
+          },
+          {
+           "name": "z",
+           "type": {
+            "kind": "f32"
+           }
+          }
+         ]
+        }
+       },
+       {
+        "name": "boundRadius",
+        "type": {
+         "kind": "f32"
+        }
+       },
+       {
+        "name": "hasVertexColors",
+        "type": {
+         "kind": "u8"
+        }
+       },
+       {
+        "name": "vertexColors",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "Vec4",
+          "fields": [
+           {
+            "name": "x",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "y",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "z",
+            "type": {
+             "kind": "f32"
+            }
+           },
+           {
+            "name": "w",
+            "type": {
+             "kind": "f32"
+            }
+           }
+          ]
+         },
+         "countField": "numVertices"
+        },
+        "if": {
+         "field": "hasVertexColors",
+         "ne": 0
+        },
+        "packed": true,
+        "doc": "RGBA floats."
+       },
+       {
+        "name": "uvSets",
+        "type": {
+         "kind": "array",
+         "element": {
+          "kind": "struct",
+          "name": "GeometryDataUvSets",
+          "fields": [
+           {
+            "name": "coords",
+            "type": {
+             "kind": "array",
+             "element": {
+              "kind": "struct",
+              "name": "Vec2",
+              "fields": [
+               {
+                "name": "x",
+                "type": {
+                 "kind": "f32"
+                }
+               },
+               {
+                "name": "y",
+                "type": {
+                 "kind": "f32"
+                }
+               }
+              ]
+             },
+             "countField": "numVertices"
+            },
+            "packed": true
+           }
+          ]
+         },
+         "countField": "uvSetCount"
+        }
+       },
+       {
+        "name": "unknown3",
+        "type": {
+         "kind": "u16"
+        },
+        "doc": "Always 0x4000 in the corpus."
+       },
+       {
+        "name": "unknown4",
+        "type": {
+         "kind": "i32"
+        },
+        "doc": "Always -1 in the corpus."
+       }
+      ]
      },
-     "declaredBy": "NiTriStripsData",
-     "doc": "Not yet decoded."
+     "declaredBy": "NiTriStripsData"
+    },
+    {
+     "name": "numTriangles",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTriStripsData"
+    },
+    {
+     "name": "numStrips",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "NiTriStripsData"
+    },
+    {
+     "name": "stripLengths",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      },
+      "countField": "numStrips"
+     },
+     "declaredBy": "NiTriStripsData"
+    },
+    {
+     "name": "hasPoints",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "NiTriStripsData"
+    },
+    {
+     "name": "points",
+     "type": {
+      "kind": "array",
+      "element": {
+       "kind": "u16"
+      }
+     },
+     "if": {
+      "field": "hasPoints",
+      "ne": 0
+     },
+     "packed": true,
+     "declaredBy": "NiTriStripsData"
     }
-   ]
+   ],
+   "doc": "Legacy triangle-strip geometry. All 31 SSE instances parse exactly; numTriangles is always the sum of (stripLength - 2), and every point is a vertex index below numVertices. The points of all strips are stored back to back; stripLengths splits them."
   },
   {
    "name": "NiVisController",

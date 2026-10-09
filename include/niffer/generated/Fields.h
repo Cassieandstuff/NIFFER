@@ -222,7 +222,25 @@ namespace BSDynamicTriShape {
 
 // BSEffectShaderProperty : NiObjectNET
 namespace BSEffectShaderProperty {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 8, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> shaderFlags1{ 8, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> shaderFlags2{ 8, { { 4 }, 1 } };
+    namespace uvOffset {
+        inline constexpr ::niffer::StructRef self{ 8, { { 5 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 8, { { 5, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 8, { { 5, 1 }, 2 } };
+    }
+    namespace uvScale {
+        inline constexpr ::niffer::StructRef self{ 8, { { 6 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 8, { { 6, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 8, { { 6, 1 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<std::string> texture{ 8, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown0{ 8, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown1{ 8, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown2{ 8, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown3{ 8, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<float>> unknownFloats{ 8, { { 12 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::string> texture2{ 8, { { 13 }, 1 } };
 }
 
 // BSEffectShaderPropertyColorController : NiSingleInterpController
@@ -603,7 +621,17 @@ namespace NiControllerManager {
 namespace NiControllerSequence {
     inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> name{ 64, { { 0 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint32_t> numControlledBlocks{ 64, { { 1 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> tail{ 64, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 64, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> controlledBlocks{ 64, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown1{ 64, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiTextKeyExtraData>> textKeys{ 64, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> unknown2{ 64, { { 6 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> unknown3{ 64, { { 7 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> startTime{ 64, { { 8 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> stopTime{ 64, { { 9 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiRef<::niffer::view::NiControllerManager>> manager{ 64, { { 10 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::NiStringRef> rootNodeName{ 64, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknown4{ 64, { { 12 }, 1 } };
 }
 
 // NiDefaultAVObjectPalette : NiObject
@@ -996,12 +1024,75 @@ namespace NiTriShape {
 
 // NiTriShapeData : NiObject
 namespace NiTriShapeData {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 123, { { 0 }, 1 } };
+    namespace geometry {
+        inline constexpr ::niffer::StructRef self{ 123, { { 0 }, 1 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 123, { { 0, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> numVertices{ 123, { { 0, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> unknown1{ 123, { { 0, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> hasVertices{ 123, { { 0, 3 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> vertices{ 123, { { 0, 4 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> uvSetCount{ 123, { { 0, 5 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> vectorFlags{ 123, { { 0, 6 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> unknown2{ 123, { { 0, 7 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> hasNormals{ 123, { { 0, 8 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> normals{ 123, { { 0, 9 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> tangents{ 123, { { 0, 10 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> bitangents{ 123, { { 0, 11 }, 2 } };
+        namespace boundCenter {
+            inline constexpr ::niffer::StructRef self{ 123, { { 0, 12 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 123, { { 0, 12, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 123, { { 0, 12, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 123, { { 0, 12, 2 }, 3 } };
+        }
+        inline constexpr ::niffer::FieldRef<float> boundRadius{ 123, { { 0, 13 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> hasVertexColors{ 123, { { 0, 14 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> vertexColors{ 123, { { 0, 15 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> uvSets{ 123, { { 0, 16 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> unknown3{ 123, { { 0, 17 }, 2 } };
+        inline constexpr ::niffer::FieldRef<int32_t> unknown4{ 123, { { 0, 18 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<uint16_t> numTriangles{ 123, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> numTrianglePoints{ 123, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> hasTriangles{ 123, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> triangles{ 123, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> numVertexGroups{ 123, { { 5 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> vertexGroups{ 123, { { 6 }, 1 } };
 }
 
 // NiTriStripsData : NiObject
 namespace NiTriStripsData {
-    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 124, { { 0 }, 1 } };
+    namespace geometry {
+        inline constexpr ::niffer::StructRef self{ 124, { { 0 }, 1 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> unknown0{ 124, { { 0, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> numVertices{ 124, { { 0, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> unknown1{ 124, { { 0, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> hasVertices{ 124, { { 0, 3 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> vertices{ 124, { { 0, 4 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> uvSetCount{ 124, { { 0, 5 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> vectorFlags{ 124, { { 0, 6 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint32_t> unknown2{ 124, { { 0, 7 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> hasNormals{ 124, { { 0, 8 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> normals{ 124, { { 0, 9 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> tangents{ 124, { { 0, 10 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> bitangents{ 124, { { 0, 11 }, 2 } };
+        namespace boundCenter {
+            inline constexpr ::niffer::StructRef self{ 124, { { 0, 12 }, 2 } };
+            inline constexpr ::niffer::FieldRef<float> x{ 124, { { 0, 12, 0 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> y{ 124, { { 0, 12, 1 }, 3 } };
+            inline constexpr ::niffer::FieldRef<float> z{ 124, { { 0, 12, 2 }, 3 } };
+        }
+        inline constexpr ::niffer::FieldRef<float> boundRadius{ 124, { { 0, 13 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint8_t> hasVertexColors{ 124, { { 0, 14 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> vertexColors{ 124, { { 0, 15 }, 2 } };
+        inline constexpr ::niffer::FieldRef<::niffer::Value> uvSets{ 124, { { 0, 16 }, 2 } };
+        inline constexpr ::niffer::FieldRef<uint16_t> unknown3{ 124, { { 0, 17 }, 2 } };
+        inline constexpr ::niffer::FieldRef<int32_t> unknown4{ 124, { { 0, 18 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<uint16_t> numTriangles{ 124, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> numStrips{ 124, { { 2 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint16_t>> stripLengths{ 124, { { 3 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> hasPoints{ 124, { { 4 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint16_t>> points{ 124, { { 5 }, 1 } };
 }
 
 // bhkBallAndSocketConstraint : NiObject

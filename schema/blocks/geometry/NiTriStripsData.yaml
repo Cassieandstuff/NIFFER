@@ -1,4 +1,13 @@
 block: NiTriStripsData
 inherits: NiObject
+doc: >-
+  Legacy triangle-strip geometry. All 31 SSE instances parse exactly; numTriangles is always the sum
+  of (stripLength - 2), and every point is a vertex index below numVertices. The points of all
+  strips are stored back to back; stripLengths splits them.
 fields:
-  - { name: data, type: bytes, doc: Not yet decoded. }
+  - { name: geometry, type: GeometryData }
+  - { name: numTriangles, type: u16 }
+  - { name: numStrips, type: u16 }
+  - { name: stripLengths, type: "u16[count: numStrips]" }
+  - { name: hasPoints, type: u8 }
+  - { name: points, type: "u16[]", if: { field: hasPoints, ne: 0 }, packed: true }

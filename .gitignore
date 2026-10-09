@@ -1,0 +1,17 @@
+# Build trees
+/build/
+/out/
+CMakeUserPresets.json
+
+# IDE
+/.vs/
+/.vscode/
+*.user
+*.suo
+
+# Local tooling
+/.claude/settings.local.json
+/.claude/worktrees/
+
+# Python bytecode (tools/schemagen, tests)
+__pycache__/

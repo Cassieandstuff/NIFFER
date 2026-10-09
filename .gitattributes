@@ -1,0 +1,23 @@
+# Normalize text to LF in the repo; let git auto-detect text vs binary otherwise.
+* text=auto eol=lf
+
+# Windows-only scripts stay CRLF on checkout.
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
+
+*.cpp   text
+*.h     text
+*.cmake text
+*.txt   text
+*.md    text
+*.json  text
+*.yml   text
+*.yaml  text
+
+# Game asset formats (test fixtures, if any are ever tracked): binary with
+# internal offsets/sizes — never EOL-convert or textually merge.
+*.nif  binary
+*.tri  binary
+*.kf   binary
+*.hkx  binary
+*.bsa  binary

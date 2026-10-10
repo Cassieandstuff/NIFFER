@@ -78,6 +78,7 @@ niffer-tool dump          <file.nif> [blockIdx]
 niffer-tool decode        <file.nif>
 niffer-tool collision     <file.nif>
 niffer-tool collision-validate [--sweep] <dir>  # ExtractCollision against bounds and render geometry
+niffer-tool decode-compare <dir>          # schema-path DecodeShapeMesh vs the typed DecodeMesh
 ```
 
 A change to any block layout must keep `roundtrip`, `roundtrip --schema` and `tri-roundtrip`

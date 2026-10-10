@@ -446,10 +446,14 @@ CollisionGeometry Extract(Nif& nif, const Options& opt, Diagnostics* diag) {
 
 }  // namespace collision
 
+CollisionGeometry ExtractCollision(Nif& nif) {
+    return collision::Extract(nif, collision::Options{});
+}
+
 CollisionGeometry ExtractCollision(const NifFile& nif) {
     auto loaded = Nif::Load(nif.Save());
     if (!loaded) return {};
-    return collision::Extract(*loaded, collision::Options{});
+    return ExtractCollision(*loaded);
 }
 
 }  // namespace niffer

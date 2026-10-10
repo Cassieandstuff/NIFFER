@@ -191,13 +191,25 @@ public:
     // Context for decoding a value below the block root (packed elements).
     void PushFrame(const TypeDef* t, const Value* v) { scope_.Push(t, v); }
 
+    // Points the decoder at a new byte range (the next packed element).
+    void Window(const uint8_t* beg, const uint8_t* end) {
+        beg_ = cur_ = beg;
+        end_ = end;
+        err_.clear();
+    }
+
     size_t Remaining() const { return static_cast<size_t>(end_ - cur_); }
     size_t Offset() const { return static_cast<size_t>(cur_ - beg_); }
     const std::string& Error() const { return err_; }
 
     // `fieldLen` is the length from a LenKind::Field source (-1 when none);
     // `fd` is the field being decoded (unions read their selector through it).
+    // Decoding OVERWRITES `v` in place: a value decoded before is reused, with its
+    // storage, so bulk readers can decode element after element without
+    // allocating.
     bool Decode(const TypeDef& t, Value& v, int64_t fieldLen, const FieldDef* fd) {
+        v.present = true;
+        v.packed  = false;
         switch (t.kind) {
         case Kind::U8: case Kind::U16: case Kind::U32: case Kind::U64:
         case Kind::I8: case Kind::I16: case Kind::I32: case Kind::I64:
@@ -238,11 +250,10 @@ public:
         }
         case Kind::Struct: {
             scope_.Push(&t, &v);
-            v.items.reserve(t.refCount);
+            v.items.resize(t.refCount);
             for (uint16_t i = 0; i < t.refCount; ++i) {
                 const FieldDef& f = set_.fields[t.ref + i];
-                v.items.emplace_back();
-                Value& fv = v.items.back();
+                Value& fv = v.items[i];
                 if (!scope_.CondHolds(f)) { fv.present = false; continue; }
                 const int64_t len = f.lenField != schema::kNoField ? scope_.Length(f) : -1;
                 const TypeDef& ft = set_.types[f.type];
@@ -259,9 +270,12 @@ public:
             if (c < 0) return Fail("union: no case for the selector's value");
             v.bits = static_cast<uint64_t>(c);
             const CaseDef& cd = set_.cases[t.ref + static_cast<uint16_t>(c)];
-            if (cd.type == schema::kNoField) return true;   // empty case
-            v.items.emplace_back();
-            return Decode(set_.types[cd.type], v.items.back(), -1, nullptr);
+            if (cd.type == schema::kNoField) {   // empty case
+                v.items.clear();
+                return true;
+            }
+            v.items.resize(1);
+            return Decode(set_.types[cd.type], v.items[0], -1, nullptr);
         }
         case Kind::Array:
             return DecodeArray(t, v, fieldLen);
@@ -284,9 +298,9 @@ private:
         uint64_t n = 0;
         size_t elemSize = 0;
         bool uniform = true;
+        Value scratch;   // reused: each element overwrites it
         while (open ? Remaining() > 0 : n < count) {
             const uint8_t* before = cur_;
-            Value scratch;
             if (!Decode(et, scratch, -1, nullptr)) { end_ = savedEnd; return false; }
             const size_t sz = static_cast<size_t>(cur_ - before);
             if (sz == 0) { end_ = savedEnd; return Fail("array element consumed no bytes"); }
@@ -300,6 +314,7 @@ private:
             cur_ = savedCur;
             return DecodeArray(t, v, fieldLen);
         }
+        v.items.clear();
         v.packed = true;
         v.bits = n | (static_cast<uint64_t>(elemSize) << 32);
         v.bytes.assign(start, stop);
@@ -351,12 +366,14 @@ private:
                 end_ = cur_ + n;
             }
             bool ok = true;
+            size_t n = 0;
             while (ok && Remaining() > 0) {
                 const uint8_t* before = cur_;
-                v.items.emplace_back();
-                ok = Decode(et, v.items.back(), -1, nullptr);
+                if (n == v.items.size()) v.items.emplace_back();
+                ok = Decode(et, v.items[n++], -1, nullptr);
                 if (ok && cur_ == before) ok = Fail("array element consumed no bytes");
             }
+            v.items.resize(n);
             end_ = savedEnd;
             return ok;
         }
@@ -401,26 +418,47 @@ private:
     std::string      err_;
 };
 
-// Decodes element `i` of the packed array `arr` (of type `t`) into `out`, with
-// the enclosing structs as context.
+// Reads the elements of one packed array `arr` (of array type `t`), with the
+// enclosing structs as context. One decoder serves every element.
+class PackedReader {
+public:
+    PackedReader(const SchemaSet& s, const TypeDef& t, const Value& arr, const std::vector<Frame>& frames)
+        : set_(s), elem_(s.types[t.ref]), arr_(arr), size_(static_cast<size_t>(arr.bits >> 32)),
+          dec_(s, arr.bytes.data(), arr.bytes.data()) {
+        for (const Frame& f : frames) dec_.PushFrame(f.type, f.value);
+    }
+    size_t Count() const { return static_cast<size_t>(arr_.bits & 0xFFFFFFFFu); }
+    // Decodes element `i` into `out` (overwriting it in place).
+    bool Element(size_t i, Value& out) {
+        if (size_ == 0 || (i + 1) * size_ > arr_.bytes.size()) return false;
+        const uint8_t* beg = arr_.bytes.data() + i * size_;
+        dec_.Window(beg, beg + size_);
+        return dec_.Decode(elem_, out, -1, nullptr) && dec_.Remaining() == 0;
+    }
+
+private:
+    const SchemaSet& set_;
+    const TypeDef&   elem_;
+    const Value&     arr_;
+    size_t           size_;
+    Decoder          dec_;
+};
+
+// Decodes element `i` of the packed array `arr` (of type `t`) into `out`.
 bool DecodePackedElement(const SchemaSet& s, const TypeDef& t, const Value& arr, size_t i,
                          const std::vector<Frame>& frames, Value& out) {
-    const size_t size = static_cast<size_t>(arr.bits >> 32);
-    if (size == 0 || (i + 1) * size > arr.bytes.size()) return false;
-    const uint8_t* beg = arr.bytes.data() + i * size;
-    Decoder dec(s, beg, beg + size);
-    for (const Frame& f : frames) dec.PushFrame(f.type, f.value);
-    return dec.Decode(s.types[t.ref], out, -1, nullptr) && dec.Remaining() == 0;
+    PackedReader r(s, t, arr, frames);
+    return r.Element(i, out);
 }
 
 // A packed array's elements, materialized.
 bool UnpackArray(const SchemaSet& s, const TypeDef& t, const Value& arr,
                  const std::vector<Frame>& frames, Value& out) {
-    const size_t count = static_cast<size_t>(arr.bits & 0xFFFFFFFFu);
+    PackedReader r(s, t, arr, frames);
     out = Value{};
-    out.items.resize(count);
-    for (size_t i = 0; i < count; ++i)
-        if (!DecodePackedElement(s, t, arr, i, frames, out.items[i])) return false;
+    out.items.resize(r.Count());
+    for (size_t i = 0; i < out.items.size(); ++i)
+        if (!r.Element(i, out.items[i])) return false;
     return true;
 }
 
@@ -670,7 +708,8 @@ const Value* Block::GetValue(const RelPath& p) const {
 // through (into `temps`, which owns them). With `unpackEnd`, a path ending on a
 // packed array gets that array materialized too.
 const Value* Block::Locate(const RelPath& p, std::deque<Value>& temps, const TypeDef*& t,
-                           bool unpackEnd) const {
+                           bool unpackEnd,
+                           std::vector<std::pair<const TypeDef*, const Value*>>* structs) const {
     if (!def_) return nullptr;
     t = &set_->types[def_->type];
     const Value* v = &value_;
@@ -695,7 +734,37 @@ const Value* Block::Locate(const RelPath& p, std::deque<Value>& temps, const Typ
         if (!UnpackArray(*set_, *t, *v, frames, all)) return nullptr;
         v = &all;
     }
+    if (structs) {
+        structs->clear();
+        for (const Frame& f : frames) structs->emplace_back(f.type, f.value);
+    }
     return v;
+}
+
+bool Block::ForEachElement(const RelPath& p,
+                           const std::function<void(size_t, const TypeDef&, const Value&)>& fn) const {
+    std::deque<Value> temps;
+    const TypeDef* t = nullptr;
+    std::vector<std::pair<const TypeDef*, const Value*>> structs;
+    const Value* v = Locate(p, temps, t, false, &structs);
+    if (!v || t->kind != Kind::Array) return false;
+    const TypeDef& et = set_->types[t->ref];
+    if (!v->packed) {
+        for (size_t i = 0; i < v->items.size(); ++i) fn(i, et, v->items[i]);
+        return true;
+    }
+    // Packed: decode one element at a time into one reused scratch value, so the
+    // array is never materialized and the steady state allocates nothing.
+    std::vector<Frame> frames;
+    frames.reserve(structs.size());
+    for (const auto& [st, sv] : structs) frames.push_back({st, sv});
+    PackedReader r(*set_, *t, *v, frames);
+    Value elem;
+    for (size_t i = 0; i < r.Count(); ++i) {
+        if (!r.Element(i, elem)) return false;
+        fn(i, et, elem);
+    }
+    return true;
 }
 
 bool Block::Visit(const RelPath& p,

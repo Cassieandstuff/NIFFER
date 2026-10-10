@@ -23,9 +23,11 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <execution>
 #include <filesystem>
 #include <fstream>
@@ -635,6 +637,122 @@ static int CmdTriRoundtrip(const fs::path& root) {
     return (diff == 0 && err == 0) ? 0 : 1;
 }
 
+// ── decode-compare ────────────────────────────────────────────────────────────
+// The step-4 gate: for every BSTriShape in the corpus, the schema path's
+// DecodeShapeMesh must equal the typed path's geometry (the selection logic SCT's
+// NifDocument uses over the typed DecodeMesh), array by array, bit for bit.
+// The one documented difference: a vertex layout with no position attribute
+// leaves the schema path's positions at zero, while the typed decoder reads the
+// first attribute's bytes as positions; it is reported, not counted as a mismatch.
+static DecodedMesh TypedShapeMesh(const NifFile& nif, const BSTriShape& shape) {
+    const NiSkinPartition* part = nullptr;
+    if (!shape.skin.IsNull())
+        if (auto* si = dynamic_cast<const NiSkinInstance*>(nif.GetBlock(shape.skin.index)))
+            part = dynamic_cast<const NiSkinPartition*>(nif.GetBlock(si->skinPartition.index));
+    if (auto* dyn = dynamic_cast<const BSDynamicTriShape*>(&shape)) {
+        DecodedMesh m = part ? DecodeMesh(*part) : DecodedMesh{};
+        const size_t nv = m.numVertices, have = dyn->dynamicData.size() / 16;
+        m.positions.assign(nv * 3, 0.f);
+        for (size_t v = 0; v < std::min(nv, have); ++v)
+            std::memcpy(&m.positions[v * 3], dyn->dynamicData.data() + v * 16, 12);
+        return m;
+    }
+    DecodedMesh m = DecodeMesh(shape);
+    if (m.numVertices == 0 && part) m = DecodeMesh(*part);
+    return m;
+}
+
+template <class T>
+static bool SameBits(const std::vector<T>& a, const std::vector<T>& b) {
+    return a.size() == b.size() && (a.empty() || std::memcmp(a.data(), b.data(), a.size() * sizeof(T)) == 0);
+}
+
+struct CompareResult {
+    uint64_t shapes = 0, equal = 0, noPositionLayouts = 0;
+    std::map<std::string, uint64_t> mismatches;   // array -> shapes
+    std::string firstMismatch;
+    double typedMs = 0, schemaMs = 0;
+};
+
+static CompareResult CompareOne(const fs::path& p) {
+    CompareResult r;
+    auto bytes = ReadFile(p);
+    auto typed = NifFile::Load(bytes);
+    auto nif = Nif::Load(bytes);
+    if (!typed || !nif) return r;
+    for (size_t i = 0; i < typed->blocks.size(); ++i) {
+        auto* shape = dynamic_cast<const BSTriShape*>(typed->blocks[i].get());
+        if (!shape) continue;
+        ++r.shapes;
+        auto t0 = std::chrono::steady_clock::now();
+        const DecodedMesh a = TypedShapeMesh(*typed, *shape);
+        auto t1 = std::chrono::steady_clock::now();
+        const DecodedMesh b = DecodeShapeMesh(*nif, nif->blocks[i]);
+        auto t2 = std::chrono::steady_clock::now();
+        r.typedMs += std::chrono::duration<double, std::milli>(t1 - t0).count();
+        r.schemaMs += std::chrono::duration<double, std::milli>(t2 - t1).count();
+
+        // Which layout fed the positions (shape or partition): no position
+        // attribute there means the typed decoder's positions are not real data.
+        uint64_t desc = shape->vertexDesc;
+        if (a.numVertices && shape->geometryData.empty() && !shape->skin.IsNull())
+            if (auto* si = dynamic_cast<const NiSkinInstance*>(typed->GetBlock(shape->skin.index)))
+                if (auto* pt = dynamic_cast<const NiSkinPartition*>(typed->GetBlock(si->skinPartition.index)))
+                    desc = pt->vertexDesc;
+        const bool noPos = !DecodeVertexDesc(desc).hasVertex && !dynamic_cast<const BSDynamicTriShape*>(shape);
+        if (noPos) ++r.noPositionLayouts;
+
+        bool ok = a.numVertices == b.numVertices;
+        auto check = [&](const char* name, bool same) {
+            if (same) return;
+            ok = false;
+            ++r.mismatches[name];
+            if (r.firstMismatch.empty())
+                r.firstMismatch = std::string(name) + " in " + p.string() + " block " + std::to_string(i);
+        };
+        if (a.numVertices != b.numVertices) check("numVertices", false);
+        if (!noPos) check("positions", SameBits(a.positions, b.positions));
+        else check("positions (size)", a.positions.size() == b.positions.size());
+        check("normals", SameBits(a.normals, b.normals));
+        check("tangents", SameBits(a.tangents, b.tangents));
+        check("uvs", SameBits(a.uvs, b.uvs));
+        check("colors", SameBits(a.colors, b.colors));
+        check("boneWeights", SameBits(a.boneWeights, b.boneWeights));
+        check("boneIndices", SameBits(a.boneIndices, b.boneIndices));
+        check("triangles", SameBits(a.triangles, b.triangles));
+        if (ok) ++r.equal;
+    }
+    return r;
+}
+
+static int CmdDecodeCompare(const fs::path& root) {
+    auto files = CollectNifs(root);
+    std::printf("decode-compare: %zu .nif files under %s\n", files.size(), root.string().c_str());
+    std::vector<CompareResult> results(files.size());
+    std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
+                   [](const fs::path& p) { return CompareOne(p); });
+    CompareResult t;
+    for (auto& r : results) {
+        t.shapes += r.shapes; t.equal += r.equal; t.noPositionLayouts += r.noPositionLayouts;
+        t.typedMs += r.typedMs; t.schemaMs += r.schemaMs;
+        for (auto& [k, n] : r.mismatches) t.mismatches[k] += n;
+        if (t.firstMismatch.empty()) t.firstMismatch = r.firstMismatch;
+    }
+    if (!t.mismatches.empty()) {
+        std::printf("\nMISMATCHES by array:\n");
+        for (auto& [k, n] : t.mismatches) std::printf("  %8llu  %s\n", (unsigned long long)n, k.c_str());
+        std::printf("  first: %s\n", t.firstMismatch.c_str());
+    }
+    std::printf("\n── decode-compare summary ──\n");
+    std::printf("  shapes            %llu, equal %llu\n", (unsigned long long)t.shapes, (unsigned long long)t.equal);
+    std::printf("  no-position layouts %llu (typed positions are not vertex data there; sizes compared)\n",
+                (unsigned long long)t.noPositionLayouts);
+    std::printf("  decode time       typed %.0f ms, schema %.0f ms (summed over threads)\n", t.typedMs, t.schemaMs);
+    const bool green = t.shapes > 0 && t.equal == t.shapes;
+    std::printf("\n  GATE: %s\n", green ? "GREEN" : "RED");
+    return green ? 0 : 1;
+}
+
 // ── decode ────────────────────────────────────────────────────────────────────
 // Spot-check the vertex decoder: decode the first BSTriShape's geometry.
 static int CmdDecode(const fs::path& file) {
@@ -886,6 +1004,7 @@ int main(int argc, char** argv) {
                     "  niffer-tool tri-roundtrip <dir>\n"
                     "  niffer-tool dump <file.nif> [blockIdx]\n"
                     "  niffer-tool decode <file.nif>\n"
+                    "  niffer-tool decode-compare <dir>\n"
                     "  niffer-tool collision <file.nif>\n"
                     "  niffer-tool collision-validate [--sweep] <dir>\n");
         return 2;
@@ -903,6 +1022,7 @@ int main(int argc, char** argv) {
     std::string cmd = argv[1];
     fs::path arg = argv[2];
     if (cmd == "collision") return CmdCollision(arg);
+    if (cmd == "decode-compare") return CmdDecodeCompare(arg);
     if (cmd == "histogram") return CmdHistogram(arg);
     if (cmd == "roundtrip") return CmdRoundtrip(arg);
     if (cmd == "tri-roundtrip") return CmdTriRoundtrip(arg);

@@ -972,10 +972,14 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
             p = f"p_.Child({i})"
             doc = f"    // {f.name}" + (f" — {f.doc.strip().splitlines()[0]}" if f.doc else "")
             lines.append(doc)
+            # The field's index in its struct: bulk readers (Block::ForEachElement)
+            # index an element's Value::items with it.
+            lines.append(f"    static constexpr uint16_t k{acc} = {i};")
             if f.type.kind == "Union":
                 # One accessor per case; each is empty unless that case is selected.
                 lines.append(f"    int {acc}Case() const {{ return b_->CaseAt({p}); }}")
                 for c, case in enumerate(f.type.cases):
+                    lines.append(f"    static constexpr uint16_t k{acc}{pascal(case.name)} = {c};")
                     value_accessor(lines, acc + pascal(case.name), f"{p}.Child({c})", case.type, True)
                 continue
             value_accessor(lines, acc, p, f.type, f.cond is not None)

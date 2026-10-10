@@ -266,6 +266,14 @@ public:
     size_t                 Count(const RelPath& p) const;
     // The selected case of the union at `p`; -1 when absent.
     int                    CaseAt(const RelPath& p) const;
+    // Calls fn(index, elementType, element) for every element of the array at
+    // `p`, decoding each element exactly once (packed or not), in order. For
+    // bulk readers (vertices, triangles, keys): index an element's `items`
+    // with the generated views' field-index constants (view::BSVertex::kPosition).
+    // Returns false when `p` isn't a present array.
+    bool                   ForEachElement(const RelPath& p,
+                                          const std::function<void(size_t index, const schema::TypeDef& type,
+                                                                   const Value& element)>& fn) const;
     // The schema type at `p` (whether or not the value is present).
     const schema::TypeDef* TypeAt(const RelPath& p) const;
     // Replaces the value at `p`. A no-op when unchanged, so untouched blocks stay
@@ -291,8 +299,11 @@ public:
     template <class T> static Value ToValue(const T& x, const schema::TypeDef& t, const schema::SchemaSet& s);
 
 private:
+    // `structs` (optional) receives the structs enclosing the value, outermost
+    // first: the context a packed element at `p` decodes against.
     const Value* Locate(const RelPath& p, std::deque<Value>& temps, const schema::TypeDef*& t,
-                        bool unpackEnd) const;
+                        bool unpackEnd,
+                        std::vector<std::pair<const schema::TypeDef*, const Value*>>* structs = nullptr) const;
 
     const schema::SchemaSet* set_ = nullptr;
     const schema::BlockDef*  def_ = nullptr;
@@ -466,3 +477,27 @@ bool Block::Set(const FieldRef<T>& f, const T& v) {
 
 #include <niffer/generated/Fields.h>
 #include <niffer/generated/Views.h>
+
+// ── Decode helpers on the schema path ────────────────────────────────────────
+// The schema-path counterparts of the typed helpers in Niffer.h (DecodeMesh,
+// ExtractCollision). They read through the generated views and
+// Block::ForEachElement, so packed vertex arrays are decoded one element at a
+// time and never materialized. Not on the round-trip path.
+namespace niffer {
+
+// A shape's own vertices and triangles. numVertices is the shape's; the
+// attribute arrays stay empty when it stores no geometry (dataSize 0: skinned).
+DecodedMesh DecodeMesh(const view::BSTriShape& shape);
+// A skin partition's vertices, and the triangles of all its partitions (which
+// index the partition's whole vertex array).
+DecodedMesh DecodeMesh(const view::NiSkinPartition& partition);
+// A shape's renderable geometry wherever it lives: the shape's own; its skin
+// partition's when the shape stores none; for BSDynamicTriShape (FaceGen
+// heads), attributes and triangles from the partition with positions from the
+// shape's dynamic vertices. Empty when `shape` isn't a BSTriShape.
+DecodedMesh DecodeShapeMesh(Nif& nif, Block& shape);
+// ExtractCollision over a schema-path Nif (the NifFile overload re-reads the
+// file as one).
+CollisionGeometry ExtractCollision(Nif& nif);
+
+}  // namespace niffer

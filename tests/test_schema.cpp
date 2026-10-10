@@ -435,6 +435,85 @@ void Packed() {
     CHECK_EQ(*t.GetAt<uint16_t>(*t.Find("window/0/y")), 0x2222);
 }
 
+void Elements() {
+    // ForEachElement visits each element once, in order, packed or not.
+    Block b = Block::Load(Test(), "TAll", MakeTAll());
+    std::vector<uint32_t> seen;
+    CHECK(b.GetValue(*b.Find("byCount"))->packed);
+    CHECK(b.ForEachElement(*b.Find("byCount"), [&](size_t i, const schema::TypeDef& t, const Value& v) {
+        CHECK_EQ(i, seen.size());
+        CHECK(t.kind == schema::Kind::U32);
+        seen.push_back(static_cast<uint32_t>(v.bits));
+    }));
+    CHECK(seen == (std::vector<uint32_t>{10, 20, 30}));
+
+    // Materialized rows, indexed with the generated field-index constants.
+    std::vector<int> hasValue;
+    CHECK(b.ForEachElement(*b.Find("rows"), [&](size_t, const schema::TypeDef&, const Value& row) {
+        hasValue.push_back(row.items[tv::TAllRows::kValue].present ? 1 : 0);
+    }));
+    CHECK(hasValue == (std::vector<int>{1, 0}));
+    CHECK_EQ(tv::TAllRows::kMask, 0);
+    CHECK_EQ(tv::TAllRows::kOuter, 2);
+
+    // Packed elements whose layout reads an enclosing field: TNew's Probe window
+    // (kind 6: y present), decoded into one reused scratch value.
+    Block t = Block::Load(Test(), "TNew", MakeTNew(6));
+    std::vector<uint16_t> ys;
+    CHECK(t.ForEachElement(*t.Find("window"), [&](size_t, const schema::TypeDef&, const Value& e) {
+        CHECK(e.items[tv::Probe::kY].present);
+        ys.push_back(static_cast<uint16_t>(e.items[tv::Probe::kY].bits));
+    }));
+    CHECK(ys == (std::vector<uint16_t>{0x2222, 0x3333}));
+    CHECK(!t.ForEachElement(*t.Find("kind"), [](size_t, const schema::TypeDef&, const Value&) {}));
+}
+
+// A one-shape file: a BSTriShape with three vertices (position, uv, normal) and
+// one triangle, decoded by both paths.
+void SchemaDecodeMesh() {
+    const uint64_t desc = 6ull | (4ull << 8) | (5ull << 16) | (0x00Bull << 44);   // 24-byte vertex
+    Bytes s;
+    s.put<uint32_t>(0xFFFFFFFF).put<uint32_t>(0).put<int32_t>(-1);    // name, extraData, controller
+    s.put<uint32_t>(14);                                                 // flags
+    for (int i = 0; i < 3; ++i) s.put<float>(0.f);                       // translation
+    for (int i = 0; i < 9; ++i) s.put<float>(i % 4 == 0 ? 1.f : 0.f);   // rotation
+    s.put<float>(1.f).put<int32_t>(-1);                                  // scale, collisionObject
+    for (int i = 0; i < 4; ++i) s.put<float>(1.f);                       // bound sphere
+    s.put<int32_t>(-1).put<int32_t>(-1).put<int32_t>(-1);               // skin, shader, alpha
+    s.put<uint64_t>(desc).put<uint16_t>(1).put<uint16_t>(3).put<uint32_t>(3 * 24 + 6);
+    const float pos[3][3] = {{1.f, 2.f, 3.f}, {-4.f, 5.f, 6.f}, {7.f, -8.f, 9.5f}};
+    for (int v = 0; v < 3; ++v) {
+        s.put<float>(pos[v][0]).put<float>(pos[v][1]).put<float>(pos[v][2]).put<float>(0.f);
+        s.put<uint16_t>(Half::FromFloat(0.25f * v).bits).put<uint16_t>(Half::FromFloat(0.5f).bits);
+        s.raw({255, 127, 0, 0});                                         // normal + w
+    }
+    s.put<uint16_t>(0).put<uint16_t>(1).put<uint16_t>(2);               // triangle
+    s.put<uint32_t>(0);                                                  // particleDataSize
+
+    Header h;
+    h.versionLine = "Gamebryo File Format, Version 20.2.0.7";
+    h.blockTypes = {"BSTriShape"};
+    h.blockTypeIndex = {0};
+    h.numBlocks = 1;
+    const auto file = detail::WriteFraming(h, {s.b}, {0}, {});
+
+    auto typed = NifFile::Load(file);
+    auto nif = Nif::Load(file);
+    CHECK(typed.has_value() && nif.has_value());
+    if (!typed || !nif) return;
+    auto* shape = dynamic_cast<BSTriShape*>(typed->blocks[0].get());
+    CHECK(shape != nullptr && nif->blocks[0].Modeled());
+    if (!shape) return;
+    const DecodedMesh a = DecodeMesh(*shape);
+    const DecodedMesh b = DecodeShapeMesh(*nif, nif->blocks[0]);
+    CHECK_EQ(b.numVertices, 3u);
+    CHECK(a.positions == b.positions && a.normals == b.normals && a.uvs == b.uvs);
+    CHECK(a.triangles == b.triangles && b.triangles == (std::vector<uint16_t>{0, 1, 2}));
+    CHECK(b.positions.size() == 9 && b.positions[8] == 9.5f && b.uvs[2] == 0.25f);
+    CHECK(b.normals.size() == 9 && b.normals[0] == 1.f && b.normals[2] == -1.f);
+    CHECK(b.colors.empty() && b.boneWeights.empty() && b.tangents.empty());
+}
+
 void RealSchemaSmoke() {
     const auto& s = schema::Main();
     CHECK(s.Find("NiNode") != nullptr);
@@ -478,5 +557,7 @@ void run_schema_tests() {
     Container();
     Language02();
     Packed();
+    Elements();
+    SchemaDecodeMesh();
     RealSchemaSmoke();
 }

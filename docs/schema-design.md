@@ -1,6 +1,6 @@
 # NIFFER — schema-first design
 
-Status: **steps 1–3 implemented** (2026-10-09). The normative spec is
+Status: **steps 1–4 implemented** (2026-10-10). The normative spec is
 [schema-language.md](schema-language.md). The model follows ESPER's
 (github.com/Cassieandstuff/ESPER, `docs/schema-design.md`), which settled the same questions for
 plugin records; this document records where NIF differs.
@@ -122,10 +122,16 @@ a general storage mode in the engine, not per-block code:
 - Reads go through `Block::Visit` / `GetAt` / `Count` / `Has` and the views, which decode just
   the element a path reaches. `GetValue` returns tree pointers only, so it stops at a packed
   array. Writing into a packed array unpacks that array first.
-- **Open:** each accessor decodes its element again, so reading every attribute of every vertex
-  through views costs more than materialized access (3.1 ms against 0.6 ms for the body's
-  vertices). Bulk consumers such as `DecodeMesh` (step 4) should visit each element once;
-  that needs an element-iteration entry point on `Block`.
+- **Bulk reads:** `Block::ForEachElement` decodes each element of an array exactly once, into
+  one reused scratch value (decoding overwrites a value in place, so the steady state allocates
+  nothing). Readers index an element with the views' generated field-index constants
+  (`view::BSVertex::kPosition`). Per-attribute view accessors remain the convenient path for
+  single reads; each of those decodes its element again.
+- **Measured** (`decode-compare`, all 83,178 shapes in the corpus, summed over threads): the
+  schema `DecodeShapeMesh` takes 17.3 s against the typed `DecodeMesh`'s 4.0 s, about 0.2 ms per
+  shape. Before element reuse it was 155.7 s. The rest of the gap is the interpreter's
+  per-field work (conditions, frames); a later optimization could compile a per-array element
+  plan.
 
 ## Migration plan
 
@@ -180,8 +186,22 @@ until step 6.
    Result: `roundtrip --schema` stays GREEN at **98.67%** decoded (opaque `bytes` 1.33%, mostly
    MOPP byte code), with 1,098,425 refs checked against `to:` and 728,961 string refs in range.
    `schemaVersion` is 0.2.0: steps 2–3 renamed and re-parented fields.
-4. **Decode helpers on views:** `DecodeMesh`, `ExtractCollision` and the morph helpers read
-   through the schema.
+4. **Done (2026-10-10). Decode helpers on views.** The schema path has its own helpers,
+   declared at the end of `Schema.h`:
+   - `DecodeMesh(view::BSTriShape)` and `DecodeMesh(view::NiSkinPartition)`;
+   - `DecodeShapeMesh(Nif&, Block&)`, which carries the geometry-selection rule SCT's
+     NifDocument had: the shape's own vertices; else its skin partition's; for
+     `BSDynamicTriShape`, the partition's attributes with positions from the dynamic vertices;
+   - `ExtractCollision(Nif&)`, with no save-and-reload round trip.
+
+   They read through `Block::ForEachElement` (new) and the views' field-index constants (new).
+   `niffer-tool decode-compare` requires the schema path to equal the typed path bit for bit on
+   every shape in the corpus. All 83,178 match; for the 37 shapes whose vertex layout has no
+   position attribute, the typed decoder reads other bytes as positions, so only sizes are
+   compared there. The TRI helpers (`DecodeMorphDeltas`, `DecodeBaseVertices`, `ApplyMorphs`)
+   stay on `TriFile`: TRI is its own file format, outside the NIF schema.
+   `GlossinessToRoughness` and `DecodeVertexDesc` are pure functions and serve both paths. The
+   typed `DecodeMesh` overloads stay until step 6.
 5. **Port SCT** (sct-assets, sct-pipeline, Scene Editor v2) to `niffer::Nif` and the views, and
    bump SCT's NIFFER pin.
 6. **Delete the typed world:** the hand-written structs, `Sync` functions and registry. `Nif` takes

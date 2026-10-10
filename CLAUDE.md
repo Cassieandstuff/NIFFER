@@ -94,7 +94,11 @@ owner writes. Design and migration plan: [docs/schema-design.md](docs/schema-des
     stored bounds; the collision AABB is within 10% of the render AABB's diagonal in 87.4% of
     the 11,094 files with both. `--sweep` re-measures each extraction convention
     (docs/collision-provenance.md).
+  - `niffer-tool decode-compare <dir>`: the schema path's `DecodeShapeMesh` against the typed
+    `DecodeMesh` on every shape, bit for bit. 83,178 of 83,178 equal.
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
+- **Bulk reads** go through `Block::ForEachElement` and the views' field-index constants
+  (`view::BSVertex::kPosition`): one decode per element, no allocation in the steady state.
 
 ## Bug log — sync is mandatory
 

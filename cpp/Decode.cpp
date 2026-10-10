@@ -6,8 +6,10 @@
 #include <niffer/Niffer.h>
 
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <cstring>
+#include <optional>
 
 namespace niffer {
 
@@ -225,6 +227,127 @@ std::vector<float> ApplyMorphs(const std::vector<float>& base, const TriFile& tr
             out[i] += d[i] * w;
     }
     return out;
+}
+
+// ── Schema path ───────────────────────────────────────────────────────────────
+// The same decoding through the generated views: vertices are BSVertex values
+// (their layout already resolved from vertexDesc by the schema), read one
+// element at a time with Block::ForEachElement and indexed with the views'
+// field-index constants. The results match the typed helpers above
+// (`niffer-tool decode-compare` checks every shape in the corpus).
+namespace {
+
+float F32Of(const Value& v) { return std::bit_cast<float>(static_cast<uint32_t>(v.bits)); }
+float HalfOf(const Value& v) { return Half{ static_cast<uint16_t>(v.bits) }.ToFloat(); }
+uint8_t U8Of(const Value& v) { return static_cast<uint8_t>(v.bits); }
+
+// Fills `m` from the BSVertex array at `array` in `b`: `nv` vertices laid out per
+// `desc`. Allocates exactly what DecodeVertexBlock does for the same desc.
+void SchemaVertices(const Block& b, const RelPath& array, uint64_t desc, uint16_t nv, DecodedMesh& m) {
+    m.numVertices = nv;
+    const VertexLayout L = DecodeVertexDesc(desc);
+    if (L.vertexSize == 0 || b.Count(array) < nv) return;
+
+    m.positions.resize(static_cast<size_t>(nv) * 3);
+    if (L.hasNormal)  m.normals.resize(static_cast<size_t>(nv) * 3);
+    if (L.hasTangent) m.tangents.resize(static_cast<size_t>(nv) * 4);
+    if (L.hasUV)      m.uvs.resize(static_cast<size_t>(nv) * 2);
+    if (L.hasColor)   m.colors.resize(static_cast<size_t>(nv) * 4);
+    if (L.hasSkin) {
+        m.boneWeights.resize(static_cast<size_t>(nv) * 4);
+        m.boneIndices.resize(static_cast<size_t>(nv) * 4);
+    }
+
+    using V = view::BSVertex;
+    b.ForEachElement(array, [&](size_t i, const schema::TypeDef&, const Value& e) {
+        if (i >= nv) return;
+        if (const Value& p = e.items[V::kPosition]; p.present)
+            for (int k = 0; k < 3; ++k) m.positions[i*3+k] = F32Of(p.items[k]);
+        if (const Value& uv = e.items[V::kUv]; uv.present && L.hasUV) {
+            m.uvs[i*2+0] = HalfOf(uv.items[view::TexCoord::kU]);
+            m.uvs[i*2+1] = HalfOf(uv.items[view::TexCoord::kV]);
+        }
+        if (const Value& n = e.items[V::kNormal]; n.present && L.hasNormal)
+            for (int k = 0; k < 3; ++k) m.normals[i*3+k] = SNorm(U8Of(n.items[k]));
+        if (const Value& t = e.items[V::kTangent]; t.present && L.hasTangent) {
+            for (int k = 0; k < 3; ++k) m.tangents[i*4+k] = SNorm(U8Of(t.items[k]));
+            m.tangents[i*4+3] = 1.0f;
+        }
+        if (const Value& c = e.items[V::kColor]; c.present && L.hasColor)
+            for (int k = 0; k < 4; ++k) m.colors[i*4+k] = U8Of(c.items[k]);
+        if (const Value& w = e.items[V::kBoneWeights]; w.present && L.hasSkin) {
+            const Value& bi = e.items[V::kBoneIndices];
+            for (int k = 0; k < 4; ++k) {
+                m.boneWeights[i*4+k] = HalfOf(w.items[k]);
+                m.boneIndices[i*4+k] = U8Of(bi.items[k]);
+            }
+        }
+    });
+}
+
+// Appends the triangles of the Triangle array at `array` (all of them, or only
+// those whose indices are below `limit` when it is non-zero).
+void SchemaTriangles(const Block& b, const RelPath& array, uint32_t limit, std::vector<uint16_t>& out) {
+    using T = view::Triangle;
+    b.ForEachElement(array, [&](size_t, const schema::TypeDef&, const Value& t) {
+        const auto a = static_cast<uint16_t>(t.items[T::kA].bits);
+        const auto c1 = static_cast<uint16_t>(t.items[T::kB].bits);
+        const auto c2 = static_cast<uint16_t>(t.items[T::kC].bits);
+        if (limit && (a >= limit || c1 >= limit || c2 >= limit)) return;
+        out.push_back(a); out.push_back(c1); out.push_back(c2);
+    });
+}
+
+}  // namespace
+
+DecodedMesh DecodeMesh(const view::BSTriShape& s) {
+    DecodedMesh m;
+    const RelPath root{};
+    SchemaVertices(s.block(), root.Child(view::BSTriShape::kVertices), s.VertexDesc(), s.NumVertices(), m);
+    if (!m.positions.empty())
+        SchemaTriangles(s.block(), root.Child(view::BSTriShape::kTriangles), 0, m.triangles);
+    return m;
+}
+
+DecodedMesh DecodeMesh(const view::NiSkinPartition& p) {
+    // As the typed helper: the vertex count comes from the byte size, and only
+    // triangles whose indices fall inside the vertex array are kept.
+    const uint32_t vs = p.VertexSize();
+    const auto nv = static_cast<uint16_t>(vs ? p.DataSize() / vs : 0);
+    DecodedMesh m;
+    const RelPath root{};
+    SchemaVertices(p.block(), root.Child(view::NiSkinPartition::kVertexData), p.VertexDesc(), nv, m);
+    const RelPath parts = root.Child(view::NiSkinPartition::kPartitions);
+    const size_t n = p.block().Count(parts);
+    for (size_t i = 0; i < n; ++i)
+        SchemaTriangles(p.block(), parts.Child(static_cast<uint16_t>(i)).Child(view::SkinPartition::kTrueTriangles),
+                        nv, m.triangles);
+    return m;
+}
+
+DecodedMesh DecodeShapeMesh(Nif& nif, Block& shapeBlock) {
+    auto shape = view::BSTriShape::From(shapeBlock);
+    if (!shape) return {};
+    std::optional<view::NiSkinPartition> part;
+    if (auto skin = nif.Get(shape->Skin()))
+        part = nif.Get(skin->SkinPartition());
+
+    if (auto dyn = view::BSDynamicTriShape::From(shapeBlock)) {
+        // FaceGen heads: attributes and triangles in the partition, positions in
+        // the shape's dynamic vertices (one Vec4 each).
+        DecodedMesh m = part ? DecodeMesh(*part) : DecodedMesh{};
+        const size_t nv = m.numVertices;
+        m.positions.assign(nv * 3, 0.f);
+        shapeBlock.ForEachElement(RelPath{}.Child(view::BSDynamicTriShape::kDynamicData),
+                                  [&](size_t i, const schema::TypeDef&, const Value& v) {
+            if (i >= nv) return;
+            for (int k = 0; k < 3; ++k) m.positions[i*3+k] = F32Of(v.items[k]);
+        });
+        return m;
+    }
+    DecodedMesh m = DecodeMesh(*shape);
+    if (m.numVertices == 0 && part) m = DecodeMesh(*part);
+    return m;
 }
 
 }  // namespace niffer

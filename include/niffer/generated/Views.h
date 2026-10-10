@@ -224,12 +224,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // x
+    static constexpr uint16_t kX = 0;
     float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // y
+    static constexpr uint16_t kY = 1;
     float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // z
+    static constexpr uint16_t kZ = 2;
     float Z() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetZ(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
 private:
@@ -243,6 +246,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // m — The nine floats in disk order.
+    static constexpr uint16_t kM = 0;
     std::vector<float> M() const { return b_->GetAt<std::vector<float>>(p_.Child(0)).value_or(std::vector<float>{}); }
     bool SetM(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(0), v); }
 private:
@@ -256,10 +260,13 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // translation
+    static constexpr uint16_t kTranslation = 0;
     ::niffer::view::Vec3 Translation() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
     // rotation
+    static constexpr uint16_t kRotation = 1;
     ::niffer::view::Matrix33 Rotation() const { return ::niffer::view::Matrix33(*b_, p_.Child(1)); }
     // scale
+    static constexpr uint16_t kScale = 2;
     float Scale() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetScale(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
 private:
@@ -273,9 +280,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // distance
+    static constexpr uint16_t kDistance = 0;
     uint32_t Distance() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetDistance(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // boneName
+    static constexpr uint16_t kBoneName = 1;
     ::niffer::NiStringRef BoneName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(1)).value_or(::niffer::NiStringRef{}); }
     bool SetBoneName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(1), v); }
 private:
@@ -289,9 +298,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // partFlag
+    static constexpr uint16_t kPartFlag = 0;
     uint16_t PartFlag() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
     bool SetPartFlag(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
     // bodyPart
+    static constexpr uint16_t kBodyPart = 1;
     uint16_t BodyPart() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetBodyPart(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
 private:
@@ -305,9 +316,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // u
+    static constexpr uint16_t kU = 0;
     ::niffer::Half U() const { return b_->GetAt<::niffer::Half>(p_.Child(0)).value_or(::niffer::Half{}); }
     bool SetU(const ::niffer::Half& v) const { return b_->SetAt<::niffer::Half>(p_.Child(0), v); }
     // v
+    static constexpr uint16_t kV = 1;
     ::niffer::Half V() const { return b_->GetAt<::niffer::Half>(p_.Child(1)).value_or(::niffer::Half{}); }
     bool SetV(const ::niffer::Half& v) const { return b_->SetAt<::niffer::Half>(p_.Child(1), v); }
 private:
@@ -321,34 +334,45 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // position
+    static constexpr uint16_t kPosition = 0;
     std::optional<::niffer::view::Vec3> Position() const { if (!b_->Has(p_.Child(0))) return std::nullopt; return ::niffer::view::Vec3(*b_, p_.Child(0)); }
     // positionW
+    static constexpr uint16_t kPositionW = 1;
     std::optional<float> PositionW() const { return b_->GetAt<float>(p_.Child(1)); }
     bool SetPositionW(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // uv
+    static constexpr uint16_t kUv = 2;
     std::optional<::niffer::view::TexCoord> Uv() const { if (!b_->Has(p_.Child(2))) return std::nullopt; return ::niffer::view::TexCoord(*b_, p_.Child(2)); }
     // normal — Signed-normalized bytes (b / 127.5 - 1).
+    static constexpr uint16_t kNormal = 3;
     std::optional<std::vector<uint8_t>> Normal() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(3)); }
     bool SetNormal(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(3), v); }
     // normalW
+    static constexpr uint16_t kNormalW = 4;
     std::optional<uint8_t> NormalW() const { return b_->GetAt<uint8_t>(p_.Child(4)); }
     bool SetNormalW(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
     // tangent — Signed-normalized bytes.
+    static constexpr uint16_t kTangent = 5;
     std::optional<std::vector<uint8_t>> Tangent() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)); }
     bool SetTangent(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
     // tangentW
+    static constexpr uint16_t kTangentW = 6;
     std::optional<uint8_t> TangentW() const { return b_->GetAt<uint8_t>(p_.Child(6)); }
     bool SetTangentW(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
     // color — RGBA.
+    static constexpr uint16_t kColor = 7;
     std::optional<std::vector<uint8_t>> Color() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)); }
     bool SetColor(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
     // boneWeights
+    static constexpr uint16_t kBoneWeights = 8;
     std::optional<std::vector<::niffer::Half>> BoneWeights() const { return b_->GetAt<std::vector<::niffer::Half>>(p_.Child(8)); }
     bool SetBoneWeights(const std::vector<::niffer::Half>& v) const { return b_->SetAt<std::vector<::niffer::Half>>(p_.Child(8), v); }
     // boneIndices
+    static constexpr uint16_t kBoneIndices = 9;
     std::optional<std::vector<uint8_t>> BoneIndices() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(9)); }
     bool SetBoneIndices(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(9), v); }
     // eye
+    static constexpr uint16_t kEye = 10;
     std::optional<float> Eye() const { return b_->GetAt<float>(p_.Child(10)); }
     bool SetEye(const float& v) const { return b_->SetAt<float>(p_.Child(10), v); }
 private:
@@ -362,6 +386,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     uint8_t Value() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
     bool SetValue(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
 private:
@@ -375,10 +400,13 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // time
+    static constexpr uint16_t kTime = 0;
     float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // data
+    static constexpr uint16_t kData = 1;
     int DataCase() const { return b_->CaseAt(p_.Child(1)); }
+    static constexpr uint16_t kDataConstant = 0;
     std::optional<::niffer::view::BoolKeyDataConstant> DataConstant() const { if (!b_->Has(p_.Child(1).Child(0))) return std::nullopt; return ::niffer::view::BoolKeyDataConstant(*b_, p_.Child(1).Child(0)); }
 private:
     ::niffer::Block* b_;
@@ -391,12 +419,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // numKeys
+    static constexpr uint16_t kNumKeys = 0;
     uint32_t NumKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetNumKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // interpolation
+    static constexpr uint16_t kInterpolation = 1;
     std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
     bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // keys
+    static constexpr uint16_t kKeys = 2;
     std::vector<::niffer::view::BoolKey> Keys() const {
         std::vector<::niffer::view::BoolKey> out;
         const size_t n = b_->Count(p_.Child(2));
@@ -415,12 +446,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // a
+    static constexpr uint16_t kA = 0;
     uint16_t A() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
     bool SetA(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
     // b
+    static constexpr uint16_t kB = 1;
     uint16_t B() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetB(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // c
+    static constexpr uint16_t kC = 2;
     uint16_t C() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetC(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
 private:
@@ -434,14 +468,18 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // triangle
+    static constexpr uint16_t kTriangle = 0;
     ::niffer::view::Triangle Triangle() const { return ::niffer::view::Triangle(*b_, p_.Child(0)); }
     // material — Index into the block's materials.
+    static constexpr uint16_t kMaterial = 1;
     uint16_t Material() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetMaterial(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // unknown — Always 0.
+    static constexpr uint16_t kUnknown = 2;
     uint16_t Unknown() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetUnknown(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
     // unknownB
+    static constexpr uint16_t kUnknownB = 3;
     uint16_t UnknownB() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
     bool SetUnknownB(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
 private:
@@ -455,15 +493,19 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // x
+    static constexpr uint16_t kX = 0;
     float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // y
+    static constexpr uint16_t kY = 1;
     float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // z
+    static constexpr uint16_t kZ = 2;
     float Z() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetZ(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // w
+    static constexpr uint16_t kW = 3;
     float W() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetW(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
 private:
@@ -477,26 +519,34 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // offset — Added to each dequantized vertex; w = 0.
+    static constexpr uint16_t kOffset = 0;
     ::niffer::view::Vec4 Offset() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
     // material — Index into the block's materials.
+    static constexpr uint16_t kMaterial = 1;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown — Always 0xFFFF.
+    static constexpr uint16_t kUnknown = 2;
     uint16_t Unknown() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetUnknown(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
     // transformIndex — Always below the transform-table length; every referenced transform is the identity in the corpus.
+    static constexpr uint16_t kTransformIndex = 3;
     uint16_t TransformIndex() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
     bool SetTransformIndex(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
     // vertices — x, y, z per vertex; the count is the number of u16s (3 per vertex).
+    static constexpr uint16_t kVertices = 4;
     std::vector<uint16_t> Vertices() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(4)).value_or(std::vector<uint16_t>{}); }
     bool SetVertices(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(4), v); }
     // indices — Strip indices first, then a triangle list.
+    static constexpr uint16_t kIndices = 5;
     std::vector<uint16_t> Indices() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)).value_or(std::vector<uint16_t>{}); }
     bool SetIndices(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
     // stripLengths
+    static constexpr uint16_t kStripLengths = 6;
     std::vector<uint16_t> StripLengths() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(6)).value_or(std::vector<uint16_t>{}); }
     bool SetStripLengths(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(6), v); }
     // unknownIndexData — One u16 per index (the count always equals the index count).
+    static constexpr uint16_t kUnknownIndexData = 7;
     std::vector<uint16_t> UnknownIndexData() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(7)).value_or(std::vector<uint16_t>{}); }
     bool SetUnknownIndexData(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(7), v); }
 private:
@@ -510,9 +560,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // material — A hash-like ID; 24 of its 34 distinct values also occur as the material of a primitive shape.
+    static constexpr uint16_t kMaterial = 0;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // unknown — 1 in 11,425 entries; also 2, 13, 3, 0.
+    static constexpr uint16_t kUnknown = 1;
     uint32_t Unknown() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetUnknown(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
 private:
@@ -526,8 +578,10 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // translation
+    static constexpr uint16_t kTranslation = 0;
     ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
     // rotation — Unit quaternion, x, y, z, w (|q| = 1 within 1e-4 in every entry).
+    static constexpr uint16_t kRotation = 1;
     ::niffer::view::Vec4 Rotation() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
 private:
     ::niffer::Block* b_;
@@ -540,6 +594,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
 private:
@@ -553,12 +608,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // forward
+    static constexpr uint16_t kForward = 1;
     float Forward() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetForward(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // backward
+    static constexpr uint16_t kBackward = 2;
     float Backward() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetBackward(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
 private:
@@ -572,15 +630,19 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // tension
+    static constexpr uint16_t kTension = 1;
     float Tension() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetTension(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // bias
+    static constexpr uint16_t kBias = 2;
     float Bias() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetBias(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // continuity
+    static constexpr uint16_t kContinuity = 3;
     float Continuity() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetContinuity(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
 private:
@@ -594,6 +656,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
 private:
@@ -607,13 +670,19 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // time
+    static constexpr uint16_t kTime = 0;
     float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // data
+    static constexpr uint16_t kData = 1;
     int DataCase() const { return b_->CaseAt(p_.Child(1)); }
+    static constexpr uint16_t kDataLinear = 0;
     std::optional<::niffer::view::FloatKeyDataLinear> DataLinear() const { if (!b_->Has(p_.Child(1).Child(0))) return std::nullopt; return ::niffer::view::FloatKeyDataLinear(*b_, p_.Child(1).Child(0)); }
+    static constexpr uint16_t kDataQuadratic = 1;
     std::optional<::niffer::view::FloatKeyDataQuadratic> DataQuadratic() const { if (!b_->Has(p_.Child(1).Child(1))) return std::nullopt; return ::niffer::view::FloatKeyDataQuadratic(*b_, p_.Child(1).Child(1)); }
+    static constexpr uint16_t kDataTbc = 2;
     std::optional<::niffer::view::FloatKeyDataTbc> DataTbc() const { if (!b_->Has(p_.Child(1).Child(2))) return std::nullopt; return ::niffer::view::FloatKeyDataTbc(*b_, p_.Child(1).Child(2)); }
+    static constexpr uint16_t kDataConstant = 3;
     std::optional<::niffer::view::FloatKeyDataConstant> DataConstant() const { if (!b_->Has(p_.Child(1).Child(3))) return std::nullopt; return ::niffer::view::FloatKeyDataConstant(*b_, p_.Child(1).Child(3)); }
 private:
     ::niffer::Block* b_;
@@ -626,12 +695,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // numKeys
+    static constexpr uint16_t kNumKeys = 0;
     uint32_t NumKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetNumKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // interpolation
+    static constexpr uint16_t kInterpolation = 1;
     std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
     bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // keys
+    static constexpr uint16_t kKeys = 2;
     std::vector<::niffer::view::FloatKey> Keys() const {
         std::vector<::niffer::view::FloatKey> out;
         const size_t n = b_->Count(p_.Child(2));
@@ -650,9 +722,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // x
+    static constexpr uint16_t kX = 0;
     float X() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // y
+    static constexpr uint16_t kY = 1;
     float Y() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
 private:
@@ -666,6 +740,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // coords
+    static constexpr uint16_t kCoords = 0;
     std::vector<::niffer::view::Vec2> Coords() const {
         std::vector<::niffer::view::Vec2> out;
         const size_t n = b_->Count(p_.Child(0));
@@ -684,18 +759,23 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // unknown0 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown0 = 0;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // numVertices
+    static constexpr uint16_t kNumVertices = 1;
     uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // unknown1 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown1 = 2;
     uint16_t Unknown1() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetUnknown1(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
     // hasVertices
+    static constexpr uint16_t kHasVertices = 3;
     uint8_t HasVertices() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetHasVertices(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
     // vertices
+    static constexpr uint16_t kVertices = 4;
     std::vector<::niffer::view::Vec3> Vertices() const {
         std::vector<::niffer::view::Vec3> out;
         const size_t n = b_->Count(p_.Child(4));
@@ -704,18 +784,23 @@ public:
         return out;
     }
     // uvSetCount — 0 or 1 in the corpus.
+    static constexpr uint16_t kUvSetCount = 5;
     uint8_t UvSetCount() const { return b_->GetAt<uint8_t>(p_.Child(5)).value_or(uint8_t{}); }
     bool SetUvSetCount(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(5), v); }
     // vectorFlags — 0x10: tangent arrays present. Only 0 and 0x10 occur.
+    static constexpr uint16_t kVectorFlags = 6;
     uint8_t VectorFlags() const { return b_->GetAt<uint8_t>(p_.Child(6)).value_or(uint8_t{}); }
     bool SetVectorFlags(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
     // unknown2 — 0, or a hash-like value.
+    static constexpr uint16_t kUnknown2 = 7;
     uint32_t Unknown2() const { return b_->GetAt<uint32_t>(p_.Child(7)).value_or(uint32_t{}); }
     bool SetUnknown2(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(7), v); }
     // hasNormals
+    static constexpr uint16_t kHasNormals = 8;
     uint8_t HasNormals() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
     bool SetHasNormals(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
     // normals
+    static constexpr uint16_t kNormals = 9;
     std::vector<::niffer::view::Vec3> Normals() const {
         std::vector<::niffer::view::Vec3> out;
         const size_t n = b_->Count(p_.Child(9));
@@ -724,6 +809,7 @@ public:
         return out;
     }
     // tangents
+    static constexpr uint16_t kTangents = 10;
     std::vector<::niffer::view::Vec3> Tangents() const {
         std::vector<::niffer::view::Vec3> out;
         const size_t n = b_->Count(p_.Child(10));
@@ -732,6 +818,7 @@ public:
         return out;
     }
     // bitangents
+    static constexpr uint16_t kBitangents = 11;
     std::vector<::niffer::view::Vec3> Bitangents() const {
         std::vector<::niffer::view::Vec3> out;
         const size_t n = b_->Count(p_.Child(11));
@@ -740,14 +827,18 @@ public:
         return out;
     }
     // boundCenter
+    static constexpr uint16_t kBoundCenter = 12;
     ::niffer::view::Vec3 BoundCenter() const { return ::niffer::view::Vec3(*b_, p_.Child(12)); }
     // boundRadius
+    static constexpr uint16_t kBoundRadius = 13;
     float BoundRadius() const { return b_->GetAt<float>(p_.Child(13)).value_or(float{}); }
     bool SetBoundRadius(const float& v) const { return b_->SetAt<float>(p_.Child(13), v); }
     // hasVertexColors
+    static constexpr uint16_t kHasVertexColors = 14;
     uint8_t HasVertexColors() const { return b_->GetAt<uint8_t>(p_.Child(14)).value_or(uint8_t{}); }
     bool SetHasVertexColors(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(14), v); }
     // vertexColors — RGBA floats.
+    static constexpr uint16_t kVertexColors = 15;
     std::vector<::niffer::view::Vec4> VertexColors() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(15));
@@ -756,6 +847,7 @@ public:
         return out;
     }
     // uvSets
+    static constexpr uint16_t kUvSets = 16;
     std::vector<::niffer::view::GeometryDataUvSets> UvSets() const {
         std::vector<::niffer::view::GeometryDataUvSets> out;
         const size_t n = b_->Count(p_.Child(16));
@@ -764,9 +856,11 @@ public:
         return out;
     }
     // unknown3 — Always 0x4000 in the corpus.
+    static constexpr uint16_t kUnknown3 = 17;
     uint16_t Unknown3() const { return b_->GetAt<uint16_t>(p_.Child(17)).value_or(uint16_t{}); }
     bool SetUnknown3(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(17), v); }
     // unknown4 — Always -1 in the corpus.
+    static constexpr uint16_t kUnknown4 = 18;
     int32_t Unknown4() const { return b_->GetAt<int32_t>(p_.Child(18)).value_or(int32_t{}); }
     bool SetUnknown4(const int32_t& v) const { return b_->SetAt<int32_t>(p_.Child(18), v); }
 private:
@@ -780,6 +874,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // axes
+    static constexpr uint16_t kAxes = 0;
     std::vector<::niffer::view::Vec4> Axes() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(0));
@@ -788,6 +883,7 @@ public:
         return out;
     }
     // point
+    static constexpr uint16_t kPoint = 1;
     ::niffer::view::Vec4 Point() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
 private:
     ::niffer::Block* b_;
@@ -800,6 +896,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // rotation — Orthonormal basis vectors (xyz), w = 0.
+    static constexpr uint16_t kRotation = 0;
     std::vector<::niffer::view::Vec4> Rotation() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(0));
@@ -808,6 +905,7 @@ public:
         return out;
     }
     // translation
+    static constexpr uint16_t kTranslation = 1;
     ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
 private:
     ::niffer::Block* b_;
@@ -820,12 +918,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // numKeys
+    static constexpr uint16_t kNumKeys = 0;
     uint32_t NumKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetNumKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // interpolation — The key type; present only when there are keys.
+    static constexpr uint16_t kInterpolation = 1;
     std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
     bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // keys — The keys, raw.
+    static constexpr uint16_t kKeys = 2;
     std::vector<uint8_t> Keys() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
     bool SetKeys(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
 private:
@@ -839,27 +940,35 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // interpolator
+    static constexpr uint16_t kInterpolator = 0;
     ::niffer::NiRef<::niffer::view::NiObject> Interpolator() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetInterpolator(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0), v); }
     // controller
+    static constexpr uint16_t kController = 1;
     ::niffer::NiRef<::niffer::view::NiTimeController> Controller() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiTimeController>{}); }
     bool SetController(const ::niffer::NiRef<::niffer::view::NiTimeController>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(1), v); }
     // unknown0 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown0 = 2;
     uint8_t Unknown0() const { return b_->GetAt<uint8_t>(p_.Child(2)).value_or(uint8_t{}); }
     bool SetUnknown0(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(2), v); }
     // nodeName — The name of a node in the file (63,607 of 63,644).
+    static constexpr uint16_t kNodeName = 3;
     ::niffer::NiStringRef NodeName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(3)).value_or(::niffer::NiStringRef{}); }
     bool SetNodeName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(3), v); }
     // propertyType — Empty, or a block class name.
+    static constexpr uint16_t kPropertyType = 4;
     ::niffer::NiStringRef PropertyType() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(4)).value_or(::niffer::NiStringRef{}); }
     bool SetPropertyType(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(4), v); }
     // controllerType — A controller class name.
+    static constexpr uint16_t kControllerType = 5;
     ::niffer::NiStringRef ControllerType() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(5)).value_or(::niffer::NiStringRef{}); }
     bool SetControllerType(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(5), v); }
     // variable — Empty, or a short numeric string.
+    static constexpr uint16_t kVariable = 6;
     ::niffer::NiStringRef Variable() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(6)).value_or(::niffer::NiStringRef{}); }
     bool SetVariable(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(6), v); }
     // parameter — Empty, or a parameter name such as BirthRate or EmitterActive.
+    static constexpr uint16_t kParameter = 7;
     ::niffer::NiStringRef Parameter() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(7)).value_or(::niffer::NiStringRef{}); }
     bool SetParameter(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(7), v); }
 private:
@@ -873,9 +982,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // name
+    static constexpr uint16_t kName = 0;
     std::string Name() const { return b_->GetAt<std::string>(p_.Child(0)).value_or(std::string{}); }
     bool SetName(const std::string& v) const { return b_->SetAt<std::string>(p_.Child(0), v); }
     // object
+    static constexpr uint16_t kObject = 1;
     ::niffer::NiRef<::niffer::view::NiAVObject> Object() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAVObject>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiAVObject>{}); }
     bool SetObject(const ::niffer::NiRef<::niffer::view::NiAVObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAVObject>>(p_.Child(1), v); }
 private:
@@ -889,10 +1000,13 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // rotation
+    static constexpr uint16_t kRotation = 0;
     ::niffer::view::Matrix33 Rotation() const { return ::niffer::view::Matrix33(*b_, p_.Child(0)); }
     // translation
+    static constexpr uint16_t kTranslation = 1;
     ::niffer::view::Vec3 Translation() const { return ::niffer::view::Vec3(*b_, p_.Child(1)); }
     // scale
+    static constexpr uint16_t kScale = 2;
     float Scale() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetScale(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
 private:
@@ -906,9 +1020,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // index
+    static constexpr uint16_t kIndex = 0;
     uint16_t Index() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
     bool SetIndex(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
     // weight
+    static constexpr uint16_t kWeight = 1;
     float Weight() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetWeight(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
 private:
@@ -922,16 +1038,21 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // transform — Skin to bone (the inverse bind).
+    static constexpr uint16_t kTransform = 0;
     ::niffer::view::NiTransform Transform() const { return ::niffer::view::NiTransform(*b_, p_.Child(0)); }
     // boundingOffset
+    static constexpr uint16_t kBoundingOffset = 1;
     ::niffer::view::Vec3 BoundingOffset() const { return ::niffer::view::Vec3(*b_, p_.Child(1)); }
     // boundingRadius
+    static constexpr uint16_t kBoundingRadius = 2;
     float BoundingRadius() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetBoundingRadius(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // numVertices
+    static constexpr uint16_t kNumVertices = 3;
     uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
     bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
     // vertexWeights
+    static constexpr uint16_t kVertexWeights = 4;
     std::vector<::niffer::view::NiSkinDataBonesVertexWeights> VertexWeights() const {
         std::vector<::niffer::view::NiSkinDataBonesVertexWeights> out;
         const size_t n = b_->Count(p_.Child(4));
@@ -950,9 +1071,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // time
+    static constexpr uint16_t kTime = 0;
     float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // value
+    static constexpr uint16_t kValue = 1;
     ::niffer::NiStringRef Value() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(1)).value_or(::niffer::NiStringRef{}); }
     bool SetValue(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(1), v); }
 private:
@@ -966,15 +1089,19 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // w
+    static constexpr uint16_t kW = 0;
     float W() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetW(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // x
+    static constexpr uint16_t kX = 1;
     float X() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetX(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // y
+    static constexpr uint16_t kY = 2;
     float Y() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetY(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // z
+    static constexpr uint16_t kZ = 3;
     float Z() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetZ(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
 private:
@@ -988,12 +1115,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // tension
+    static constexpr uint16_t kTension = 0;
     float Tension() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetTension(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // bias
+    static constexpr uint16_t kBias = 1;
     float Bias() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetBias(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // continuity
+    static constexpr uint16_t kContinuity = 2;
     float Continuity() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetContinuity(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
 private:
@@ -1007,13 +1137,18 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // time
+    static constexpr uint16_t kTime = 0;
     float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // value
+    static constexpr uint16_t kValue = 1;
     ::niffer::view::Quat Value() const { return ::niffer::view::Quat(*b_, p_.Child(1)); }
     // tbc
+    static constexpr uint16_t kTbc = 2;
     int TbcCase() const { return b_->CaseAt(p_.Child(2)); }
+    static constexpr uint16_t kTbcLinear = 0;
     bool TbcLinear() const { return b_->Has(p_.Child(2).Child(0)); }
+    static constexpr uint16_t kTbcTbc = 1;
     std::optional<::niffer::view::QuatKeyTbcTbc> TbcTbc() const { if (!b_->Has(p_.Child(2).Child(1))) return std::nullopt; return ::niffer::view::QuatKeyTbcTbc(*b_, p_.Child(2).Child(1)); }
 private:
     ::niffer::Block* b_;
@@ -1026,6 +1161,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // keys
+    static constexpr uint16_t kKeys = 0;
     std::vector<::niffer::view::QuatKey> Keys() const {
         std::vector<::niffer::view::QuatKey> out;
         const size_t n = b_->Count(p_.Child(0));
@@ -1044,10 +1180,13 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // x
+    static constexpr uint16_t kX = 0;
     ::niffer::view::FloatKeyGroup X() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(0)); }
     // y
+    static constexpr uint16_t kY = 1;
     ::niffer::view::FloatKeyGroup Y() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(1)); }
     // z
+    static constexpr uint16_t kZ = 2;
     ::niffer::view::FloatKeyGroup Z() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(2)); }
 private:
     ::niffer::Block* b_;
@@ -1060,9 +1199,11 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // count
+    static constexpr uint16_t kCount = 0;
     uint16_t Count() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
     bool SetCount(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
     // indices
+    static constexpr uint16_t kIndices = 1;
     std::vector<uint16_t> Indices() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(1)).value_or(std::vector<uint16_t>{}); }
     bool SetIndices(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(1), v); }
 private:
@@ -1076,6 +1217,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // weights
+    static constexpr uint16_t kWeights = 0;
     std::vector<float> Weights() const { return b_->GetAt<std::vector<float>>(p_.Child(0)).value_or(std::vector<float>{}); }
     bool SetWeights(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(0), v); }
 private:
@@ -1089,6 +1231,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // indices
+    static constexpr uint16_t kIndices = 0;
     std::vector<uint8_t> Indices() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
     bool SetIndices(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
 private:
@@ -1102,33 +1245,43 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // numVertices
+    static constexpr uint16_t kNumVertices = 0;
     uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
     bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
     // numTriangles
+    static constexpr uint16_t kNumTriangles = 1;
     uint16_t NumTriangles() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetNumTriangles(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // numBones
+    static constexpr uint16_t kNumBones = 2;
     uint16_t NumBones() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetNumBones(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
     // numStrips
+    static constexpr uint16_t kNumStrips = 3;
     uint16_t NumStrips() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
     bool SetNumStrips(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
     // numWeightsPerVertex
+    static constexpr uint16_t kNumWeightsPerVertex = 4;
     uint16_t NumWeightsPerVertex() const { return b_->GetAt<uint16_t>(p_.Child(4)).value_or(uint16_t{}); }
     bool SetNumWeightsPerVertex(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(4), v); }
     // bones
+    static constexpr uint16_t kBones = 5;
     std::vector<uint16_t> Bones() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)).value_or(std::vector<uint16_t>{}); }
     bool SetBones(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
     // hasVertexMap
+    static constexpr uint16_t kHasVertexMap = 6;
     uint8_t HasVertexMap() const { return b_->GetAt<uint8_t>(p_.Child(6)).value_or(uint8_t{}); }
     bool SetHasVertexMap(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
     // vertexMap
+    static constexpr uint16_t kVertexMap = 7;
     std::optional<std::vector<uint16_t>> VertexMap() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(7)); }
     bool SetVertexMap(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(7), v); }
     // hasVertexWeights
+    static constexpr uint16_t kHasVertexWeights = 8;
     uint8_t HasVertexWeights() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
     bool SetHasVertexWeights(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
     // vertexWeights
+    static constexpr uint16_t kVertexWeights = 9;
     std::vector<::niffer::view::SkinPartitionVertexWeights> VertexWeights() const {
         std::vector<::niffer::view::SkinPartitionVertexWeights> out;
         const size_t n = b_->Count(p_.Child(9));
@@ -1137,12 +1290,15 @@ public:
         return out;
     }
     // stripLengths
+    static constexpr uint16_t kStripLengths = 10;
     std::vector<uint16_t> StripLengths() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(10)).value_or(std::vector<uint16_t>{}); }
     bool SetStripLengths(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(10), v); }
     // hasFaces
+    static constexpr uint16_t kHasFaces = 11;
     uint8_t HasFaces() const { return b_->GetAt<uint8_t>(p_.Child(11)).value_or(uint8_t{}); }
     bool SetHasFaces(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(11), v); }
     // triangles
+    static constexpr uint16_t kTriangles = 12;
     std::vector<::niffer::view::Triangle> Triangles() const {
         std::vector<::niffer::view::Triangle> out;
         const size_t n = b_->Count(p_.Child(12));
@@ -1151,9 +1307,11 @@ public:
         return out;
     }
     // hasBoneIndices
+    static constexpr uint16_t kHasBoneIndices = 13;
     uint8_t HasBoneIndices() const { return b_->GetAt<uint8_t>(p_.Child(13)).value_or(uint8_t{}); }
     bool SetHasBoneIndices(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(13), v); }
     // boneIndices
+    static constexpr uint16_t kBoneIndices = 14;
     std::vector<::niffer::view::SkinPartitionBoneIndices> BoneIndices() const {
         std::vector<::niffer::view::SkinPartitionBoneIndices> out;
         const size_t n = b_->Count(p_.Child(14));
@@ -1162,12 +1320,15 @@ public:
         return out;
     }
     // unknownShort
+    static constexpr uint16_t kUnknownShort = 15;
     uint16_t UnknownShort() const { return b_->GetAt<uint16_t>(p_.Child(15)).value_or(uint16_t{}); }
     bool SetUnknownShort(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(15), v); }
     // vertexDesc
+    static constexpr uint16_t kVertexDesc = 16;
     uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(16)).value_or(uint64_t{}); }
     bool SetVertexDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(16), v); }
     // trueTriangles — Triangles indexing the shape's global vertex array.
+    static constexpr uint16_t kTrueTriangles = 17;
     std::vector<::niffer::view::Triangle> TrueTriangles() const {
         std::vector<::niffer::view::Triangle> out;
         const size_t n = b_->Count(p_.Child(17));
@@ -1186,6 +1347,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
 private:
     ::niffer::Block* b_;
@@ -1198,10 +1360,13 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
     // forward
+    static constexpr uint16_t kForward = 1;
     ::niffer::view::Vec3 Forward() const { return ::niffer::view::Vec3(*b_, p_.Child(1)); }
     // backward
+    static constexpr uint16_t kBackward = 2;
     ::niffer::view::Vec3 Backward() const { return ::niffer::view::Vec3(*b_, p_.Child(2)); }
 private:
     ::niffer::Block* b_;
@@ -1214,14 +1379,18 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
     // tension
+    static constexpr uint16_t kTension = 1;
     float Tension() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetTension(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // bias
+    static constexpr uint16_t kBias = 2;
     float Bias() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetBias(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // continuity
+    static constexpr uint16_t kContinuity = 3;
     float Continuity() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetContinuity(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
 private:
@@ -1235,6 +1404,7 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // value
+    static constexpr uint16_t kValue = 0;
     ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
 private:
     ::niffer::Block* b_;
@@ -1247,13 +1417,19 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // time
+    static constexpr uint16_t kTime = 0;
     float Time() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetTime(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // data
+    static constexpr uint16_t kData = 1;
     int DataCase() const { return b_->CaseAt(p_.Child(1)); }
+    static constexpr uint16_t kDataLinear = 0;
     std::optional<::niffer::view::Vec3KeyDataLinear> DataLinear() const { if (!b_->Has(p_.Child(1).Child(0))) return std::nullopt; return ::niffer::view::Vec3KeyDataLinear(*b_, p_.Child(1).Child(0)); }
+    static constexpr uint16_t kDataQuadratic = 1;
     std::optional<::niffer::view::Vec3KeyDataQuadratic> DataQuadratic() const { if (!b_->Has(p_.Child(1).Child(1))) return std::nullopt; return ::niffer::view::Vec3KeyDataQuadratic(*b_, p_.Child(1).Child(1)); }
+    static constexpr uint16_t kDataTbc = 2;
     std::optional<::niffer::view::Vec3KeyDataTbc> DataTbc() const { if (!b_->Has(p_.Child(1).Child(2))) return std::nullopt; return ::niffer::view::Vec3KeyDataTbc(*b_, p_.Child(1).Child(2)); }
+    static constexpr uint16_t kDataConstant = 3;
     std::optional<::niffer::view::Vec3KeyDataConstant> DataConstant() const { if (!b_->Has(p_.Child(1).Child(3))) return std::nullopt; return ::niffer::view::Vec3KeyDataConstant(*b_, p_.Child(1).Child(3)); }
 private:
     ::niffer::Block* b_;
@@ -1266,12 +1442,15 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // numKeys
+    static constexpr uint16_t kNumKeys = 0;
     uint32_t NumKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetNumKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // interpolation
+    static constexpr uint16_t kInterpolation = 1;
     std::optional<uint32_t> Interpolation() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
     bool SetInterpolation(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // keys
+    static constexpr uint16_t kKeys = 2;
     std::vector<::niffer::view::Vec3Key> Keys() const {
         std::vector<::niffer::view::Vec3Key> out;
         const size_t n = b_->Count(p_.Child(2));
@@ -1290,8 +1469,10 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // pointA
+    static constexpr uint16_t kPointA = 0;
     ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
     // pointB
+    static constexpr uint16_t kPointB = 1;
     ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
 private:
     ::niffer::Block* b_;
@@ -1304,10 +1485,13 @@ public:
     ::niffer::Block& block() const { return *b_; }
     ::niffer::RelPath path() const { return p_; }
     // pointA
+    static constexpr uint16_t kPointA = 0;
     ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(0)); }
     // pointB
+    static constexpr uint16_t kPointB = 1;
     ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(1)); }
     // unknown
+    static constexpr uint16_t kUnknown = 2;
     float Unknown() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetUnknown(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
 private:
@@ -1337,6 +1521,7 @@ public:
         return std::nullopt;
     }
     // name
+    static constexpr uint16_t kName = 0;
     ::niffer::NiStringRef Name() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(0)).value_or(::niffer::NiStringRef{}); }
     bool SetName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(0), v); }
 protected:
@@ -1351,9 +1536,11 @@ public:
         return std::nullopt;
     }
     // behaviorGraphFile
+    static constexpr uint16_t kBehaviorGraphFile = 1;
     ::niffer::NiStringRef BehaviorGraphFile() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(1)).value_or(::niffer::NiStringRef{}); }
     bool SetBehaviorGraphFile(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(1), v); }
     // controlsBaseSkeleton
+    static constexpr uint16_t kControlsBaseSkeleton = 2;
     uint8_t ControlsBaseSkeleton() const { return b_->GetAt<uint8_t>(p_.Child(2)).value_or(uint8_t{}); }
     bool SetControlsBaseSkeleton(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(2), v); }
 protected:
@@ -1368,12 +1555,15 @@ public:
         return std::nullopt;
     }
     // name
+    static constexpr uint16_t kName = 0;
     ::niffer::NiStringRef Name() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(0)).value_or(::niffer::NiStringRef{}); }
     bool SetName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(0), v); }
     // extraData
+    static constexpr uint16_t kExtraData = 1;
     std::vector<::niffer::NiRef<::niffer::view::NiExtraData>> ExtraData() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>>(p_.Child(1)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>{}); }
     bool SetExtraData(const std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>>(p_.Child(1), v); }
     // controller
+    static constexpr uint16_t kController = 2;
     ::niffer::NiRef<::niffer::view::NiTimeController> Controller() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiTimeController>{}); }
     bool SetController(const ::niffer::NiRef<::niffer::view::NiTimeController>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(2), v); }
 protected:
@@ -1388,11 +1578,14 @@ public:
         return std::nullopt;
     }
     // flags
+    static constexpr uint16_t kFlags = 3;
     uint32_t Flags() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
     bool SetFlags(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
     // transform
+    static constexpr uint16_t kTransform = 4;
     ::niffer::view::AvTransform Transform() const { return ::niffer::view::AvTransform(*b_, p_.Child(4)); }
     // collisionObject
+    static constexpr uint16_t kCollisionObject = 5;
     ::niffer::NiRef<::niffer::view::bhkCollisionObject> CollisionObject() const { return b_->GetAt<::niffer::NiRef<::niffer::view::bhkCollisionObject>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::bhkCollisionObject>{}); }
     bool SetCollisionObject(const ::niffer::NiRef<::niffer::view::bhkCollisionObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::bhkCollisionObject>>(p_.Child(5), v); }
 protected:
@@ -1407,9 +1600,11 @@ public:
         return std::nullopt;
     }
     // children
+    static constexpr uint16_t kChildren = 6;
     std::vector<::niffer::NiRef<::niffer::view::NiAVObject>> Children() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>>(p_.Child(6)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>{}); }
     bool SetChildren(const std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiAVObject>>>(p_.Child(6), v); }
     // effects
+    static constexpr uint16_t kEffects = 7;
     std::vector<::niffer::NiRef<::niffer::view::NiObject>> Effects() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
     bool SetEffects(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7), v); }
 protected:
@@ -1424,6 +1619,7 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 8;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
 protected:
@@ -1438,6 +1634,7 @@ public:
         return std::nullopt;
     }
     // boneLODs
+    static constexpr uint16_t kBoneLODs = 1;
     std::vector<::niffer::view::BSBoneLODExtraDataBoneLODs> BoneLODs() const {
         std::vector<::niffer::view::BSBoneLODExtraDataBoneLODs> out;
         const size_t n = b_->Count(p_.Child(1));
@@ -1457,8 +1654,10 @@ public:
         return std::nullopt;
     }
     // center
+    static constexpr uint16_t kCenter = 1;
     ::niffer::view::Vec3 Center() const { return ::niffer::view::Vec3(*b_, p_.Child(1)); }
     // dimensions
+    static constexpr uint16_t kDimensions = 2;
     ::niffer::view::Vec3 Dimensions() const { return ::niffer::view::Vec3(*b_, p_.Child(2)); }
 protected:
     explicit BSBound(::niffer::Block& b) : NiExtraData(b) {}
@@ -1472,6 +1671,7 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 8;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
 protected:
@@ -1486,6 +1686,7 @@ public:
         return std::nullopt;
     }
     // data — Not yet decoded.
+    static constexpr uint16_t kData = 1;
     std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
     bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
 protected:
@@ -1500,15 +1701,19 @@ public:
         return std::nullopt;
     }
     // data
+    static constexpr uint16_t kData = 0;
     ::niffer::NiRef<::niffer::view::NiSkinData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiSkinData>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiSkinData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiSkinData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiSkinData>>(p_.Child(0), v); }
     // skinPartition
+    static constexpr uint16_t kSkinPartition = 1;
     ::niffer::NiRef<::niffer::view::NiSkinPartition> SkinPartition() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiSkinPartition>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiSkinPartition>{}); }
     bool SetSkinPartition(const ::niffer::NiRef<::niffer::view::NiSkinPartition>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiSkinPartition>>(p_.Child(1), v); }
     // skeletonRoot
+    static constexpr uint16_t kSkeletonRoot = 2;
     ::niffer::NiRef<::niffer::view::NiNode> SkeletonRoot() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetSkeletonRoot(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(2), v); }
     // bones
+    static constexpr uint16_t kBones = 3;
     std::vector<::niffer::NiRef<::niffer::view::NiNode>> Bones() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(3)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiNode>>{}); }
     bool SetBones(const std::vector<::niffer::NiRef<::niffer::view::NiNode>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(3), v); }
 protected:
@@ -1523,6 +1728,7 @@ public:
         return std::nullopt;
     }
     // partitions
+    static constexpr uint16_t kPartitions = 4;
     std::vector<::niffer::view::BSDismemberSkinInstancePartitions> Partitions() const {
         std::vector<::niffer::view::BSDismemberSkinInstancePartitions> out;
         const size_t n = b_->Count(p_.Child(4));
@@ -1542,32 +1748,42 @@ public:
         return std::nullopt;
     }
     // boundCenter
+    static constexpr uint16_t kBoundCenter = 6;
     ::niffer::view::Vec3 BoundCenter() const { return ::niffer::view::Vec3(*b_, p_.Child(6)); }
     // boundRadius
+    static constexpr uint16_t kBoundRadius = 7;
     float BoundRadius() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
     bool SetBoundRadius(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
     // skin
+    static constexpr uint16_t kSkin = 8;
     ::niffer::NiRef<::niffer::view::NiSkinInstance> Skin() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiSkinInstance>>(p_.Child(8)).value_or(::niffer::NiRef<::niffer::view::NiSkinInstance>{}); }
     bool SetSkin(const ::niffer::NiRef<::niffer::view::NiSkinInstance>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiSkinInstance>>(p_.Child(8), v); }
     // shaderProperty
+    static constexpr uint16_t kShaderProperty = 9;
     ::niffer::NiRef<::niffer::view::NiObject> ShaderProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetShaderProperty(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9), v); }
     // alphaProperty
+    static constexpr uint16_t kAlphaProperty = 10;
     ::niffer::NiRef<::niffer::view::NiAlphaProperty> AlphaProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10)).value_or(::niffer::NiRef<::niffer::view::NiAlphaProperty>{}); }
     bool SetAlphaProperty(const ::niffer::NiRef<::niffer::view::NiAlphaProperty>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10), v); }
     // vertexDesc — The BSVertexDesc bitfield: the per-vertex layout.
+    static constexpr uint16_t kVertexDesc = 11;
     uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(11)).value_or(uint64_t{}); }
     bool SetVertexDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(11), v); }
     // numTriangles
+    static constexpr uint16_t kNumTriangles = 12;
     uint16_t NumTriangles() const { return b_->GetAt<uint16_t>(p_.Child(12)).value_or(uint16_t{}); }
     bool SetNumTriangles(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(12), v); }
     // numVertices
+    static constexpr uint16_t kNumVertices = 13;
     uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(13)).value_or(uint16_t{}); }
     bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(13), v); }
     // dataSize — Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit.
+    static constexpr uint16_t kDataSize = 14;
     uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(14)).value_or(uint32_t{}); }
     bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(14), v); }
     // vertices
+    static constexpr uint16_t kVertices = 15;
     std::vector<::niffer::view::BSVertex> Vertices() const {
         std::vector<::niffer::view::BSVertex> out;
         const size_t n = b_->Count(p_.Child(15));
@@ -1576,6 +1792,7 @@ public:
         return out;
     }
     // triangles
+    static constexpr uint16_t kTriangles = 16;
     std::vector<::niffer::view::Triangle> Triangles() const {
         std::vector<::niffer::view::Triangle> out;
         const size_t n = b_->Count(p_.Child(16));
@@ -1584,9 +1801,11 @@ public:
         return out;
     }
     // particleDataSize
+    static constexpr uint16_t kParticleDataSize = 17;
     uint32_t ParticleDataSize() const { return b_->GetAt<uint32_t>(p_.Child(17)).value_or(uint32_t{}); }
     bool SetParticleDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(17), v); }
     // particleData — Present only on particle/FX shapes.
+    static constexpr uint16_t kParticleData = 18;
     std::vector<uint16_t> ParticleData() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(18)).value_or(std::vector<uint16_t>{}); }
     bool SetParticleData(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(18), v); }
 protected:
@@ -1601,9 +1820,11 @@ public:
         return std::nullopt;
     }
     // dynamicDataSize — Bytes; numVertices * 16.
+    static constexpr uint16_t kDynamicDataSize = 19;
     uint32_t DynamicDataSize() const { return b_->GetAt<uint32_t>(p_.Child(19)).value_or(uint32_t{}); }
     bool SetDynamicDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(19), v); }
     // dynamicData — A Vec4 per vertex.
+    static constexpr uint16_t kDynamicData = 20;
     std::vector<::niffer::view::Vec4> DynamicData() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(20));
@@ -1623,34 +1844,45 @@ public:
         return std::nullopt;
     }
     // shaderFlags1
+    static constexpr uint16_t kShaderFlags1 = 3;
     uint32_t ShaderFlags1() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
     bool SetShaderFlags1(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
     // shaderFlags2
+    static constexpr uint16_t kShaderFlags2 = 4;
     uint32_t ShaderFlags2() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetShaderFlags2(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // uvOffset
+    static constexpr uint16_t kUvOffset = 5;
     ::niffer::view::Vec2 UvOffset() const { return ::niffer::view::Vec2(*b_, p_.Child(5)); }
     // uvScale
+    static constexpr uint16_t kUvScale = 6;
     ::niffer::view::Vec2 UvScale() const { return ::niffer::view::Vec2(*b_, p_.Child(6)); }
     // texture — A .dds path, or empty.
+    static constexpr uint16_t kTexture = 7;
     std::string Texture() const { return b_->GetAt<std::string>(p_.Child(7)).value_or(std::string{}); }
     bool SetTexture(const std::string& v) const { return b_->SetAt<std::string>(p_.Child(7), v); }
     // unknown0 — 3, 2 or 0 in the corpus.
+    static constexpr uint16_t kUnknown0 = 8;
     uint8_t Unknown0() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
     bool SetUnknown0(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
     // unknown1 — 0-255; 255 in most blocks.
+    static constexpr uint16_t kUnknown1 = 9;
     uint8_t Unknown1() const { return b_->GetAt<uint8_t>(p_.Child(9)).value_or(uint8_t{}); }
     bool SetUnknown1(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(9), v); }
     // unknown2 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown2 = 10;
     uint8_t Unknown2() const { return b_->GetAt<uint8_t>(p_.Child(10)).value_or(uint8_t{}); }
     bool SetUnknown2(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(10), v); }
     // unknown3 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown3 = 11;
     uint8_t Unknown3() const { return b_->GetAt<uint8_t>(p_.Child(11)).value_or(uint8_t{}); }
     bool SetUnknown3(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(11), v); }
     // unknownFloats — Mostly within [0, 1]; the last is often 100.
+    static constexpr uint16_t kUnknownFloats = 12;
     std::vector<float> UnknownFloats() const { return b_->GetAt<std::vector<float>>(p_.Child(12)).value_or(std::vector<float>{}); }
     bool SetUnknownFloats(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(12), v); }
     // texture2 — A .dds path, or empty.
+    static constexpr uint16_t kTexture2 = 13;
     std::string Texture2() const { return b_->GetAt<std::string>(p_.Child(13)).value_or(std::string{}); }
     bool SetTexture2(const std::string& v) const { return b_->SetAt<std::string>(p_.Child(13), v); }
 protected:
@@ -1665,24 +1897,31 @@ public:
         return std::nullopt;
     }
     // nextController
+    static constexpr uint16_t kNextController = 0;
     ::niffer::NiRef<::niffer::view::NiTimeController> NextController() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiTimeController>{}); }
     bool SetNextController(const ::niffer::NiRef<::niffer::view::NiTimeController>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(0), v); }
     // flags
+    static constexpr uint16_t kFlags = 1;
     uint16_t Flags() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetFlags(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // frequency
+    static constexpr uint16_t kFrequency = 2;
     float Frequency() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetFrequency(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // phase
+    static constexpr uint16_t kPhase = 3;
     float Phase() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetPhase(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
     // startTime
+    static constexpr uint16_t kStartTime = 4;
     float StartTime() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetStartTime(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
     // stopTime
+    static constexpr uint16_t kStopTime = 5;
     float StopTime() const { return b_->GetAt<float>(p_.Child(5)).value_or(float{}); }
     bool SetStopTime(const float& v) const { return b_->SetAt<float>(p_.Child(5), v); }
     // target
+    static constexpr uint16_t kTarget = 6;
     ::niffer::NiRef<::niffer::view::NiObject> Target() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(6)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetTarget(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(6), v); }
 protected:
@@ -1697,6 +1936,7 @@ public:
         return std::nullopt;
     }
     // interpolator
+    static constexpr uint16_t kInterpolator = 7;
     ::niffer::NiRef<::niffer::view::NiObject> Interpolator() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(7)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetInterpolator(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(7), v); }
 protected:
@@ -1711,6 +1951,7 @@ public:
         return std::nullopt;
     }
     // targetVariable
+    static constexpr uint16_t kTargetVariable = 8;
     uint32_t TargetVariable() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
     bool SetTargetVariable(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
 protected:
@@ -1725,6 +1966,7 @@ public:
         return std::nullopt;
     }
     // targetVariable
+    static constexpr uint16_t kTargetVariable = 8;
     uint32_t TargetVariable() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
     bool SetTargetVariable(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
 protected:
@@ -1761,6 +2003,7 @@ public:
         return std::nullopt;
     }
     // data — Not yet decoded.
+    static constexpr uint16_t kData = 1;
     std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
     bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
 protected:
@@ -1775,15 +2018,19 @@ public:
         return std::nullopt;
     }
     // rotationX
+    static constexpr uint16_t kRotationX = 1;
     uint16_t RotationX() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetRotationX(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // rotationY
+    static constexpr uint16_t kRotationY = 2;
     uint16_t RotationY() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetRotationY(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
     // rotationZ
+    static constexpr uint16_t kRotationZ = 3;
     uint16_t RotationZ() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
     bool SetRotationZ(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
     // zoom
+    static constexpr uint16_t kZoom = 4;
     float Zoom() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetZoom(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
 protected:
@@ -1798,18 +2045,23 @@ public:
         return std::nullopt;
     }
     // data
+    static constexpr uint16_t kData = 6;
     ::niffer::NiRef<::niffer::view::NiTriShapeData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTriShapeData>>(p_.Child(6)).value_or(::niffer::NiRef<::niffer::view::NiTriShapeData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiTriShapeData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTriShapeData>>(p_.Child(6), v); }
     // skin
+    static constexpr uint16_t kSkin = 7;
     ::niffer::NiRef<::niffer::view::NiObject> Skin() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(7)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetSkin(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(7), v); }
     // unknown0 — Always zero in the corpus.
+    static constexpr uint16_t kUnknown0 = 8;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
     // shaderProperty
+    static constexpr uint16_t kShaderProperty = 9;
     ::niffer::NiRef<::niffer::view::NiObject> ShaderProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetShaderProperty(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9), v); }
     // alphaProperty
+    static constexpr uint16_t kAlphaProperty = 10;
     ::niffer::NiRef<::niffer::view::NiAlphaProperty> AlphaProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10)).value_or(::niffer::NiRef<::niffer::view::NiAlphaProperty>{}); }
     bool SetAlphaProperty(const ::niffer::NiRef<::niffer::view::NiAlphaProperty>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10), v); }
 protected:
@@ -1824,6 +2076,7 @@ public:
         return std::nullopt;
     }
     // unknown1
+    static constexpr uint16_t kUnknown1 = 11;
     std::vector<uint32_t> Unknown1() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(11)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown1(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(11), v); }
 protected:
@@ -1838,6 +2091,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 7;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
 protected:
@@ -1863,73 +2117,101 @@ public:
         return std::nullopt;
     }
     // shaderType — Selects the material tail's layout.
+    static constexpr uint16_t kShaderType = 0;
     uint32_t ShaderType() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetShaderType(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // name
+    static constexpr uint16_t kName = 1;
     ::niffer::NiStringRef Name() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(1)).value_or(::niffer::NiStringRef{}); }
     bool SetName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(1), v); }
     // extraData
+    static constexpr uint16_t kExtraData = 2;
     std::vector<::niffer::NiRef<::niffer::view::NiExtraData>> ExtraData() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>>(p_.Child(2)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>{}); }
     bool SetExtraData(const std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiExtraData>>>(p_.Child(2), v); }
     // controller
+    static constexpr uint16_t kController = 3;
     ::niffer::NiRef<::niffer::view::NiTimeController> Controller() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(3)).value_or(::niffer::NiRef<::niffer::view::NiTimeController>{}); }
     bool SetController(const ::niffer::NiRef<::niffer::view::NiTimeController>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTimeController>>(p_.Child(3), v); }
     // shaderFlags1
+    static constexpr uint16_t kShaderFlags1 = 4;
     uint32_t ShaderFlags1() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetShaderFlags1(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // shaderFlags2
+    static constexpr uint16_t kShaderFlags2 = 5;
     uint32_t ShaderFlags2() const { return b_->GetAt<uint32_t>(p_.Child(5)).value_or(uint32_t{}); }
     bool SetShaderFlags2(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(5), v); }
     // uvOffset
+    static constexpr uint16_t kUvOffset = 6;
     ::niffer::view::Vec2 UvOffset() const { return ::niffer::view::Vec2(*b_, p_.Child(6)); }
     // uvScale
+    static constexpr uint16_t kUvScale = 7;
     ::niffer::view::Vec2 UvScale() const { return ::niffer::view::Vec2(*b_, p_.Child(7)); }
     // textureSet
+    static constexpr uint16_t kTextureSet = 8;
     ::niffer::NiRef<::niffer::view::BSShaderTextureSet> TextureSet() const { return b_->GetAt<::niffer::NiRef<::niffer::view::BSShaderTextureSet>>(p_.Child(8)).value_or(::niffer::NiRef<::niffer::view::BSShaderTextureSet>{}); }
     bool SetTextureSet(const ::niffer::NiRef<::niffer::view::BSShaderTextureSet>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::BSShaderTextureSet>>(p_.Child(8), v); }
     // emissiveColor
+    static constexpr uint16_t kEmissiveColor = 9;
     ::niffer::view::Vec3 EmissiveColor() const { return ::niffer::view::Vec3(*b_, p_.Child(9)); }
     // emissiveMultiple
+    static constexpr uint16_t kEmissiveMultiple = 10;
     float EmissiveMultiple() const { return b_->GetAt<float>(p_.Child(10)).value_or(float{}); }
     bool SetEmissiveMultiple(const float& v) const { return b_->SetAt<float>(p_.Child(10), v); }
     // unknown0 — An integer; 3 in almost every SSE block, otherwise 0 or 1.
+    static constexpr uint16_t kUnknown0 = 11;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
     // unknown1 — 1.0 in almost every SSE block.
+    static constexpr uint16_t kUnknown1 = 12;
     float Unknown1() const { return b_->GetAt<float>(p_.Child(12)).value_or(float{}); }
     bool SetUnknown1(const float& v) const { return b_->SetAt<float>(p_.Child(12), v); }
     // unknown2 — 0 in almost every SSE block.
+    static constexpr uint16_t kUnknown2 = 13;
     float Unknown2() const { return b_->GetAt<float>(p_.Child(13)).value_or(float{}); }
     bool SetUnknown2(const float& v) const { return b_->SetAt<float>(p_.Child(13), v); }
     // glossiness
+    static constexpr uint16_t kGlossiness = 14;
     float Glossiness() const { return b_->GetAt<float>(p_.Child(14)).value_or(float{}); }
     bool SetGlossiness(const float& v) const { return b_->SetAt<float>(p_.Child(14), v); }
     // specularColor
+    static constexpr uint16_t kSpecularColor = 15;
     ::niffer::view::Vec3 SpecularColor() const { return ::niffer::view::Vec3(*b_, p_.Child(15)); }
     // specularStrength
+    static constexpr uint16_t kSpecularStrength = 16;
     float SpecularStrength() const { return b_->GetAt<float>(p_.Child(16)).value_or(float{}); }
     bool SetSpecularStrength(const float& v) const { return b_->SetAt<float>(p_.Child(16), v); }
     // unknown3 — 0.3 in most SSE blocks.
+    static constexpr uint16_t kUnknown3 = 17;
     float Unknown3() const { return b_->GetAt<float>(p_.Child(17)).value_or(float{}); }
     bool SetUnknown3(const float& v) const { return b_->SetAt<float>(p_.Child(17), v); }
     // unknown4 — 2.0 in most SSE blocks.
+    static constexpr uint16_t kUnknown4 = 18;
     float Unknown4() const { return b_->GetAt<float>(p_.Child(18)).value_or(float{}); }
     bool SetUnknown4(const float& v) const { return b_->SetAt<float>(p_.Child(18), v); }
     // typeData — Floats that only some shader types carry; their meanings aren't established yet.
+    static constexpr uint16_t kTypeData = 19;
     int TypeDataCase() const { return b_->CaseAt(p_.Child(19)); }
+    static constexpr uint16_t kTypeDataNone = 0;
     bool TypeDataNone() const { return b_->Has(p_.Child(19).Child(0)); }
+    static constexpr uint16_t kTypeDataType1 = 1;
     std::optional<std::vector<float>> TypeDataType1() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(1)); }
     bool SetTypeDataType1(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(1), v); }
+    static constexpr uint16_t kTypeDataType5 = 2;
     std::optional<std::vector<float>> TypeDataType5() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(2)); }
     bool SetTypeDataType5(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(2), v); }
+    static constexpr uint16_t kTypeDataType6 = 3;
     std::optional<std::vector<float>> TypeDataType6() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(3)); }
     bool SetTypeDataType6(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(3), v); }
+    static constexpr uint16_t kTypeDataType11 = 4;
     std::optional<std::vector<float>> TypeDataType11() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(4)); }
     bool SetTypeDataType11(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(4), v); }
+    static constexpr uint16_t kTypeDataType14 = 5;
     std::optional<std::vector<float>> TypeDataType14() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(5)); }
     bool SetTypeDataType14(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(5), v); }
+    static constexpr uint16_t kTypeDataType16 = 6;
     std::optional<std::vector<float>> TypeDataType16() const { return b_->GetAt<std::vector<float>>(p_.Child(19).Child(6)); }
     bool SetTypeDataType16(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(19).Child(6), v); }
+    static constexpr uint16_t kTypeDataUnknown = 7;
     std::optional<std::vector<uint8_t>> TypeDataUnknown() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(19).Child(7)); }
     bool SetTypeDataUnknown(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(19).Child(7), v); }
 protected:
@@ -1944,6 +2226,7 @@ public:
         return std::nullopt;
     }
     // targetVariable
+    static constexpr uint16_t kTargetVariable = 8;
     uint32_t TargetVariable() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
     bool SetTargetVariable(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
 protected:
@@ -1958,6 +2241,7 @@ public:
         return std::nullopt;
     }
     // targetVariable
+    static constexpr uint16_t kTargetVariable = 8;
     uint32_t TargetVariable() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
     bool SetTargetVariable(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
 protected:
@@ -1972,9 +2256,11 @@ public:
         return std::nullopt;
     }
     // unknown0 — Always 20 in the corpus.
+    static constexpr uint16_t kUnknown0 = 8;
     uint16_t Unknown0() const { return b_->GetAt<uint16_t>(p_.Child(8)).value_or(uint16_t{}); }
     bool SetUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(8), v); }
     // particleSystems
+    static constexpr uint16_t kParticleSystems = 9;
     std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>> ParticleSystems() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>>(p_.Child(9)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>{}); }
     bool SetParticleSystems(const std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiParticleSystem>>>(p_.Child(9), v); }
 protected:
@@ -1989,6 +2275,7 @@ public:
         return std::nullopt;
     }
     // data
+    static constexpr uint16_t kData = 0;
     ::niffer::NiRef<::niffer::view::NiObject> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0), v); }
 protected:
@@ -2003,6 +2290,7 @@ public:
         return std::nullopt;
     }
     // data — Not yet decoded.
+    static constexpr uint16_t kData = 0;
     std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
     bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
 protected:
@@ -2017,9 +2305,11 @@ public:
         return std::nullopt;
     }
     // multiBound
+    static constexpr uint16_t kMultiBound = 8;
     ::niffer::NiRef<::niffer::view::BSMultiBound> MultiBound() const { return b_->GetAt<::niffer::NiRef<::niffer::view::BSMultiBound>>(p_.Child(8)).value_or(::niffer::NiRef<::niffer::view::BSMultiBound>{}); }
     bool SetMultiBound(const ::niffer::NiRef<::niffer::view::BSMultiBound>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::BSMultiBound>>(p_.Child(8), v); }
     // cullingMode
+    static constexpr uint16_t kCullingMode = 9;
     uint32_t CullingMode() const { return b_->GetAt<uint32_t>(p_.Child(9)).value_or(uint32_t{}); }
     bool SetCullingMode(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(9), v); }
 protected:
@@ -2034,6 +2324,7 @@ public:
         return std::nullopt;
     }
     // data — Not yet decoded.
+    static constexpr uint16_t kData = 0;
     std::vector<uint8_t> Data() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
     bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
 protected:
@@ -2059,8 +2350,10 @@ public:
         return std::nullopt;
     }
     // alphaSortBound
+    static constexpr uint16_t kAlphaSortBound = 8;
     ::niffer::view::Vec4 AlphaSortBound() const { return ::niffer::view::Vec4(*b_, p_.Child(8)); }
     // staticBound
+    static constexpr uint16_t kStaticBound = 9;
     uint8_t StaticBound() const { return b_->GetAt<uint8_t>(p_.Child(9)).value_or(uint8_t{}); }
     bool SetStaticBound(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(9), v); }
 protected:
@@ -2075,15 +2368,19 @@ public:
         return std::nullopt;
     }
     // name
+    static constexpr uint16_t kName = 0;
     ::niffer::NiStringRef Name() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(0)).value_or(::niffer::NiStringRef{}); }
     bool SetName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(0), v); }
     // order
+    static constexpr uint16_t kOrder = 1;
     uint32_t Order() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetOrder(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // target
+    static constexpr uint16_t kTarget = 2;
     ::niffer::NiRef<::niffer::view::NiParticleSystem> Target() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiParticleSystem>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiParticleSystem>{}); }
     bool SetTarget(const ::niffer::NiRef<::niffer::view::NiParticleSystem>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiParticleSystem>>(p_.Child(2), v); }
     // active
+    static constexpr uint16_t kActive = 3;
     uint8_t Active() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetActive(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
 protected:
@@ -2098,12 +2395,15 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 4;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // node
+    static constexpr uint16_t kNode = 5;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // modifier
+    static constexpr uint16_t kModifier = 6;
     ::niffer::NiRef<::niffer::view::NiPSysRotationModifier> Modifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysRotationModifier>>(p_.Child(6)).value_or(::niffer::NiRef<::niffer::view::NiPSysRotationModifier>{}); }
     bool SetModifier(const ::niffer::NiRef<::niffer::view::NiPSysRotationModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysRotationModifier>>(p_.Child(6), v); }
 protected:
@@ -2118,9 +2418,11 @@ public:
         return std::nullopt;
     }
     // node
+    static constexpr uint16_t kNode = 4;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 5;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
@@ -2135,6 +2437,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -2149,15 +2452,19 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
     // boolInterpolator
+    static constexpr uint16_t kBoolInterpolator = 9;
     ::niffer::NiRef<::niffer::view::NiBoolInterpolator> BoolInterpolator() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiBoolInterpolator>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiBoolInterpolator>{}); }
     bool SetBoolInterpolator(const ::niffer::NiRef<::niffer::view::NiBoolInterpolator>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiBoolInterpolator>>(p_.Child(9), v); }
     // unknown0 — 15 in the corpus.
+    static constexpr uint16_t kUnknown0 = 10;
     uint16_t Unknown0() const { return b_->GetAt<uint16_t>(p_.Child(10)).value_or(uint16_t{}); }
     bool SetUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(10), v); }
     // unknown1 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown1 = 11;
     uint32_t Unknown1() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
     bool SetUnknown1(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
 protected:
@@ -2172,9 +2479,11 @@ public:
         return std::nullopt;
     }
     // unknownFloats
+    static constexpr uint16_t kUnknownFloats = 4;
     std::vector<float> UnknownFloats() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
     bool SetUnknownFloats(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
     // node
+    static constexpr uint16_t kNode = 5;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
 protected:
@@ -2189,6 +2498,7 @@ public:
         return std::nullopt;
     }
     // scales
+    static constexpr uint16_t kScales = 4;
     std::vector<float> Scales() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
     bool SetScales(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
 protected:
@@ -2203,13 +2513,17 @@ public:
         return std::nullopt;
     }
     // unknownFloats — Fractions in [0, 1]; meanings not established.
+    static constexpr uint16_t kUnknownFloats = 4;
     std::vector<float> UnknownFloats() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
     bool SetUnknownFloats(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
     // color1
+    static constexpr uint16_t kColor1 = 5;
     ::niffer::view::Vec4 Color1() const { return ::niffer::view::Vec4(*b_, p_.Child(5)); }
     // color2
+    static constexpr uint16_t kColor2 = 6;
     ::niffer::view::Vec4 Color2() const { return ::niffer::view::Vec4(*b_, p_.Child(6)); }
     // color3
+    static constexpr uint16_t kColor3 = 7;
     ::niffer::view::Vec4 Color3() const { return ::niffer::view::Vec4(*b_, p_.Child(7)); }
 protected:
     explicit BSPSysSimpleColorModifier(::niffer::Block& b) : NiPSysModifier(b) {}
@@ -2223,6 +2537,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -2237,6 +2552,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -2251,9 +2567,11 @@ public:
         return std::nullopt;
     }
     // interpolators
+    static constexpr uint16_t kInterpolators = 7;
     std::vector<::niffer::NiRef<::niffer::view::NiObject>> Interpolators() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
     bool SetInterpolators(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(7), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 8;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(8)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(8), v); }
 protected:
@@ -2268,6 +2586,7 @@ public:
         return std::nullopt;
     }
     // textures
+    static constexpr uint16_t kTextures = 0;
     std::vector<std::string> Textures() const { return b_->GetAt<std::vector<std::string>>(p_.Child(0)).value_or(std::vector<std::string>{}); }
     bool SetTextures(const std::vector<std::string>& v) const { return b_->SetAt<std::vector<std::string>>(p_.Child(0), v); }
 protected:
@@ -2282,6 +2601,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 3;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(3)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(3), v); }
 protected:
@@ -2296,44 +2616,58 @@ public:
         return std::nullopt;
     }
     // unknown0 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown0 = 0;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // unknown1 — A count-like value (40, 50, 62...); doesn't affect the layout.
+    static constexpr uint16_t kUnknown1 = 1;
     uint16_t Unknown1() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetUnknown1(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // unknown2 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown2 = 2;
     uint16_t Unknown2() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetUnknown2(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
     // unknown3 — Always 1, 0, 0 in the corpus.
+    static constexpr uint16_t kUnknown3 = 3;
     std::vector<uint8_t> Unknown3() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(3)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown3(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(3), v); }
     // unknown4 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown4 = 4;
     uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // unknown5 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown5 = 5;
     uint8_t Unknown5() const { return b_->GetAt<uint8_t>(p_.Child(5)).value_or(uint8_t{}); }
     bool SetUnknown5(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(5), v); }
     // boundCenter
+    static constexpr uint16_t kBoundCenter = 6;
     ::niffer::view::Vec3 BoundCenter() const { return ::niffer::view::Vec3(*b_, p_.Child(6)); }
     // boundRadius
+    static constexpr uint16_t kBoundRadius = 7;
     float BoundRadius() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
     bool SetBoundRadius(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
     // unknown6 — 1 or 0.
+    static constexpr uint16_t kUnknown6 = 8;
     uint8_t Unknown6() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
     bool SetUnknown6(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
     // unknown7 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown7 = 9;
     uint16_t Unknown7() const { return b_->GetAt<uint16_t>(p_.Child(9)).value_or(uint16_t{}); }
     bool SetUnknown7(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(9), v); }
     // unknown8 — Always -1 in the corpus.
+    static constexpr uint16_t kUnknown8 = 10;
     int32_t Unknown8() const { return b_->GetAt<int32_t>(p_.Child(10)).value_or(int32_t{}); }
     bool SetUnknown8(const int32_t& v) const { return b_->SetAt<int32_t>(p_.Child(10), v); }
     // unknown9 — 1, 0, 0, 1, 0, (0|1), 0, (0|1) in the corpus.
+    static constexpr uint16_t kUnknown9 = 11;
     std::vector<uint8_t> Unknown9() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(11)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown9(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(11), v); }
     // numUvRects
+    static constexpr uint16_t kNumUvRects = 12;
     uint32_t NumUvRects() const { return b_->GetAt<uint32_t>(p_.Child(12)).value_or(uint32_t{}); }
     bool SetNumUvRects(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(12), v); }
     // uvRects
+    static constexpr uint16_t kUvRects = 13;
     std::vector<::niffer::view::Vec4> UvRects() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(13));
@@ -2342,24 +2676,31 @@ public:
         return out;
     }
     // unknown10
+    static constexpr uint16_t kUnknown10 = 14;
     float Unknown10() const { return b_->GetAt<float>(p_.Child(14)).value_or(float{}); }
     bool SetUnknown10(const float& v) const { return b_->SetAt<float>(p_.Child(14), v); }
     // unknown11
+    static constexpr uint16_t kUnknown11 = 15;
     uint8_t Unknown11() const { return b_->GetAt<uint8_t>(p_.Child(15)).value_or(uint8_t{}); }
     bool SetUnknown11(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(15), v); }
     // unknown12
+    static constexpr uint16_t kUnknown12 = 16;
     uint8_t Unknown12() const { return b_->GetAt<uint8_t>(p_.Child(16)).value_or(uint8_t{}); }
     bool SetUnknown12(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(16), v); }
     // unknown13
+    static constexpr uint16_t kUnknown13 = 17;
     float Unknown13() const { return b_->GetAt<float>(p_.Child(17)).value_or(float{}); }
     bool SetUnknown13(const float& v) const { return b_->SetAt<float>(p_.Child(17), v); }
     // unknown14
+    static constexpr uint16_t kUnknown14 = 18;
     float Unknown14() const { return b_->GetAt<float>(p_.Child(18)).value_or(float{}); }
     bool SetUnknown14(const float& v) const { return b_->SetAt<float>(p_.Child(18), v); }
     // unknown15
+    static constexpr uint16_t kUnknown15 = 19;
     float Unknown15() const { return b_->GetAt<float>(p_.Child(19)).value_or(float{}); }
     bool SetUnknown15(const float& v) const { return b_->SetAt<float>(p_.Child(19), v); }
     // unknown16
+    static constexpr uint16_t kUnknown16 = 20;
     uint8_t Unknown16() const { return b_->GetAt<uint8_t>(p_.Child(20)).value_or(uint8_t{}); }
     bool SetUnknown16(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(20), v); }
 protected:
@@ -2374,15 +2715,19 @@ public:
         return std::nullopt;
     }
     // stripUnknown0 — 17, 31, 33, 65... in the corpus.
+    static constexpr uint16_t kStripUnknown0 = 21;
     uint16_t StripUnknown0() const { return b_->GetAt<uint16_t>(p_.Child(21)).value_or(uint16_t{}); }
     bool SetStripUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(21), v); }
     // stripUnknown1
+    static constexpr uint16_t kStripUnknown1 = 22;
     float StripUnknown1() const { return b_->GetAt<float>(p_.Child(22)).value_or(float{}); }
     bool SetStripUnknown1(const float& v) const { return b_->SetAt<float>(p_.Child(22), v); }
     // stripUnknown2
+    static constexpr uint16_t kStripUnknown2 = 23;
     float StripUnknown2() const { return b_->GetAt<float>(p_.Child(23)).value_or(float{}); }
     bool SetStripUnknown2(const float& v) const { return b_->SetAt<float>(p_.Child(23), v); }
     // stripUnknown3
+    static constexpr uint16_t kStripUnknown3 = 24;
     uint8_t StripUnknown3() const { return b_->GetAt<uint8_t>(p_.Child(24)).value_or(uint8_t{}); }
     bool SetStripUnknown3(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(24), v); }
 protected:
@@ -2397,35 +2742,46 @@ public:
         return std::nullopt;
     }
     // boundCenter
+    static constexpr uint16_t kBoundCenter = 6;
     ::niffer::view::Vec3 BoundCenter() const { return ::niffer::view::Vec3(*b_, p_.Child(6)); }
     // boundRadius
+    static constexpr uint16_t kBoundRadius = 7;
     float BoundRadius() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
     bool SetBoundRadius(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
     // skin — Always null in the corpus.
+    static constexpr uint16_t kSkin = 8;
     ::niffer::NiRef<::niffer::view::NiObject> Skin() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(8)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetSkin(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(8), v); }
     // shaderProperty
+    static constexpr uint16_t kShaderProperty = 9;
     ::niffer::NiRef<::niffer::view::BSEffectShaderProperty> ShaderProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::BSEffectShaderProperty>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::BSEffectShaderProperty>{}); }
     bool SetShaderProperty(const ::niffer::NiRef<::niffer::view::BSEffectShaderProperty>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::BSEffectShaderProperty>>(p_.Child(9), v); }
     // alphaProperty
+    static constexpr uint16_t kAlphaProperty = 10;
     ::niffer::NiRef<::niffer::view::NiAlphaProperty> AlphaProperty() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10)).value_or(::niffer::NiRef<::niffer::view::NiAlphaProperty>{}); }
     bool SetAlphaProperty(const ::niffer::NiRef<::niffer::view::NiAlphaProperty>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiAlphaProperty>>(p_.Child(10), v); }
     // vertexDesc
+    static constexpr uint16_t kVertexDesc = 11;
     uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(11)).value_or(uint64_t{}); }
     bool SetVertexDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(11), v); }
     // unknown0 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown0 = 12;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(12)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(12), v); }
     // unknown1 — Usually 0; otherwise values such as 0x0019004B.
+    static constexpr uint16_t kUnknown1 = 13;
     uint32_t Unknown1() const { return b_->GetAt<uint32_t>(p_.Child(13)).value_or(uint32_t{}); }
     bool SetUnknown1(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(13), v); }
     // data
+    static constexpr uint16_t kData = 14;
     ::niffer::NiRef<::niffer::view::NiObject> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(14)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(14), v); }
     // unknown2 — 1 or 0.
+    static constexpr uint16_t kUnknown2 = 15;
     uint8_t Unknown2() const { return b_->GetAt<uint8_t>(p_.Child(15)).value_or(uint8_t{}); }
     bool SetUnknown2(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(15), v); }
     // modifiers
+    static constexpr uint16_t kModifiers = 16;
     std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>> Modifiers() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>>(p_.Child(16)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>{}); }
     bool SetModifiers(const std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiPSysModifier>>>(p_.Child(16), v); }
 protected:
@@ -2451,9 +2807,11 @@ public:
         return std::nullopt;
     }
     // bones1
+    static constexpr uint16_t kBones1 = 8;
     std::vector<::niffer::NiRef<::niffer::view::NiNode>> Bones1() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(8)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiNode>>{}); }
     bool SetBones1(const std::vector<::niffer::NiRef<::niffer::view::NiNode>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(8), v); }
     // bones2
+    static constexpr uint16_t kBones2 = 9;
     std::vector<::niffer::NiRef<::niffer::view::NiNode>> Bones2() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(9)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiNode>>{}); }
     bool SetBones2(const std::vector<::niffer::NiRef<::niffer::view::NiNode>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(9), v); }
 protected:
@@ -2468,9 +2826,11 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 8;
     uint32_t Value() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
     bool SetValue(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
     // valueNodeFlags
+    static constexpr uint16_t kValueNodeFlags = 9;
     uint8_t ValueNodeFlags() const { return b_->GetAt<uint8_t>(p_.Child(9)).value_or(uint8_t{}); }
     bool SetValueNodeFlags(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(9), v); }
 protected:
@@ -2485,6 +2845,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 3;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(3)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(3), v); }
 protected:
@@ -2499,6 +2860,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -2513,6 +2875,7 @@ public:
         return std::nullopt;
     }
     // integerData
+    static constexpr uint16_t kIntegerData = 1;
     uint32_t IntegerData() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetIntegerData(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
 protected:
@@ -2527,9 +2890,11 @@ public:
         return std::nullopt;
     }
     // flags
+    static constexpr uint16_t kFlags = 3;
     uint16_t Flags() const { return b_->GetAt<uint16_t>(p_.Child(3)).value_or(uint16_t{}); }
     bool SetFlags(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(3), v); }
     // threshold
+    static constexpr uint16_t kThreshold = 4;
     uint8_t Threshold() const { return b_->GetAt<uint8_t>(p_.Child(4)).value_or(uint8_t{}); }
     bool SetThreshold(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
 protected:
@@ -2544,6 +2909,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 7;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
 protected:
@@ -2558,6 +2924,7 @@ public:
         return std::nullopt;
     }
     // billboardMode
+    static constexpr uint16_t kBillboardMode = 8;
     uint16_t BillboardMode() const { return b_->GetAt<uint16_t>(p_.Child(8)).value_or(uint16_t{}); }
     bool SetBillboardMode(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(8), v); }
 protected:
@@ -2572,9 +2939,11 @@ public:
         return std::nullopt;
     }
     // dataSize
+    static constexpr uint16_t kDataSize = 1;
     uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // binaryData
+    static constexpr uint16_t kBinaryData = 2;
     std::vector<uint8_t> BinaryData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
     bool SetBinaryData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
 protected:
@@ -2589,12 +2958,15 @@ public:
         return std::nullopt;
     }
     // flags
+    static constexpr uint16_t kFlags = 0;
     uint8_t Flags() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
     bool SetFlags(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
     // arraySize
+    static constexpr uint16_t kArraySize = 1;
     uint8_t ArraySize() const { return b_->GetAt<uint8_t>(p_.Child(1)).value_or(uint8_t{}); }
     bool SetArraySize(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(1), v); }
     // weightThreshold
+    static constexpr uint16_t kWeightThreshold = 2;
     float WeightThreshold() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetWeightThreshold(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
 protected:
@@ -2609,6 +2981,7 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 3;
     uint8_t Value() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetValue(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
 protected:
@@ -2623,6 +2996,7 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 3;
     float Value() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
 protected:
@@ -2637,6 +3011,7 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 3;
     ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(3)); }
 protected:
     explicit NiBlendPoint3Interpolator(::niffer::Block& b) : NiBlendInterpolator(b) {}
@@ -2650,6 +3025,7 @@ public:
         return std::nullopt;
     }
     // keys
+    static constexpr uint16_t kKeys = 0;
     ::niffer::view::BoolKeyGroup Keys() const { return ::niffer::view::BoolKeyGroup(*b_, p_.Child(0)); }
 protected:
     explicit NiBoolData(::niffer::Block& b) : NiObject(b) {}
@@ -2663,9 +3039,11 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 0;
     uint8_t Value() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
     bool SetValue(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
     // data
+    static constexpr uint16_t kData = 1;
     ::niffer::NiRef<::niffer::view::NiBoolData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiBoolData>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiBoolData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiBoolData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiBoolData>>(p_.Child(1), v); }
 protected:
@@ -2680,9 +3058,11 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 0;
     uint8_t Value() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
     bool SetValue(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
     // data
+    static constexpr uint16_t kData = 1;
     ::niffer::NiRef<::niffer::view::NiBoolData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiBoolData>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiBoolData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiBoolData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiBoolData>>(p_.Child(1), v); }
 protected:
@@ -2697,6 +3077,7 @@ public:
         return std::nullopt;
     }
     // booleanData
+    static constexpr uint16_t kBooleanData = 1;
     uint8_t BooleanData() const { return b_->GetAt<uint8_t>(p_.Child(1)).value_or(uint8_t{}); }
     bool SetBooleanData(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(1), v); }
 protected:
@@ -2711,6 +3092,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 6;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
@@ -2725,6 +3107,7 @@ public:
         return std::nullopt;
     }
     // keys
+    static constexpr uint16_t kKeys = 0;
     ::niffer::view::KeyGroup Keys() const { return ::niffer::view::KeyGroup(*b_, p_.Child(0)); }
 protected:
     explicit NiColorData(::niffer::Block& b) : NiObject(b) {}
@@ -2738,12 +3121,15 @@ public:
         return std::nullopt;
     }
     // cumulative
+    static constexpr uint16_t kCumulative = 7;
     uint8_t Cumulative() const { return b_->GetAt<uint8_t>(p_.Child(7)).value_or(uint8_t{}); }
     bool SetCumulative(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(7), v); }
     // controllerSequences
+    static constexpr uint16_t kControllerSequences = 8;
     std::vector<::niffer::NiRef<::niffer::view::NiControllerSequence>> ControllerSequences() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiControllerSequence>>>(p_.Child(8)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiControllerSequence>>{}); }
     bool SetControllerSequences(const std::vector<::niffer::NiRef<::niffer::view::NiControllerSequence>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiControllerSequence>>>(p_.Child(8), v); }
     // objectPalette
+    static constexpr uint16_t kObjectPalette = 9;
     ::niffer::NiRef<::niffer::view::NiDefaultAVObjectPalette> ObjectPalette() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiDefaultAVObjectPalette>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiDefaultAVObjectPalette>{}); }
     bool SetObjectPalette(const ::niffer::NiRef<::niffer::view::NiDefaultAVObjectPalette>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiDefaultAVObjectPalette>>(p_.Child(9), v); }
 protected:
@@ -2758,15 +3144,19 @@ public:
         return std::nullopt;
     }
     // name
+    static constexpr uint16_t kName = 0;
     ::niffer::NiStringRef Name() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(0)).value_or(::niffer::NiStringRef{}); }
     bool SetName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(0), v); }
     // numControlledBlocks
+    static constexpr uint16_t kNumControlledBlocks = 1;
     uint32_t NumControlledBlocks() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetNumControlledBlocks(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown0 — Always 1 in the corpus.
+    static constexpr uint16_t kUnknown0 = 2;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // controlledBlocks
+    static constexpr uint16_t kControlledBlocks = 3;
     std::vector<::niffer::view::NiControllerSequenceControlledBlocks> ControlledBlocks() const {
         std::vector<::niffer::view::NiControllerSequenceControlledBlocks> out;
         const size_t n = b_->Count(p_.Child(3));
@@ -2775,30 +3165,39 @@ public:
         return out;
     }
     // unknown1 — Always 1.0 in the corpus.
+    static constexpr uint16_t kUnknown1 = 4;
     float Unknown1() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetUnknown1(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
     // textKeys
+    static constexpr uint16_t kTextKeys = 5;
     ::niffer::NiRef<::niffer::view::NiTextKeyExtraData> TextKeys() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTextKeyExtraData>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiTextKeyExtraData>{}); }
     bool SetTextKeys(const ::niffer::NiRef<::niffer::view::NiTextKeyExtraData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTextKeyExtraData>>(p_.Child(5), v); }
     // unknown2 — 2 or 0 in the corpus.
+    static constexpr uint16_t kUnknown2 = 6;
     uint32_t Unknown2() const { return b_->GetAt<uint32_t>(p_.Child(6)).value_or(uint32_t{}); }
     bool SetUnknown2(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(6), v); }
     // unknown3 — Always 1.0 in the corpus.
+    static constexpr uint16_t kUnknown3 = 7;
     float Unknown3() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
     bool SetUnknown3(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
     // startTime
+    static constexpr uint16_t kStartTime = 8;
     float StartTime() const { return b_->GetAt<float>(p_.Child(8)).value_or(float{}); }
     bool SetStartTime(const float& v) const { return b_->SetAt<float>(p_.Child(8), v); }
     // stopTime — Never below startTime in the corpus.
+    static constexpr uint16_t kStopTime = 9;
     float StopTime() const { return b_->GetAt<float>(p_.Child(9)).value_or(float{}); }
     bool SetStopTime(const float& v) const { return b_->SetAt<float>(p_.Child(9), v); }
     // manager
+    static constexpr uint16_t kManager = 10;
     ::niffer::NiRef<::niffer::view::NiControllerManager> Manager() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiControllerManager>>(p_.Child(10)).value_or(::niffer::NiRef<::niffer::view::NiControllerManager>{}); }
     bool SetManager(const ::niffer::NiRef<::niffer::view::NiControllerManager>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiControllerManager>>(p_.Child(10), v); }
     // rootNodeName — A node's name (4,699 of 4,943).
+    static constexpr uint16_t kRootNodeName = 11;
     ::niffer::NiStringRef RootNodeName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(11)).value_or(::niffer::NiStringRef{}); }
     bool SetRootNodeName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(11), v); }
     // unknown4 — Always 0 in the corpus.
+    static constexpr uint16_t kUnknown4 = 12;
     uint16_t Unknown4() const { return b_->GetAt<uint16_t>(p_.Child(12)).value_or(uint16_t{}); }
     bool SetUnknown4(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(12), v); }
 protected:
@@ -2813,12 +3212,15 @@ public:
         return std::nullopt;
     }
     // scene
+    static constexpr uint16_t kScene = 0;
     ::niffer::NiRef<::niffer::view::NiNode> Scene() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetScene(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0), v); }
     // numObjects
+    static constexpr uint16_t kNumObjects = 1;
     uint32_t NumObjects() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetNumObjects(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // objects
+    static constexpr uint16_t kObjects = 2;
     std::vector<::niffer::view::NiDefaultAVObjectPaletteObjects> Objects() const {
         std::vector<::niffer::view::NiDefaultAVObjectPaletteObjects> out;
         const size_t n = b_->Count(p_.Child(2));
@@ -2838,6 +3240,7 @@ public:
         return std::nullopt;
     }
     // keys
+    static constexpr uint16_t kKeys = 0;
     ::niffer::view::FloatKeyGroup Keys() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(0)); }
 protected:
     explicit NiFloatData(::niffer::Block& b) : NiObject(b) {}
@@ -2851,6 +3254,7 @@ public:
         return std::nullopt;
     }
     // floatData
+    static constexpr uint16_t kFloatData = 1;
     float FloatData() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetFloatData(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
 protected:
@@ -2865,6 +3269,7 @@ public:
         return std::nullopt;
     }
     // extraDataName
+    static constexpr uint16_t kExtraDataName = 8;
     ::niffer::NiStringRef ExtraDataName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetExtraDataName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -2879,9 +3284,11 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 0;
     float Value() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetValue(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // data
+    static constexpr uint16_t kData = 1;
     ::niffer::NiRef<::niffer::view::NiFloatData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiFloatData>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiFloatData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiFloatData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiFloatData>>(p_.Child(1), v); }
 protected:
@@ -2896,6 +3303,7 @@ public:
         return std::nullopt;
     }
     // integerData
+    static constexpr uint16_t kIntegerData = 1;
     uint32_t IntegerData() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetIntegerData(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
 protected:
@@ -2910,12 +3318,15 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 0;
     uint16_t Unknown0() const { return b_->GetAt<uint16_t>(p_.Child(0)).value_or(uint16_t{}); }
     bool SetUnknown0(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(0), v); }
     // lookAt
+    static constexpr uint16_t kLookAt = 1;
     ::niffer::NiRef<::niffer::view::NiNode> LookAt() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetLookAt(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 2;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(2)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(2), v); }
 protected:
@@ -2930,9 +3341,11 @@ public:
         return std::nullopt;
     }
     // unknown0 — Not yet decoded.
+    static constexpr uint16_t kUnknown0 = 0;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
     // node
+    static constexpr uint16_t kNode = 1;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(1), v); }
 protected:
@@ -2958,6 +3371,7 @@ public:
         return std::nullopt;
     }
     // extraTargets
+    static constexpr uint16_t kExtraTargets = 7;
     std::vector<::niffer::NiRef<::niffer::view::NiNode>> ExtraTargets() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(7)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiNode>>{}); }
     bool SetExtraTargets(const std::vector<::niffer::NiRef<::niffer::view::NiNode>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiNode>>>(p_.Child(7), v); }
 protected:
@@ -2972,9 +3386,11 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 4;
     uint8_t Unknown0() const { return b_->GetAt<uint8_t>(p_.Child(4)).value_or(uint8_t{}); }
     bool SetUnknown0(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
     // spawnModifier
+    static constexpr uint16_t kSpawnModifier = 5;
     ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier> SpawnModifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>{}); }
     bool SetSpawnModifier(const ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(5), v); }
 protected:
@@ -2989,9 +3405,11 @@ public:
         return std::nullopt;
     }
     // node
+    static constexpr uint16_t kNode = 4;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 5;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
@@ -3006,6 +3424,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -3020,12 +3439,15 @@ public:
         return std::nullopt;
     }
     // unknown0 — Not yet decoded.
+    static constexpr uint16_t kUnknown0 = 4;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
     // node
+    static constexpr uint16_t kNode = 5;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 6;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
@@ -3040,6 +3462,7 @@ public:
         return std::nullopt;
     }
     // collider
+    static constexpr uint16_t kCollider = 4;
     ::niffer::NiRef<::niffer::view::NiObject> Collider() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetCollider(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4), v); }
 protected:
@@ -3054,12 +3477,15 @@ public:
         return std::nullopt;
     }
     // unknown0 — Not yet decoded.
+    static constexpr uint16_t kUnknown0 = 4;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
     // node
+    static constexpr uint16_t kNode = 5;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 6;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
@@ -3074,9 +3500,11 @@ public:
         return std::nullopt;
     }
     // node
+    static constexpr uint16_t kNode = 4;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 5;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
@@ -3091,9 +3519,11 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
     // boolInterpolator
+    static constexpr uint16_t kBoolInterpolator = 9;
     ::niffer::NiRef<::niffer::view::NiObject> BoolInterpolator() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetBoolInterpolator(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(9), v); }
 protected:
@@ -3108,6 +3538,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3122,6 +3553,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3136,6 +3568,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3150,6 +3583,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3164,6 +3598,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3178,9 +3613,11 @@ public:
         return std::nullopt;
     }
     // node
+    static constexpr uint16_t kNode = 4;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(4), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 5;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(5)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(5), v); }
 protected:
@@ -3195,6 +3632,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3209,6 +3647,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3223,12 +3662,15 @@ public:
         return std::nullopt;
     }
     // unknown0 — Not yet decoded.
+    static constexpr uint16_t kUnknown0 = 4;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
     // meshes
+    static constexpr uint16_t kMeshes = 5;
     std::vector<::niffer::NiRef<::niffer::view::BSTriShape>> Meshes() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>>(p_.Child(5)).value_or(std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>{}); }
     bool SetMeshes(const std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::BSTriShape>>>(p_.Child(5), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 6;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
@@ -3243,6 +3685,7 @@ public:
         return std::nullopt;
     }
     // modifierName
+    static constexpr uint16_t kModifierName = 8;
     ::niffer::NiStringRef ModifierName() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(8)).value_or(::niffer::NiStringRef{}); }
     bool SetModifierName(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(8), v); }
 protected:
@@ -3257,24 +3700,31 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 0;
     float Unknown0() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetUnknown0(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // unknown1
+    static constexpr uint16_t kUnknown1 = 1;
     std::vector<uint8_t> Unknown1() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown1(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
     // spawnModifier
+    static constexpr uint16_t kSpawnModifier = 2;
     ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier> SpawnModifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>{}); }
     bool SetSpawnModifier(const ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2), v); }
     // manager
+    static constexpr uint16_t kManager = 3;
     ::niffer::NiRef<::niffer::view::NiPSysColliderManager> Manager() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3)).value_or(::niffer::NiRef<::niffer::view::NiPSysColliderManager>{}); }
     bool SetManager(const ::niffer::NiRef<::niffer::view::NiPSysColliderManager>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3), v); }
     // nextCollider
+    static constexpr uint16_t kNextCollider = 4;
     ::niffer::NiRef<::niffer::view::NiObject> NextCollider() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetNextCollider(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4), v); }
     // node
+    static constexpr uint16_t kNode = 5;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // shapeData — Not yet decoded.
+    static constexpr uint16_t kShapeData = 6;
     std::vector<uint8_t> ShapeData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
     bool SetShapeData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
@@ -3289,6 +3739,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -3303,6 +3754,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -3317,6 +3769,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 4;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
 protected:
@@ -3331,12 +3784,15 @@ public:
         return std::nullopt;
     }
     // unknown0 — Not yet decoded.
+    static constexpr uint16_t kUnknown0 = 4;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
     // node
+    static constexpr uint16_t kNode = 5;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 6;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
@@ -3351,24 +3807,31 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 0;
     float Unknown0() const { return b_->GetAt<float>(p_.Child(0)).value_or(float{}); }
     bool SetUnknown0(const float& v) const { return b_->SetAt<float>(p_.Child(0), v); }
     // unknown1
+    static constexpr uint16_t kUnknown1 = 1;
     std::vector<uint8_t> Unknown1() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown1(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
     // spawnModifier
+    static constexpr uint16_t kSpawnModifier = 2;
     ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier> SpawnModifier() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>{}); }
     bool SetSpawnModifier(const ::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysSpawnModifier>>(p_.Child(2), v); }
     // manager
+    static constexpr uint16_t kManager = 3;
     ::niffer::NiRef<::niffer::view::NiPSysColliderManager> Manager() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3)).value_or(::niffer::NiRef<::niffer::view::NiPSysColliderManager>{}); }
     bool SetManager(const ::niffer::NiRef<::niffer::view::NiPSysColliderManager>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPSysColliderManager>>(p_.Child(3), v); }
     // nextCollider
+    static constexpr uint16_t kNextCollider = 4;
     ::niffer::NiRef<::niffer::view::NiObject> NextCollider() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetNextCollider(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(4), v); }
     // node
+    static constexpr uint16_t kNode = 5;
     ::niffer::NiRef<::niffer::view::NiNode> Node() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetNode(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(5), v); }
     // shapeData — Not yet decoded.
+    static constexpr uint16_t kShapeData = 6;
     std::vector<uint8_t> ShapeData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(6)).value_or(std::vector<uint8_t>{}); }
     bool SetShapeData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(6), v); }
 protected:
@@ -3383,6 +3846,7 @@ public:
         return std::nullopt;
     }
     // tail — Not yet decoded.
+    static constexpr uint16_t kTail = 7;
     std::vector<uint8_t> Tail() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)).value_or(std::vector<uint8_t>{}); }
     bool SetTail(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
 protected:
@@ -3397,12 +3861,15 @@ public:
         return std::nullopt;
     }
     // unknown0 — Not yet decoded.
+    static constexpr uint16_t kUnknown0 = 0;
     std::vector<uint8_t> Unknown0() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(0)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown0(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
     // posData
+    static constexpr uint16_t kPosData = 1;
     ::niffer::NiRef<::niffer::view::NiPosData> PosData() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPosData>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiPosData>{}); }
     bool SetPosData(const ::niffer::NiRef<::niffer::view::NiPosData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPosData>>(p_.Child(1), v); }
     // floatData
+    static constexpr uint16_t kFloatData = 2;
     ::niffer::NiRef<::niffer::view::NiFloatData> FloatData() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiFloatData>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::NiFloatData>{}); }
     bool SetFloatData(const ::niffer::NiRef<::niffer::view::NiFloatData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiFloatData>>(p_.Child(2), v); }
 protected:
@@ -3417,8 +3884,10 @@ public:
         return std::nullopt;
     }
     // value
+    static constexpr uint16_t kValue = 0;
     ::niffer::view::Vec3 Value() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
     // data
+    static constexpr uint16_t kData = 1;
     ::niffer::NiRef<::niffer::view::NiPosData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiPosData>>(p_.Child(1)).value_or(::niffer::NiRef<::niffer::view::NiPosData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiPosData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiPosData>>(p_.Child(1), v); }
 protected:
@@ -3433,6 +3902,7 @@ public:
         return std::nullopt;
     }
     // keys
+    static constexpr uint16_t kKeys = 0;
     ::niffer::view::Vec3KeyGroup Keys() const { return ::niffer::view::Vec3KeyGroup(*b_, p_.Child(0)); }
 protected:
     explicit NiPosData(::niffer::Block& b) : NiObject(b) {}
@@ -3446,14 +3916,18 @@ public:
         return std::nullopt;
     }
     // skinTransform
+    static constexpr uint16_t kSkinTransform = 0;
     ::niffer::view::NiTransform SkinTransform() const { return ::niffer::view::NiTransform(*b_, p_.Child(0)); }
     // numBones
+    static constexpr uint16_t kNumBones = 1;
     uint32_t NumBones() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetNumBones(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // hasVertexWeights
+    static constexpr uint16_t kHasVertexWeights = 2;
     uint8_t HasVertexWeights() const { return b_->GetAt<uint8_t>(p_.Child(2)).value_or(uint8_t{}); }
     bool SetHasVertexWeights(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(2), v); }
     // bones
+    static constexpr uint16_t kBones = 3;
     std::vector<::niffer::view::NiSkinDataBones> Bones() const {
         std::vector<::niffer::view::NiSkinDataBones> out;
         const size_t n = b_->Count(p_.Child(3));
@@ -3473,18 +3947,23 @@ public:
         return std::nullopt;
     }
     // numPartitions
+    static constexpr uint16_t kNumPartitions = 0;
     uint32_t NumPartitions() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetNumPartitions(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // dataSize — Bytes of vertexData: numVertices * vertexSize.
+    static constexpr uint16_t kDataSize = 1;
     uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // vertexSize
+    static constexpr uint16_t kVertexSize = 2;
     uint32_t VertexSize() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetVertexSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // vertexDesc — BSVertexDesc, the same layout as BSTriShape's.
+    static constexpr uint16_t kVertexDesc = 3;
     uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(3)).value_or(uint64_t{}); }
     bool SetVertexDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(3), v); }
     // vertexData
+    static constexpr uint16_t kVertexData = 4;
     std::vector<::niffer::view::BSVertex> VertexData() const {
         std::vector<::niffer::view::BSVertex> out;
         const size_t n = b_->Count(p_.Child(4));
@@ -3493,6 +3972,7 @@ public:
         return out;
     }
     // partitions
+    static constexpr uint16_t kPartitions = 5;
     std::vector<::niffer::view::SkinPartition> Partitions() const {
         std::vector<::niffer::view::SkinPartition> out;
         const size_t n = b_->Count(p_.Child(5));
@@ -3512,6 +3992,7 @@ public:
         return std::nullopt;
     }
     // stringData
+    static constexpr uint16_t kStringData = 1;
     ::niffer::NiStringRef StringData() const { return b_->GetAt<::niffer::NiStringRef>(p_.Child(1)).value_or(::niffer::NiStringRef{}); }
     bool SetStringData(const ::niffer::NiStringRef& v) const { return b_->SetAt<::niffer::NiStringRef>(p_.Child(1), v); }
 protected:
@@ -3526,6 +4007,7 @@ public:
         return std::nullopt;
     }
     // data
+    static constexpr uint16_t kData = 1;
     std::vector<std::string> Data() const { return b_->GetAt<std::vector<std::string>>(p_.Child(1)).value_or(std::vector<std::string>{}); }
     bool SetData(const std::vector<std::string>& v) const { return b_->SetAt<std::vector<std::string>>(p_.Child(1), v); }
 protected:
@@ -3540,9 +4022,11 @@ public:
         return std::nullopt;
     }
     // switchFlags
+    static constexpr uint16_t kSwitchFlags = 8;
     uint16_t SwitchFlags() const { return b_->GetAt<uint16_t>(p_.Child(8)).value_or(uint16_t{}); }
     bool SetSwitchFlags(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(8), v); }
     // index
+    static constexpr uint16_t kIndex = 9;
     uint32_t Index() const { return b_->GetAt<uint32_t>(p_.Child(9)).value_or(uint32_t{}); }
     bool SetIndex(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(9), v); }
 protected:
@@ -3557,6 +4041,7 @@ public:
         return std::nullopt;
     }
     // keys
+    static constexpr uint16_t kKeys = 1;
     std::vector<::niffer::view::NiTextKeyExtraDataKeys> Keys() const {
         std::vector<::niffer::view::NiTextKeyExtraDataKeys> out;
         const size_t n = b_->Count(p_.Child(1));
@@ -3587,18 +4072,25 @@ public:
         return std::nullopt;
     }
     // numRotationKeys
+    static constexpr uint16_t kNumRotationKeys = 0;
     uint32_t NumRotationKeys() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetNumRotationKeys(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // rotationType
+    static constexpr uint16_t kRotationType = 1;
     std::optional<uint32_t> RotationType() const { return b_->GetAt<uint32_t>(p_.Child(1)); }
     bool SetRotationType(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // rotations
+    static constexpr uint16_t kRotations = 2;
     int RotationsCase() const { return b_->CaseAt(p_.Child(2)); }
+    static constexpr uint16_t kRotationsXyz = 0;
     std::optional<::niffer::view::NiTransformDataRotationsXyz> RotationsXyz() const { if (!b_->Has(p_.Child(2).Child(0))) return std::nullopt; return ::niffer::view::NiTransformDataRotationsXyz(*b_, p_.Child(2).Child(0)); }
+    static constexpr uint16_t kRotationsQuaternion = 1;
     std::optional<::niffer::view::NiTransformDataRotationsQuaternion> RotationsQuaternion() const { if (!b_->Has(p_.Child(2).Child(1))) return std::nullopt; return ::niffer::view::NiTransformDataRotationsQuaternion(*b_, p_.Child(2).Child(1)); }
     // translations
+    static constexpr uint16_t kTranslations = 3;
     ::niffer::view::Vec3KeyGroup Translations() const { return ::niffer::view::Vec3KeyGroup(*b_, p_.Child(3)); }
     // scales
+    static constexpr uint16_t kScales = 4;
     ::niffer::view::FloatKeyGroup Scales() const { return ::niffer::view::FloatKeyGroup(*b_, p_.Child(4)); }
 protected:
     explicit NiTransformData(::niffer::Block& b) : NiObject(b) {}
@@ -3612,13 +4104,17 @@ public:
         return std::nullopt;
     }
     // translation
+    static constexpr uint16_t kTranslation = 0;
     ::niffer::view::Vec3 Translation() const { return ::niffer::view::Vec3(*b_, p_.Child(0)); }
     // rotation
+    static constexpr uint16_t kRotation = 1;
     ::niffer::view::Quat Rotation() const { return ::niffer::view::Quat(*b_, p_.Child(1)); }
     // scale
+    static constexpr uint16_t kScale = 2;
     float Scale() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetScale(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // data
+    static constexpr uint16_t kData = 3;
     ::niffer::NiRef<::niffer::view::NiTransformData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiTransformData>>(p_.Child(3)).value_or(::niffer::NiRef<::niffer::view::NiTransformData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::NiTransformData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiTransformData>>(p_.Child(3), v); }
 protected:
@@ -3633,17 +4129,22 @@ public:
         return std::nullopt;
     }
     // geometry
+    static constexpr uint16_t kGeometry = 0;
     ::niffer::view::GeometryData Geometry() const { return ::niffer::view::GeometryData(*b_, p_.Child(0)); }
     // numTriangles
+    static constexpr uint16_t kNumTriangles = 1;
     uint16_t NumTriangles() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetNumTriangles(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // numTrianglePoints — 3 * numTriangles.
+    static constexpr uint16_t kNumTrianglePoints = 2;
     uint32_t NumTrianglePoints() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetNumTrianglePoints(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // hasTriangles
+    static constexpr uint16_t kHasTriangles = 3;
     uint8_t HasTriangles() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetHasTriangles(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
     // triangles
+    static constexpr uint16_t kTriangles = 4;
     std::vector<::niffer::view::Triangle> Triangles() const {
         std::vector<::niffer::view::Triangle> out;
         const size_t n = b_->Count(p_.Child(4));
@@ -3652,9 +4153,11 @@ public:
         return out;
     }
     // numVertexGroups
+    static constexpr uint16_t kNumVertexGroups = 5;
     uint16_t NumVertexGroups() const { return b_->GetAt<uint16_t>(p_.Child(5)).value_or(uint16_t{}); }
     bool SetNumVertexGroups(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(5), v); }
     // vertexGroups
+    static constexpr uint16_t kVertexGroups = 6;
     std::vector<::niffer::view::NiTriShapeDataVertexGroups> VertexGroups() const {
         std::vector<::niffer::view::NiTriShapeDataVertexGroups> out;
         const size_t n = b_->Count(p_.Child(6));
@@ -3674,20 +4177,26 @@ public:
         return std::nullopt;
     }
     // geometry
+    static constexpr uint16_t kGeometry = 0;
     ::niffer::view::GeometryData Geometry() const { return ::niffer::view::GeometryData(*b_, p_.Child(0)); }
     // numTriangles
+    static constexpr uint16_t kNumTriangles = 1;
     uint16_t NumTriangles() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetNumTriangles(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // numStrips
+    static constexpr uint16_t kNumStrips = 2;
     uint16_t NumStrips() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
     bool SetNumStrips(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(2), v); }
     // stripLengths
+    static constexpr uint16_t kStripLengths = 3;
     std::vector<uint16_t> StripLengths() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(3)).value_or(std::vector<uint16_t>{}); }
     bool SetStripLengths(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(3), v); }
     // hasPoints
+    static constexpr uint16_t kHasPoints = 4;
     uint8_t HasPoints() const { return b_->GetAt<uint8_t>(p_.Child(4)).value_or(uint8_t{}); }
     bool SetHasPoints(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
     // points
+    static constexpr uint16_t kPoints = 5;
     std::optional<std::vector<uint16_t>> Points() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)); }
     bool SetPoints(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
 protected:
@@ -3713,9 +4222,11 @@ public:
         return std::nullopt;
     }
     // entities — Always 2 entries.
+    static constexpr uint16_t kEntities = 0;
     std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>> Entities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(0)).value_or(std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>{}); }
     bool SetEntities(const std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(0), v); }
     // unknown — Always 1.
+    static constexpr uint16_t kUnknown = 1;
     uint32_t Unknown() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetUnknown(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
 protected:
@@ -3730,8 +4241,10 @@ public:
         return std::nullopt;
     }
     // pointA
+    static constexpr uint16_t kPointA = 2;
     ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(2)); }
     // pointB
+    static constexpr uint16_t kPointB = 3;
     ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(3)); }
 protected:
     explicit bhkBallAndSocketConstraint(::niffer::Block& b) : bhkConstraint(b) {}
@@ -3745,6 +4258,7 @@ public:
         return std::nullopt;
     }
     // points
+    static constexpr uint16_t kPoints = 0;
     std::vector<::niffer::view::Vec4> Points() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(0));
@@ -3753,15 +4267,19 @@ public:
         return out;
     }
     // unknown — 1.0, 0.6, 1.19e-8, 0.1 in every block.
+    static constexpr uint16_t kUnknown = 1;
     std::vector<float> Unknown() const { return b_->GetAt<std::vector<float>>(p_.Child(1)).value_or(std::vector<float>{}); }
     bool SetUnknown(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(1), v); }
     // chainEntities
+    static constexpr uint16_t kChainEntities = 2;
     std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>> ChainEntities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(2)).value_or(std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>{}); }
     bool SetChainEntities(const std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(2), v); }
     // entities — Always 2 entries: the first two chainEntities.
+    static constexpr uint16_t kEntities = 3;
     std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>> Entities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(3)).value_or(std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>{}); }
     bool SetEntities(const std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::bhkRigidBody>>>(p_.Child(3), v); }
     // unknownTail — Always 1.
+    static constexpr uint16_t kUnknownTail = 4;
     uint32_t UnknownTail() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetUnknownTail(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
 protected:
@@ -3776,12 +4294,15 @@ public:
         return std::nullopt;
     }
     // target
+    static constexpr uint16_t kTarget = 0;
     ::niffer::NiRef<::niffer::view::NiNode> Target() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiNode>{}); }
     bool SetTarget(const ::niffer::NiRef<::niffer::view::NiNode>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiNode>>(p_.Child(0), v); }
     // flags
+    static constexpr uint16_t kFlags = 1;
     uint16_t Flags() const { return b_->GetAt<uint16_t>(p_.Child(1)).value_or(uint16_t{}); }
     bool SetFlags(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(1), v); }
     // body
+    static constexpr uint16_t kBody = 2;
     ::niffer::NiRef<::niffer::view::bhkShapeWrapper> Body() const { return b_->GetAt<::niffer::NiRef<::niffer::view::bhkShapeWrapper>>(p_.Child(2)).value_or(::niffer::NiRef<::niffer::view::bhkShapeWrapper>{}); }
     bool SetBody(const ::niffer::NiRef<::niffer::view::bhkShapeWrapper>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::bhkShapeWrapper>>(p_.Child(2), v); }
 protected:
@@ -3796,9 +4317,11 @@ public:
         return std::nullopt;
     }
     // unknown10 — Always 1.0.
+    static constexpr uint16_t kUnknown10 = 3;
     float Unknown10() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetUnknown10(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
     // unknown14 — Always 1.0.
+    static constexpr uint16_t kUnknown14 = 4;
     float Unknown14() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetUnknown14(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
 protected:
@@ -3813,9 +4336,11 @@ public:
         return std::nullopt;
     }
     // material — A hash-like ID (68 distinct values over the corpus's primitive shapes).
+    static constexpr uint16_t kMaterial = 0;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // radius — For bhkSphereShape the sphere radius: a body's inertia is 0.4 m r^2 with it. bhkConvexTransformShape repeats its child's value.
+    static constexpr uint16_t kRadius = 1;
     float Radius() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetRadius(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
 protected:
@@ -3830,11 +4355,14 @@ public:
         return std::nullopt;
     }
     // unknown8 — Unstructured (uninitialized-looking).
+    static constexpr uint16_t kUnknown8 = 2;
     std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
     // halfExtents — Positive. The box spans -halfExtents..+halfExtents; see docs/collision-provenance.md for the render-bounds check.
+    static constexpr uint16_t kHalfExtents = 3;
     ::niffer::view::Vec3 HalfExtents() const { return ::niffer::view::Vec3(*b_, p_.Child(3)); }
     // unknownW — Always equal to one of the three halfExtents (to radius in 2,308).
+    static constexpr uint16_t kUnknownW = 4;
     float UnknownW() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetUnknownW(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
 protected:
@@ -3849,22 +4377,30 @@ public:
         return std::nullopt;
     }
     // wrappedType
+    static constexpr uint16_t kWrappedType = 2;
     uint32_t WrappedType() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetWrappedType(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // wrappedEntities — Always 2 null entries.
+    static constexpr uint16_t kWrappedEntities = 3;
     std::vector<::niffer::NiRef<::niffer::view::NiObject>> WrappedEntities() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(3)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
     bool SetWrappedEntities(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(3), v); }
     // wrappedUnknown — Always 1.
+    static constexpr uint16_t kWrappedUnknown = 4;
     uint32_t WrappedUnknown() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetWrappedUnknown(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // wrapped
+    static constexpr uint16_t kWrapped = 5;
     int WrappedCase() const { return b_->CaseAt(p_.Child(5)); }
+    static constexpr uint16_t kWrappedBallAndSocket = 0;
     std::optional<::niffer::view::bhkBreakableConstraintWrappedBallAndSocket> WrappedBallAndSocket() const { if (!b_->Has(p_.Child(5).Child(0))) return std::nullopt; return ::niffer::view::bhkBreakableConstraintWrappedBallAndSocket(*b_, p_.Child(5).Child(0)); }
+    static constexpr uint16_t kWrappedStiffSpring = 1;
     std::optional<::niffer::view::bhkBreakableConstraintWrappedStiffSpring> WrappedStiffSpring() const { if (!b_->Has(p_.Child(5).Child(1))) return std::nullopt; return ::niffer::view::bhkBreakableConstraintWrappedStiffSpring(*b_, p_.Child(5).Child(1)); }
     // unknownFloat — 10, 20, 30 or 10000.
+    static constexpr uint16_t kUnknownFloat = 6;
     float UnknownFloat() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
     bool SetUnknownFloat(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
     // unknownTail — Always 0.
+    static constexpr uint16_t kUnknownTail = 7;
     uint8_t UnknownTail() const { return b_->GetAt<uint8_t>(p_.Child(7)).value_or(uint8_t{}); }
     bool SetUnknownTail(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(7), v); }
 protected:
@@ -3879,16 +4415,21 @@ public:
         return std::nullopt;
     }
     // unknown8 — Unstructured (uninitialized-looking).
+    static constexpr uint16_t kUnknown8 = 2;
     std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
     // point1
+    static constexpr uint16_t kPoint1 = 3;
     ::niffer::view::Vec3 Point1() const { return ::niffer::view::Vec3(*b_, p_.Child(3)); }
     // radius1 — Always equal to radius.
+    static constexpr uint16_t kRadius1 = 4;
     float Radius1() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetRadius1(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
     // point2 — A body's centerOfMass is the midpoint of point1 and point2 (1,465 of 1,468).
+    static constexpr uint16_t kPoint2 = 5;
     ::niffer::view::Vec3 Point2() const { return ::niffer::view::Vec3(*b_, p_.Child(5)); }
     // radius2 — Always equal to radius.
+    static constexpr uint16_t kRadius2 = 6;
     float Radius2() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
     bool SetRadius2(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
 protected:
@@ -3903,25 +4444,33 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 0;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // unknown4 — Varies per block like a 32-bit address (low nibble 0).
+    static constexpr uint16_t kUnknown4 = 1;
     uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // radius — Always 0.005. A parent bhkMoppBvTreeShape's origin is the data's boundsMin minus this value (8,066 of 8,214).
+    static constexpr uint16_t kRadius = 2;
     float Radius() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetRadius(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // unknown12
+    static constexpr uint16_t kUnknown12 = 3;
     float Unknown12() const { return b_->GetAt<float>(p_.Child(3)).value_or(float{}); }
     bool SetUnknown12(const float& v) const { return b_->SetAt<float>(p_.Child(3), v); }
     // unknown16 — Always (1, 1, 1, 0).
+    static constexpr uint16_t kUnknown16 = 4;
     ::niffer::view::Vec4 Unknown16() const { return ::niffer::view::Vec4(*b_, p_.Child(4)); }
     // unknown32 — Always 0.005.
+    static constexpr uint16_t kUnknown32 = 5;
     float Unknown32() const { return b_->GetAt<float>(p_.Child(5)).value_or(float{}); }
     bool SetUnknown32(const float& v) const { return b_->SetAt<float>(p_.Child(5), v); }
     // unknown36 — Always (1, 1, 1, 0).
+    static constexpr uint16_t kUnknown36 = 6;
     ::niffer::view::Vec4 Unknown36() const { return ::niffer::view::Vec4(*b_, p_.Child(6)); }
     // data — The geometry block.
+    static constexpr uint16_t kData = 7;
     ::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData> Data() const { return b_->GetAt<::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>>(p_.Child(7)).value_or(::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>{}); }
     bool SetData(const ::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::bhkCompressedMeshShapeData>>(p_.Child(7), v); }
 protected:
@@ -3936,40 +4485,53 @@ public:
         return std::nullopt;
     }
     // unknown0 — Always 17.
+    static constexpr uint16_t kUnknown0 = 0;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // unknown4 — Always 18.
+    static constexpr uint16_t kUnknown4 = 1;
     uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown8 — Always 0x3FFFF.
+    static constexpr uint16_t kUnknown8 = 2;
     uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // unknown12 — Always 0x1FFFF.
+    static constexpr uint16_t kUnknown12 = 3;
     uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
     bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
     // quantization — Always 0.001: the step of the chunk vertices (vertex = chunk offset + q * quantization), which then lie inside boundsMin..boundsMax.
+    static constexpr uint16_t kQuantization = 4;
     float Quantization() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetQuantization(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
     // boundsMin — w is 0 except in 10 blocks.
+    static constexpr uint16_t kBoundsMin = 5;
     ::niffer::view::Vec4 BoundsMin() const { return ::niffer::view::Vec4(*b_, p_.Child(5)); }
     // boundsMax — w is 1.0 exactly when bigVertices is non-empty (309 blocks), else 0.
+    static constexpr uint16_t kBoundsMax = 6;
     ::niffer::view::Vec4 BoundsMax() const { return ::niffer::view::Vec4(*b_, p_.Child(6)); }
     // unknown52 — Always 0.
+    static constexpr uint16_t kUnknown52 = 7;
     uint8_t Unknown52() const { return b_->GetAt<uint8_t>(p_.Child(7)).value_or(uint8_t{}); }
     bool SetUnknown52(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(7), v); }
     // unknown53 — Always 1.
+    static constexpr uint16_t kUnknown53 = 8;
     uint8_t Unknown53() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
     bool SetUnknown53(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
     // unknown54 — Always 0.
+    static constexpr uint16_t kUnknown54 = 9;
     uint32_t Unknown54() const { return b_->GetAt<uint32_t>(p_.Child(9)).value_or(uint32_t{}); }
     bool SetUnknown54(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(9), v); }
     // unknown58 — Always 0.
+    static constexpr uint16_t kUnknown58 = 10;
     uint32_t Unknown58() const { return b_->GetAt<uint32_t>(p_.Child(10)).value_or(uint32_t{}); }
     bool SetUnknown58(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(10), v); }
     // unknown62 — Always 0.
+    static constexpr uint16_t kUnknown62 = 11;
     uint32_t Unknown62() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
     bool SetUnknown62(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
     // materials
+    static constexpr uint16_t kMaterials = 12;
     std::vector<::niffer::view::CompressedMeshMaterial> Materials() const {
         std::vector<::niffer::view::CompressedMeshMaterial> out;
         const size_t n = b_->Count(p_.Child(12));
@@ -3978,9 +4540,11 @@ public:
         return out;
     }
     // unknownCount — Always 0; the layout of whatever it would count is unknown.
+    static constexpr uint16_t kUnknownCount = 13;
     uint32_t UnknownCount() const { return b_->GetAt<uint32_t>(p_.Child(13)).value_or(uint32_t{}); }
     bool SetUnknownCount(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(13), v); }
     // transforms
+    static constexpr uint16_t kTransforms = 14;
     std::vector<::niffer::view::CompressedMeshTransform> Transforms() const {
         std::vector<::niffer::view::CompressedMeshTransform> out;
         const size_t n = b_->Count(p_.Child(14));
@@ -3989,6 +4553,7 @@ public:
         return out;
     }
     // bigVertices — Unquantized vertices (w = 999.99994 where seen); all inside the bounds.
+    static constexpr uint16_t kBigVertices = 15;
     std::vector<::niffer::view::Vec4> BigVertices() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(15));
@@ -3997,6 +4562,7 @@ public:
         return out;
     }
     // bigTriangles
+    static constexpr uint16_t kBigTriangles = 16;
     std::vector<::niffer::view::CompressedMeshBigTriangle> BigTriangles() const {
         std::vector<::niffer::view::CompressedMeshBigTriangle> out;
         const size_t n = b_->Count(p_.Child(16));
@@ -4005,6 +4571,7 @@ public:
         return out;
     }
     // chunks
+    static constexpr uint16_t kChunks = 17;
     std::vector<::niffer::view::CompressedMeshChunk> Chunks() const {
         std::vector<::niffer::view::CompressedMeshChunk> out;
         const size_t n = b_->Count(p_.Child(17));
@@ -4013,6 +4580,7 @@ public:
         return out;
     }
     // unknownTail — Always 0.
+    static constexpr uint16_t kUnknownTail = 18;
     uint32_t UnknownTail() const { return b_->GetAt<uint32_t>(p_.Child(18)).value_or(uint32_t{}); }
     bool SetUnknownTail(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(18), v); }
 protected:
@@ -4027,6 +4595,7 @@ public:
         return std::nullopt;
     }
     // shape
+    static constexpr uint16_t kShape = 0;
     ::niffer::NiRef<::niffer::view::NiObject> Shape() const { return b_->GetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0)).value_or(::niffer::NiRef<::niffer::view::NiObject>{}); }
     bool SetShape(const ::niffer::NiRef<::niffer::view::NiObject>& v) const { return b_->SetAt<::niffer::NiRef<::niffer::view::NiObject>>(p_.Child(0), v); }
 protected:
@@ -4041,18 +4610,23 @@ public:
         return std::nullopt;
     }
     // material — Always equal to the child shape's material.
+    static constexpr uint16_t kMaterial = 1;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // radius — Always equal to the child shape's radius.
+    static constexpr uint16_t kRadius = 2;
     float Radius() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetRadius(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // unknown12 — Varies per block like a 32-bit address.
+    static constexpr uint16_t kUnknown12 = 3;
     uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
     bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
     // unknown16 — Unstructured.
+    static constexpr uint16_t kUnknown16 = 4;
     uint32_t Unknown16() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetUnknown16(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // transform
+    static constexpr uint16_t kTransform = 5;
     ::niffer::view::HavokTransform Transform() const { return ::niffer::view::HavokTransform(*b_, p_.Child(5)); }
 protected:
     explicit bhkConvexTransformShape(::niffer::Block& b) : bhkShapeWrapper(b) {}
@@ -4066,9 +4640,11 @@ public:
         return std::nullopt;
     }
     // unknown8 — Always 0, 0, 0x80000000, 0, 0, 0x80000000.
+    static constexpr uint16_t kUnknown8 = 2;
     std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
     // vertices — w is always 0.
+    static constexpr uint16_t kVertices = 3;
     std::vector<::niffer::view::Vec4> Vertices() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(3));
@@ -4077,6 +4653,7 @@ public:
         return out;
     }
     // planes — xyz is a unit normal (|n| - 1 < 3e-7), w an offset: for 89% of the 106,180 planes every vertex has n.v + w <= 0, and the gap is the radius in 59%.
+    static constexpr uint16_t kPlanes = 4;
     std::vector<::niffer::view::Vec4> Planes() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(4));
@@ -4096,22 +4673,29 @@ public:
         return std::nullopt;
     }
     // unknown8 — Unstructured (uninitialized-looking).
+    static constexpr uint16_t kUnknown8 = 2;
     std::vector<uint32_t> Unknown8() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown8(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
     // point1
+    static constexpr uint16_t kPoint1 = 3;
     ::niffer::view::Vec3 Point1() const { return ::niffer::view::Vec3(*b_, p_.Child(3)); }
     // unknown28 — Always equal to unknown44; unknown48 + radius.
+    static constexpr uint16_t kUnknown28 = 4;
     float Unknown28() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetUnknown28(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
     // point2
+    static constexpr uint16_t kPoint2 = 5;
     ::niffer::view::Vec3 Point2() const { return ::niffer::view::Vec3(*b_, p_.Child(5)); }
     // unknown44
+    static constexpr uint16_t kUnknown44 = 6;
     float Unknown44() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
     bool SetUnknown44(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
     // unknown48 — Always unknown28 - radius.
+    static constexpr uint16_t kUnknown48 = 7;
     float Unknown48() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
     bool SetUnknown48(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
     // unknown52 — Unstructured (uninitialized-looking).
+    static constexpr uint16_t kUnknown52 = 8;
     std::vector<uint32_t> Unknown52() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(8)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown52(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(8), v); }
 protected:
@@ -4126,8 +4710,10 @@ public:
         return std::nullopt;
     }
     // frameA
+    static constexpr uint16_t kFrameA = 2;
     ::niffer::view::HavokFrame FrameA() const { return ::niffer::view::HavokFrame(*b_, p_.Child(2)); }
     // frameB
+    static constexpr uint16_t kFrameB = 3;
     ::niffer::view::HavokFrame FrameB() const { return ::niffer::view::HavokFrame(*b_, p_.Child(3)); }
 protected:
     explicit bhkHingeConstraint(::niffer::Block& b) : bhkConstraint(b) {}
@@ -4141,19 +4727,25 @@ public:
         return std::nullopt;
     }
     // frameA
+    static constexpr uint16_t kFrameA = 2;
     ::niffer::view::HavokFrame FrameA() const { return ::niffer::view::HavokFrame(*b_, p_.Child(2)); }
     // frameB
+    static constexpr uint16_t kFrameB = 3;
     ::niffer::view::HavokFrame FrameB() const { return ::niffer::view::HavokFrame(*b_, p_.Child(3)); }
     // unknown144 — Not positive in 819 of 823.
+    static constexpr uint16_t kUnknown144 = 4;
     float Unknown144() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetUnknown144(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
     // unknown148 — Not negative in 819 of 823.
+    static constexpr uint16_t kUnknown148 = 5;
     float Unknown148() const { return b_->GetAt<float>(p_.Child(5)).value_or(float{}); }
     bool SetUnknown148(const float& v) const { return b_->SetAt<float>(p_.Child(5), v); }
     // unknown152 — 0.01 in 814 blocks.
+    static constexpr uint16_t kUnknown152 = 6;
     float Unknown152() const { return b_->GetAt<float>(p_.Child(6)).value_or(float{}); }
     bool SetUnknown152(const float& v) const { return b_->SetAt<float>(p_.Child(6), v); }
     // unknown156 — Always 0.
+    static constexpr uint16_t kUnknown156 = 7;
     uint8_t Unknown156() const { return b_->GetAt<uint8_t>(p_.Child(7)).value_or(uint8_t{}); }
     bool SetUnknown156(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(7), v); }
 protected:
@@ -4168,15 +4760,19 @@ public:
         return std::nullopt;
     }
     // subShapes
+    static constexpr uint16_t kSubShapes = 0;
     std::vector<::niffer::NiRef<::niffer::view::NiObject>> SubShapes() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(0)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
     bool SetSubShapes(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(0), v); }
     // material — Always a value that also occurs as a primitive shape's material.
+    static constexpr uint16_t kMaterial = 1;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown — Always 0, 0, 0x80000000, 0, 0, 0x80000000.
+    static constexpr uint16_t kUnknown = 2;
     std::vector<uint32_t> Unknown() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(2)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(2), v); }
     // unknownList — Always as long as subShapes; 0 in all but one entry (1).
+    static constexpr uint16_t kUnknownList = 3;
     std::vector<uint32_t> UnknownList() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(3)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknownList(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(3), v); }
 protected:
@@ -4191,29 +4787,38 @@ public:
         return std::nullopt;
     }
     // material — 0 in 8,336 blocks; otherwise a value that also occurs as a primitive shape's material.
+    static constexpr uint16_t kMaterial = 1;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown8
+    static constexpr uint16_t kUnknown8 = 2;
     uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // unknown12
+    static constexpr uint16_t kUnknown12 = 3;
     uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
     bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
     // unknown16 — Always 1.0.
+    static constexpr uint16_t kUnknown16 = 4;
     float Unknown16() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetUnknown16(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
     // dataSize
+    static constexpr uint16_t kDataSize = 5;
     uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(5)).value_or(uint32_t{}); }
     bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(5), v); }
     // origin
+    static constexpr uint16_t kOrigin = 6;
     ::niffer::view::Vec3 Origin() const { return ::niffer::view::Vec3(*b_, p_.Child(6)); }
     // scale
+    static constexpr uint16_t kScale = 7;
     float Scale() const { return b_->GetAt<float>(p_.Child(7)).value_or(float{}); }
     bool SetScale(const float& v) const { return b_->SetAt<float>(p_.Child(7), v); }
     // unknown40 — 1 in 8,279 blocks; 0xCD (an uninitialized-memory fill) in 78.
+    static constexpr uint16_t kUnknown40 = 8;
     uint8_t Unknown40() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
     bool SetUnknown40(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
     // moppData — The tree's byte code, not decoded.
+    static constexpr uint16_t kMoppData = 9;
     std::vector<uint8_t> MoppData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(9)).value_or(std::vector<uint8_t>{}); }
     bool SetMoppData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(9), v); }
 protected:
@@ -4228,26 +4833,34 @@ public:
         return std::nullopt;
     }
     // unknown0
+    static constexpr uint16_t kUnknown0 = 0;
     uint32_t Unknown0() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetUnknown0(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // unknown4 — Always 0.005.
+    static constexpr uint16_t kUnknown4 = 1;
     float Unknown4() const { return b_->GetAt<float>(p_.Child(1)).value_or(float{}); }
     bool SetUnknown4(const float& v) const { return b_->SetAt<float>(p_.Child(1), v); }
     // unknown8 — Always 0x1036084C.
+    static constexpr uint16_t kUnknown8 = 2;
     uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // unknown12 — Always zero.
+    static constexpr uint16_t kUnknown12 = 3;
     std::vector<uint32_t> Unknown12() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(3)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown12(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(3), v); }
     // unknown28 — Always 1.
+    static constexpr uint16_t kUnknown28 = 4;
     uint32_t Unknown28() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetUnknown28(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // unknown32 — Always (1, 1, 1, 0).
+    static constexpr uint16_t kUnknown32 = 5;
     ::niffer::view::Vec4 Unknown32() const { return ::niffer::view::Vec4(*b_, p_.Child(5)); }
     // strips
+    static constexpr uint16_t kStrips = 6;
     std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>> Strips() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>>(p_.Child(6)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>{}); }
     bool SetStrips(const std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiTriStripsData>>>(p_.Child(6), v); }
     // unknownList — Always as long as strips.
+    static constexpr uint16_t kUnknownList = 7;
     std::vector<uint32_t> UnknownList() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(7)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknownList(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(7), v); }
 protected:
@@ -4262,16 +4875,21 @@ public:
         return std::nullopt;
     }
     // material
+    static constexpr uint16_t kMaterial = 0;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(0)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(0), v); }
     // unknown4
+    static constexpr uint16_t kUnknown4 = 1;
     std::vector<float> Unknown4() const { return b_->GetAt<std::vector<float>>(p_.Child(1)).value_or(std::vector<float>{}); }
     bool SetUnknown4(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(1), v); }
     // unknown16 — (0, 0, 1, 0.0084) in the only block: a unit vector and an offset.
+    static constexpr uint16_t kUnknown16 = 2;
     ::niffer::view::Vec4 Unknown16() const { return ::niffer::view::Vec4(*b_, p_.Child(2)); }
     // unknown32
+    static constexpr uint16_t kUnknown32 = 3;
     ::niffer::view::Vec4 Unknown32() const { return ::niffer::view::Vec4(*b_, p_.Child(3)); }
     // unknown48
+    static constexpr uint16_t kUnknown48 = 4;
     ::niffer::view::Vec4 Unknown48() const { return ::niffer::view::Vec4(*b_, p_.Child(4)); }
 protected:
     explicit bhkPlaneShape(::niffer::Block& b) : NiObject(b) {}
@@ -4285,16 +4903,21 @@ public:
         return std::nullopt;
     }
     // frameA
+    static constexpr uint16_t kFrameA = 2;
     ::niffer::view::HavokFrame FrameA() const { return ::niffer::view::HavokFrame(*b_, p_.Child(2)); }
     // frameB
+    static constexpr uint16_t kFrameB = 3;
     ::niffer::view::HavokFrame FrameB() const { return ::niffer::view::HavokFrame(*b_, p_.Child(3)); }
     // unknown144 — All five are whole or half degrees in radians in 418 of 752 blocks (e.g. 0.0873, 0.5236, 1.5708).
+    static constexpr uint16_t kUnknown144 = 4;
     std::vector<float> Unknown144() const { return b_->GetAt<std::vector<float>>(p_.Child(4)).value_or(std::vector<float>{}); }
     bool SetUnknown144(const std::vector<float>& v) const { return b_->SetAt<std::vector<float>>(p_.Child(4), v); }
     // unknown164 — 10.0 in 748 blocks.
+    static constexpr uint16_t kUnknown164 = 5;
     float Unknown164() const { return b_->GetAt<float>(p_.Child(5)).value_or(float{}); }
     bool SetUnknown164(const float& v) const { return b_->SetAt<float>(p_.Child(5), v); }
     // unknown168 — Always 0.
+    static constexpr uint16_t kUnknown168 = 6;
     uint8_t Unknown168() const { return b_->GetAt<uint8_t>(p_.Child(6)).value_or(uint8_t{}); }
     bool SetUnknown168(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
 protected:
@@ -4309,47 +4932,63 @@ public:
         return std::nullopt;
     }
     // unknown4 — Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36.
+    static constexpr uint16_t kUnknown4 = 1;
     uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown8 — Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40.
+    static constexpr uint16_t kUnknown8 = 2;
     uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // unknown12 — Always 1 (2 in bhkSimpleShapePhantom).
+    static constexpr uint16_t kUnknown12 = 3;
     uint8_t Unknown12() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetUnknown12(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
     // unknown13 — Unstructured (uninitialized-looking).
+    static constexpr uint16_t kUnknown13 = 4;
     std::vector<uint8_t> Unknown13() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown13(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
     // unknown16 — Always 0, 0, 0x80000000.
+    static constexpr uint16_t kUnknown16 = 5;
     std::vector<uint32_t> Unknown16() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(5)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown16(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(5), v); }
     // unknown28 — Byte 0 is always 1 and bytes 2-3 always 0xFFFF.
+    static constexpr uint16_t kUnknown28 = 6;
     uint32_t Unknown28() const { return b_->GetAt<uint32_t>(p_.Child(6)).value_or(uint32_t{}); }
     bool SetUnknown28(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(6), v); }
     // unknown32
+    static constexpr uint16_t kUnknown32 = 7;
     uint32_t Unknown32() const { return b_->GetAt<uint32_t>(p_.Child(7)).value_or(uint32_t{}); }
     bool SetUnknown32(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(7), v); }
     // unknown36
+    static constexpr uint16_t kUnknown36 = 8;
     uint32_t Unknown36() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
     bool SetUnknown36(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
     // unknown40
+    static constexpr uint16_t kUnknown40 = 9;
     uint32_t Unknown40() const { return b_->GetAt<uint32_t>(p_.Child(9)).value_or(uint32_t{}); }
     bool SetUnknown40(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(9), v); }
     // unknown44 — Always 0.
+    static constexpr uint16_t kUnknown44 = 10;
     uint32_t Unknown44() const { return b_->GetAt<uint32_t>(p_.Child(10)).value_or(uint32_t{}); }
     bool SetUnknown44(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(10), v); }
     // unknown48 — Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks.
+    static constexpr uint16_t kUnknown48 = 11;
     uint32_t Unknown48() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
     bool SetUnknown48(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
     // translation — w = 0 in 14,871 of 14,880.
+    static constexpr uint16_t kTranslation = 12;
     ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(12)); }
     // rotation — Unit quaternion x, y, z, w (|q| = 1 in every block).
+    static constexpr uint16_t kRotation = 13;
     ::niffer::view::Vec4 Rotation() const { return ::niffer::view::Vec4(*b_, p_.Child(13)); }
     // unknown84 — Always zero.
+    static constexpr uint16_t kUnknown84 = 14;
     ::niffer::view::Vec4 Unknown84() const { return ::niffer::view::Vec4(*b_, p_.Child(14)); }
     // unknown100 — Always zero.
+    static constexpr uint16_t kUnknown100 = 15;
     ::niffer::view::Vec4 Unknown100() const { return ::niffer::view::Vec4(*b_, p_.Child(15)); }
     // inertia — A symmetric 3x3 matrix (w = 0). For bodies with a bhkSphereShape it is diag(0.4 m r^2) in most of them.
+    static constexpr uint16_t kInertia = 16;
     std::vector<::niffer::view::Vec4> Inertia() const {
         std::vector<::niffer::view::Vec4> out;
         const size_t n = b_->Count(p_.Child(16));
@@ -4358,71 +4997,94 @@ public:
         return out;
     }
     // centerOfMass
+    static constexpr uint16_t kCenterOfMass = 17;
     ::niffer::view::Vec4 CenterOfMass() const { return ::niffer::view::Vec4(*b_, p_.Child(17)); }
     // mass — 0 exactly when inertia is all zero (14,868 of 14,880).
+    static constexpr uint16_t kMass = 18;
     float Mass() const { return b_->GetAt<float>(p_.Child(18)).value_or(float{}); }
     bool SetMass(const float& v) const { return b_->SetAt<float>(p_.Child(18), v); }
     // unknown184
+    static constexpr uint16_t kUnknown184 = 19;
     float Unknown184() const { return b_->GetAt<float>(p_.Child(19)).value_or(float{}); }
     bool SetUnknown184(const float& v) const { return b_->SetAt<float>(p_.Child(19), v); }
     // unknown188
+    static constexpr uint16_t kUnknown188 = 20;
     float Unknown188() const { return b_->GetAt<float>(p_.Child(20)).value_or(float{}); }
     bool SetUnknown188(const float& v) const { return b_->SetAt<float>(p_.Child(20), v); }
     // unknown192 — Always 1.0.
+    static constexpr uint16_t kUnknown192 = 21;
     float Unknown192() const { return b_->GetAt<float>(p_.Child(21)).value_or(float{}); }
     bool SetUnknown192(const float& v) const { return b_->SetAt<float>(p_.Child(21), v); }
     // unknown196 — Always 1.0.
+    static constexpr uint16_t kUnknown196 = 22;
     float Unknown196() const { return b_->GetAt<float>(p_.Child(22)).value_or(float{}); }
     bool SetUnknown196(const float& v) const { return b_->SetAt<float>(p_.Child(22), v); }
     // unknown200
+    static constexpr uint16_t kUnknown200 = 23;
     float Unknown200() const { return b_->GetAt<float>(p_.Child(23)).value_or(float{}); }
     bool SetUnknown200(const float& v) const { return b_->SetAt<float>(p_.Child(23), v); }
     // unknown204 — Always 0.
+    static constexpr uint16_t kUnknown204 = 24;
     float Unknown204() const { return b_->GetAt<float>(p_.Child(24)).value_or(float{}); }
     bool SetUnknown204(const float& v) const { return b_->SetAt<float>(p_.Child(24), v); }
     // unknown208
+    static constexpr uint16_t kUnknown208 = 25;
     float Unknown208() const { return b_->GetAt<float>(p_.Child(25)).value_or(float{}); }
     bool SetUnknown208(const float& v) const { return b_->SetAt<float>(p_.Child(25), v); }
     // unknown212
+    static constexpr uint16_t kUnknown212 = 26;
     float Unknown212() const { return b_->GetAt<float>(p_.Child(26)).value_or(float{}); }
     bool SetUnknown212(const float& v) const { return b_->SetAt<float>(p_.Child(26), v); }
     // unknown216
+    static constexpr uint16_t kUnknown216 = 27;
     float Unknown216() const { return b_->GetAt<float>(p_.Child(27)).value_or(float{}); }
     bool SetUnknown216(const float& v) const { return b_->SetAt<float>(p_.Child(27), v); }
     // unknown220
+    static constexpr uint16_t kUnknown220 = 28;
     float Unknown220() const { return b_->GetAt<float>(p_.Child(28)).value_or(float{}); }
     bool SetUnknown220(const float& v) const { return b_->SetAt<float>(p_.Child(28), v); }
     // unknown224 — 2-5.
+    static constexpr uint16_t kUnknown224 = 29;
     uint8_t Unknown224() const { return b_->GetAt<uint8_t>(p_.Child(29)).value_or(uint8_t{}); }
     bool SetUnknown224(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(29), v); }
     // unknown225 — Always 1.
+    static constexpr uint16_t kUnknown225 = 30;
     uint8_t Unknown225() const { return b_->GetAt<uint8_t>(p_.Child(30)).value_or(uint8_t{}); }
     bool SetUnknown225(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(30), v); }
     // unknown226 — 1 or 2.
+    static constexpr uint16_t kUnknown226 = 31;
     uint8_t Unknown226() const { return b_->GetAt<uint8_t>(p_.Child(31)).value_or(uint8_t{}); }
     bool SetUnknown226(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(31), v); }
     // unknown227 — 0, 1, 2 or 4.
+    static constexpr uint16_t kUnknown227 = 32;
     uint8_t Unknown227() const { return b_->GetAt<uint8_t>(p_.Child(32)).value_or(uint8_t{}); }
     bool SetUnknown227(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(32), v); }
     // unknown228 — Always 0.
+    static constexpr uint16_t kUnknown228 = 33;
     uint8_t Unknown228() const { return b_->GetAt<uint8_t>(p_.Child(33)).value_or(uint8_t{}); }
     bool SetUnknown228(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(33), v); }
     // unknown229 — Always 0.
+    static constexpr uint16_t kUnknown229 = 34;
     uint8_t Unknown229() const { return b_->GetAt<uint8_t>(p_.Child(34)).value_or(uint8_t{}); }
     bool SetUnknown229(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(34), v); }
     // unknown230 — Always 3.
+    static constexpr uint16_t kUnknown230 = 35;
     uint8_t Unknown230() const { return b_->GetAt<uint8_t>(p_.Child(35)).value_or(uint8_t{}); }
     bool SetUnknown230(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(35), v); }
     // unknown231 — Always 0.
+    static constexpr uint16_t kUnknown231 = 36;
     uint8_t Unknown231() const { return b_->GetAt<uint8_t>(p_.Child(36)).value_or(uint8_t{}); }
     bool SetUnknown231(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(36), v); }
     // unknown232 — Unstructured (uninitialized-looking).
+    static constexpr uint16_t kUnknown232 = 37;
     std::vector<uint32_t> Unknown232() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(37)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown232(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(37), v); }
     // constraints — Every constraint block in the corpus is referenced from exactly one rigid body's list.
+    static constexpr uint16_t kConstraints = 38;
     std::vector<::niffer::NiRef<::niffer::view::NiObject>> Constraints() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(38)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
     bool SetConstraints(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(38), v); }
     // unknownTail — 0 except in one block (1).
+    static constexpr uint16_t kUnknownTail = 39;
     uint16_t UnknownTail() const { return b_->GetAt<uint16_t>(p_.Child(39)).value_or(uint16_t{}); }
     bool SetUnknownTail(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(39), v); }
 protected:
@@ -4459,24 +5121,31 @@ public:
         return std::nullopt;
     }
     // unknown4
+    static constexpr uint16_t kUnknown4 = 1;
     uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown8 — Varies per block like a 32-bit address.
+    static constexpr uint16_t kUnknown8 = 2;
     uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // unknown12 — Always 2.
+    static constexpr uint16_t kUnknown12 = 3;
     uint8_t Unknown12() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetUnknown12(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
     // unknown13
+    static constexpr uint16_t kUnknown13 = 4;
     std::vector<uint8_t> Unknown13() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown13(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
     // unknown16 — Always 0, 0, 0x80000000.
+    static constexpr uint16_t kUnknown16 = 5;
     std::vector<uint32_t> Unknown16() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(5)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown16(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(5), v); }
     // unknown28 — Unstructured.
+    static constexpr uint16_t kUnknown28 = 6;
     std::vector<uint32_t> Unknown28() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(6)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown28(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(6), v); }
     // transform
+    static constexpr uint16_t kTransform = 7;
     ::niffer::view::HavokTransform Transform() const { return ::niffer::view::HavokTransform(*b_, p_.Child(7)); }
 protected:
     explicit bhkSimpleShapePhantom(::niffer::Block& b) : bhkShapeWrapper(b) {}
@@ -4501,10 +5170,13 @@ public:
         return std::nullopt;
     }
     // pointA
+    static constexpr uint16_t kPointA = 2;
     ::niffer::view::Vec4 PointA() const { return ::niffer::view::Vec4(*b_, p_.Child(2)); }
     // pointB
+    static constexpr uint16_t kPointB = 3;
     ::niffer::view::Vec4 PointB() const { return ::niffer::view::Vec4(*b_, p_.Child(3)); }
     // unknown48
+    static constexpr uint16_t kUnknown48 = 4;
     float Unknown48() const { return b_->GetAt<float>(p_.Child(4)).value_or(float{}); }
     bool SetUnknown48(const float& v) const { return b_->SetAt<float>(p_.Child(4), v); }
 protected:
@@ -4519,18 +5191,23 @@ public:
         return std::nullopt;
     }
     // material — Equal to the child's material whenever the child is a primitive shape (79 of 79).
+    static constexpr uint16_t kMaterial = 1;
     uint32_t Material() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetMaterial(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
     // unknown8 — Always 0.
+    static constexpr uint16_t kUnknown8 = 2;
     float Unknown8() const { return b_->GetAt<float>(p_.Child(2)).value_or(float{}); }
     bool SetUnknown8(const float& v) const { return b_->SetAt<float>(p_.Child(2), v); }
     // unknown12
+    static constexpr uint16_t kUnknown12 = 3;
     uint32_t Unknown12() const { return b_->GetAt<uint32_t>(p_.Child(3)).value_or(uint32_t{}); }
     bool SetUnknown12(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(3), v); }
     // unknown16
+    static constexpr uint16_t kUnknown16 = 4;
     uint32_t Unknown16() const { return b_->GetAt<uint32_t>(p_.Child(4)).value_or(uint32_t{}); }
     bool SetUnknown16(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(4), v); }
     // transform
+    static constexpr uint16_t kTransform = 5;
     ::niffer::view::HavokTransform Transform() const { return ::niffer::view::HavokTransform(*b_, p_.Child(5)); }
 protected:
     explicit bhkTransformShape(::niffer::Block& b) : bhkShapeWrapper(b) {}

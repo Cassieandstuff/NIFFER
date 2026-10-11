@@ -1,16 +1,16 @@
+#include "Framing.h"
 #include "Stream.h"
 #include "test_harness.h"
 
 #include <niffer/Niffer.h>
 
+#include <algorithm>
 #include <vector>
 
 using namespace niffer;
 
-// Hand-build a minimal but structurally complete SSE NIF (header + two unknown
-// blocks + footer), Save→Load→Save, and assert byte-identity + field fidelity.
-// This is the Phase-1 stand-in for the corpus gate: passthrough must round-trip
-// byte-exact before any typed block exists.
+// The header through Stream, then hand-built minimal SSE files (header + blocks
+// + footer): Load→Save must be byte-identical, raw and modeled blocks alike.
 void run_header_tests() {
     std::printf(" header/file\n");
 
@@ -53,103 +53,72 @@ void run_header_tests() {
         CHECK(h2.TypeNameOf(1) == "BSXFlags");
     }
 
-    // --- Full NifFile Save → Load → Save byte-identity (all UnknownBlock) ---
+    // A minimal SSE header for the file-level tests below.
+    auto header = [](std::vector<std::string> types, std::vector<std::string> strings) {
+        Header h;
+        h.versionLine = "Gamebryo File Format, Version 20.2.0.7";
+        h.author = std::string("me\0", 3);
+        h.processScript = std::string("\0", 1);
+        h.exportScript = std::string("\0", 1);
+        h.blockTypes = types;
+        for (uint16_t i = 0; i < types.size(); ++i) h.blockTypeIndex.push_back(i);
+        h.numBlocks = static_cast<uint32_t>(types.size());
+        h.maxStringLength = 0;
+        for (auto& str : strings) h.maxStringLength = std::max<uint32_t>(h.maxStringLength, static_cast<uint32_t>(str.size()));
+        h.strings = std::move(strings);
+        return h;
+    };
+
+    // --- Blocks with no descriptor pass through raw, byte-identical ---
     {
-        NifFile f;
-        f.header.versionLine = "Gamebryo File Format, Version 20.2.0.7";
-        f.header.version = kNifVersion;
-        f.header.endian = 1;
-        f.header.userVersion = kUserVersion;
-        f.header.bsVersion = kStreamVersion;
-        f.header.author = std::string("me\0", 3);
-        f.header.processScript = std::string("\0", 1);
-        f.header.exportScript = std::string("\0", 1);
-        // Deliberately-unregistered type names so this exercises the passthrough
-        // path deterministically, regardless of which blocks become typed later.
-        f.header.blockTypes = {"ZZZ_FakeBlockA", "ZZZ_FakeBlockB"};
-        f.header.blockTypeIndex = {0, 1};
-        f.header.blockSizes = {0, 0};  // recomputed on Save
-        f.header.numBlocks = 2;
-
-        auto a = std::make_unique<UnknownBlock>();
-        a->typeName = "ZZZ_FakeBlockA";
-        a->raw = {1, 2, 3, 4, 5, 6, 7, 8};
-        auto b = std::make_unique<UnknownBlock>();
-        b->typeName = "ZZZ_FakeBlockB";
-        b->raw = {0xFF, 0x00, 0xAA, 0x55};
-        f.blocks.push_back(std::move(a));
-        f.blocks.push_back(std::move(b));
-        f.roots = {0};
-
-        std::vector<uint8_t> bytes = f.Save();
-
+        // Type names no schema will ever describe, so this always exercises
+        // the passthrough path.
+        const auto bytes = detail::WriteFraming(header({"ZZZ_FakeBlockA", "ZZZ_FakeBlockB"}, {}),
+                                                {{1, 2, 3, 4, 5, 6, 7, 8}, {0xFF, 0x00, 0xAA, 0x55}},
+                                                {0}, {});
         auto loaded = NifFile::Load(bytes);
         CHECK(loaded.has_value());
         if (loaded) {
             CHECK_EQ(loaded->blocks.size(), 2u);
-            CHECK_EQ(loaded->unknownBlocks.size(), 2u);   // both types unregistered
-            CHECK_EQ(loaded->layoutMismatches.size(), 0u);
+            CHECK_EQ(loaded->RawCount(), 2u);   // no descriptor: raw
+            CHECK(!loaded->blocks[0].Modeled());
             CHECK_EQ(loaded->roots.size(), 1u);
             CHECK_EQ(loaded->roots[0], 0);
             CHECK(loaded->header.TypeNameOf(0) == "ZZZ_FakeBlockA");
-
-            std::vector<uint8_t> bytes2 = loaded->Save();
-            CHECK_EQ(bytes.size(), bytes2.size());
-            CHECK(bytes == bytes2);   // byte-identical re-write
+            CHECK(loaded->Save() == bytes);         // byte-identical re-write
+            CHECK(loaded->Save(true) == bytes);     // forced: raw blocks stay verbatim
         }
     }
 
-    // --- Typed block (BSXFlags) round-trips typed, not as unknown ---
+    // --- A modeled block (BSXFlags) decodes through its view ---
     {
-        NifFile f;
-        f.header.versionLine = "Gamebryo File Format, Version 20.2.0.7";
-        f.header.version = kNifVersion;
-        f.header.endian = 1;
-        f.header.userVersion = kUserVersion;
-        f.header.bsVersion = kStreamVersion;
-        f.header.author = std::string("\0", 1);
-        f.header.processScript = std::string("\0", 1);
-        f.header.exportScript = std::string("\0", 1);
-        f.header.blockTypes = {"BSXFlags"};
-        f.header.blockTypeIndex = {0};
-        f.header.blockSizes = {0};
-        f.header.numBlocks = 1;
-        f.header.strings = {"BSX"};
-        f.header.maxStringLength = 3;
-
-        auto x = std::make_unique<BSXFlags>();
-        x->name.index = 0;
-        x->integerData = 0xCAFE;
-        f.blocks.push_back(std::move(x));
-
-        auto bytes = f.Save();
+        std::vector<uint8_t> body;
+        Stream w = Stream::Writer(body);
+        uint32_t name = 0, flags = 0xCAFE;
+        w.U32(name);
+        w.U32(flags);
+        const auto bytes = detail::WriteFraming(header({"BSXFlags"}, {"BSX"}), {body}, {0}, {});
         auto loaded = NifFile::Load(bytes);
         CHECK(loaded.has_value());
         if (loaded) {
-            CHECK_EQ(loaded->unknownBlocks.size(), 0u);   // typed, not raw
-            CHECK_EQ(loaded->layoutMismatches.size(), 0u);
-            auto* bsx = dynamic_cast<BSXFlags*>(loaded->GetBlock(0));
-            CHECK(bsx != nullptr);
+            CHECK_EQ(loaded->RawCount(), 0u);   // modeled, not raw
+            auto bsx = view::BSXFlags::From(loaded->blocks[0]);
+            CHECK(bsx.has_value());
             if (bsx) {
-                CHECK_EQ(bsx->integerData, 0xCAFEu);
-                CHECK_EQ(bsx->name.index, 0u);
-                CHECK(loaded->String(bsx->name) == "BSX");
+                CHECK_EQ(bsx->IntegerData(), 0xCAFEu);
+                CHECK_EQ(bsx->Name().index, 0u);
+                CHECK(loaded->String(bsx->Name()) == "BSX");
             }
-            CHECK(loaded->Save() == bytes);   // still byte-identical
+            CHECK(loaded->Save() == bytes);
+            CHECK(loaded->Save(true) == bytes);
         }
     }
 
     // --- Rejects a non-SSE version ---
     {
-        NifFile f;
-        f.header.versionLine = "Gamebryo File Format, Version 20.2.0.7";
-        f.header.version = kNifVersion;
-        f.header.endian = 1;
-        f.header.userVersion = kUserVersion;
-        f.header.bsVersion = 83;  // LE
-        f.header.numBlocks = 0;
-        std::vector<uint8_t> bytes = f.Save();
-        auto loaded = NifFile::Load(bytes);
+        Header h = header({}, {});
+        h.bsVersion = 83;  // LE
+        auto loaded = NifFile::Load(detail::WriteFraming(h, {}, {}, {}));
         CHECK(!loaded.has_value());
         if (!loaded) CHECK(loaded.error().kind == NifErrorKind::UnsupportedVersion);
     }

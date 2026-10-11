@@ -5,7 +5,11 @@ Keep in sync in the SAME change as the code.
 
 ## Open
 
-### Typed path: BSLightingShaderProperty's leading fields are mislabeled — OPEN (typed path only)
+None.
+
+## Fixed
+
+### Typed path: BSLightingShaderProperty's leading fields are mislabeled — FIXED
 - **Symptom:** the typed struct calls the first u32 `name` (a string ref) and the next three
   `headerA/B/C` ("observed -1/0/-1"). As a string index, `name` is out of range in 4,310 SSE
   blocks. SCT's `NifDocument::shaderType` is declared but never set, because the typed path
@@ -20,10 +24,10 @@ Keep in sync in the SAME change as the code.
 - **Where:** `include/niffer/Niffer.h` `struct BSLightingShaderProperty`,
   `cpp/blocks/Shaders.cpp` `BSLightingShaderProperty::Sync`.
 - **Status:** fixed in the schema (`schema/blocks/shaders/BSLightingShaderProperty.yaml`:
-  `shaderType`, `name`, `extraData`, `controller`). The typed path is left as-is; it is deleted
-  at migration step 6, and SCT moves to the schema path at step 5.
+  `shaderType`, `name`, `extraData`, `controller`); SCT reads `shaderType` since migration step
+  5, and step 6 deleted the typed path.
 
-### Typed path: `bhkCompressedMeshShape` / `bhkNiTriStripsShape` `.shape` is not a child shape — OPEN (typed path only)
+### Typed path: `bhkCompressedMeshShape` / `bhkNiTriStripsShape` `.shape` is not a child shape — FIXED
 - **Symptom:** treating the first field as an owning `ref` makes the block graph cyclic in
   7,918 SSE files: the shape "owns" the root node. In one `bhkNiTriStripsShape` it is out of
   range.
@@ -32,15 +36,14 @@ Keep in sync in the SAME change as the code.
   the data alone. In `bhkNiTriStripsShape` it isn't a block reference at all: it is 0 in 26
   blocks and `-455893853` in one.
 - **Where:** `cpp/blocks/Collision.cpp` (both registered as `bhkShapeWrapper`).
-- **Status:** fixed in the schema (`unknown0: u32` in both). The typed path is left as-is until
-  step 6.
+- **Status:** fixed in the schema (`unknown0: u32` in both); migration step 6 deleted the typed
+  path.
 
-### Typed path: BSFurnitureMarkerNode / BSDecalPlacementVectorExtraData typed as plain raw — OPEN (typed path only)
+### Typed path: BSFurnitureMarkerNode / BSDecalPlacementVectorExtraData typed as plain raw — FIXED
 - **Root cause:** both are extra data. They are referenced from `NiObjectNET.extraData` in 304
   SSE blocks, and their first u32 is always a valid string index (`NiExtraData.name`).
-- **Status:** fixed in the schema (both inherit `NiExtraData`).
-
-## Fixed
+- **Status:** fixed in the schema (both inherit `NiExtraData`); migration step 6 deleted the
+  typed path. SCT's NifDocument flags them as extra data since step 5.
 
 ### CollisionExtract.cpp is not clean-room — FIXED
 - **Symptom:** `cpp/blocks/CollisionExtract.cpp` (`ExtractCollision`, used by SCT's
@@ -52,7 +55,7 @@ Keep in sync in the SAME change as the code.
 - **Fix:** the old file is deleted. A session that never read it reverse-engineered the bhk
   payloads from the SSE corpus alone (no nif.xml, nifly or other NIF library; no Havok SDK
   headers either) and described them in `schema/blocks/collision/` (every bhk class but the
-  MOPP byte code is now decoded field by field; `roundtrip --schema` GREEN). The new
+  MOPP byte code is now decoded field by field; the schema gate GREEN). The new
   `ExtractCollision` (same API: `CollisionGeometry`, `kHavokToSkyrim`) is
   `cpp/collision/Collision.cpp` over the schema engine, with its internals in
   `hpp/Collision.h`. Every convention it applies was selected by corpus measurement
@@ -74,3 +77,4 @@ Keep in sync in the SAME change as the code.
   hit it at startup.
 - **Fix:** registration runs inside a function-local static initializer, which runs exactly once
   and blocks concurrent callers until it finishes (`cpp/Registry.cpp` `EnsureBlocksRegistered`).
+  The registry itself was deleted with the typed path in migration step 6.

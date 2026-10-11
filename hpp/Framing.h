@@ -1,9 +1,8 @@
 #pragma once
-// ── Framing — the file container shared by NifFile and Nif ───────────────────
-// Header, per-block byte windows, footer roots and trailing bytes. Both the
-// typed path (NifFile) and the schema path (Nif) read and write files through
-// these, so the two can never disagree about the container. SSE only: any other
-// version is rejected as UnsupportedVersion.
+// ── Framing — the file container ─────────────────────────────────────────────
+// Header, per-block byte windows, footer roots and trailing bytes; NifFile reads
+// and writes files through these. SSE only: any other version is rejected as
+// UnsupportedVersion.
 
 #include <niffer/Niffer.h>
 

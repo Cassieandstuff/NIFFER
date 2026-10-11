@@ -5,7 +5,7 @@
 // tools/schemagen) for every block class; nothing here is per-block code. The
 // semantics are specified in docs/schema-language.md.
 //
-//   auto nif = niffer::Nif::LoadFile(path);                     // std::expected
+//   auto nif = niffer::NifFile::LoadFile(path);                 // std::expected
 //   for (niffer::Block& b : nif->blocks)
 //       if (auto node = niffer::view::NiNode::From(b))
 //           for (auto child : node->Children()) use(nif->Get(child));
@@ -316,26 +316,25 @@ private:
     friend struct BlockAccess;
 };
 
-// ── Nif — the schema-path container ──────────────────────────────────────────
-// Header, blocks, footer roots and trailing bytes. The header is parsed by the
-// same framing code as NifFile (SSE only). During the migration this coexists
-// with the typed NifFile; it takes over that name once the typed path is gone.
-class Nif {
+// ── NifFile — the container ──────────────────────────────────────────────────
+// Header, blocks, footer roots and trailing bytes (SSE only). Each block body is
+// a Block interpreted by the schema.
+class NifFile {
 public:
     Header                header;
     std::vector<Block>    blocks;     // index == file block index
     std::vector<int32_t>  roots;      // footer root refs
     std::vector<uint8_t>  trailing;   // bytes past the footer, verbatim
 
-    static std::expected<Nif, NifError> Load(const uint8_t* data, size_t len,
-                                             const schema::SchemaSet& set = schema::Main(),
-                                             LoadMode mode = LoadMode::Packed);
-    static std::expected<Nif, NifError> Load(const std::vector<uint8_t>& bytes,
-                                             const schema::SchemaSet& set = schema::Main(),
-                                             LoadMode mode = LoadMode::Packed);
-    static std::expected<Nif, NifError> LoadFile(const std::string& path,
+    static std::expected<NifFile, NifError> Load(const uint8_t* data, size_t len,
                                                  const schema::SchemaSet& set = schema::Main(),
                                                  LoadMode mode = LoadMode::Packed);
+    static std::expected<NifFile, NifError> Load(const std::vector<uint8_t>& bytes,
+                                                 const schema::SchemaSet& set = schema::Main(),
+                                                 LoadMode mode = LoadMode::Packed);
+    static std::expected<NifFile, NifError> LoadFile(const std::string& path,
+                                                     const schema::SchemaSet& set = schema::Main(),
+                                                     LoadMode mode = LoadMode::Packed);
 
     // Block sizes are re-measured; every other header fact is emitted verbatim.
     // `force` re-encodes every modeled block from its value (the real-data gate).
@@ -478,11 +477,11 @@ bool Block::Set(const FieldRef<T>& f, const T& v) {
 #include <niffer/generated/Fields.h>
 #include <niffer/generated/Views.h>
 
-// ── Decode helpers on the schema path ────────────────────────────────────────
-// The schema-path counterparts of the typed helpers in Niffer.h (DecodeMesh,
-// ExtractCollision). They read through the generated views and
-// Block::ForEachElement, so packed vertex arrays are decoded one element at a
-// time and never materialized. Not on the round-trip path.
+// ── Decode helpers over NifFile ──────────────────────────────────────────────
+// Geometry and collision (DecodedMesh and CollisionGeometry are in Niffer.h).
+// They read through the generated views and Block::ForEachElement, so packed
+// vertex arrays are decoded one element at a time and never materialized. Not
+// on the round-trip path.
 namespace niffer {
 
 // A shape's own vertices and triangles. numVertices is the shape's; the
@@ -495,9 +494,8 @@ DecodedMesh DecodeMesh(const view::NiSkinPartition& partition);
 // partition's when the shape stores none; for BSDynamicTriShape (FaceGen
 // heads), attributes and triangles from the partition with positions from the
 // shape's dynamic vertices. Empty when `shape` isn't a BSTriShape.
-DecodedMesh DecodeShapeMesh(Nif& nif, Block& shape);
-// ExtractCollision over a schema-path Nif (the NifFile overload re-reads the
-// file as one).
-CollisionGeometry ExtractCollision(Nif& nif);
+DecodedMesh DecodeShapeMesh(NifFile& nif, Block& shape);
+// Collision geometry; see CollisionGeometry in Niffer.h.
+CollisionGeometry ExtractCollision(NifFile& nif);
 
 }  // namespace niffer

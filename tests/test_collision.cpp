@@ -1,3 +1,4 @@
+#include "Framing.h"
 #include "test_harness.h"
 
 #include <niffer/Niffer.h>
@@ -6,7 +7,6 @@
 #include <cmath>
 #include <cstring>
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -143,37 +143,30 @@ void run_collision_tests() {
         { "bhkCompressedMeshShapeData", CompressedMeshData() }, // 11
     };
 
-    NifFile f;
-    f.header.versionLine = "Gamebryo File Format, Version 20.2.0.7";
-    f.header.version = kNifVersion;
-    f.header.endian = 1;
-    f.header.userVersion = kUserVersion;
-    f.header.bsVersion = kStreamVersion;
-    f.header.author = std::string("\0", 1);
-    f.header.processScript = std::string("\0", 1);
-    f.header.exportScript = std::string("\0", 1);
+    Header h;
+    h.versionLine = "Gamebryo File Format, Version 20.2.0.7";
+    h.author = std::string("\0", 1);
+    h.processScript = std::string("\0", 1);
+    h.exportScript = std::string("\0", 1);
     std::map<std::string, uint16_t> typeIndex;
+    std::vector<std::vector<uint8_t>> bodies;
     for (auto& [name, raw] : blocks) {
         if (!typeIndex.count(name)) {
-            typeIndex[name] = static_cast<uint16_t>(f.header.blockTypes.size());
-            f.header.blockTypes.push_back(name);
+            typeIndex[name] = static_cast<uint16_t>(h.blockTypes.size());
+            h.blockTypes.push_back(name);
         }
-        f.header.blockTypeIndex.push_back(typeIndex[name]);
-        f.header.blockSizes.push_back(0);
-        auto u = std::make_unique<UnknownBlock>();
-        u->typeName = name;
-        u->raw = raw;
-        f.blocks.push_back(std::move(u));
+        h.blockTypeIndex.push_back(typeIndex[name]);
+        bodies.push_back(raw);
     }
-    f.header.numBlocks = static_cast<uint32_t>(blocks.size());
-    f.roots = { 0 };
+    h.numBlocks = static_cast<uint32_t>(blocks.size());
 
     // Every block must decode under the schema, or the test exercises nothing.
-    auto nif = Nif::Load(f.Save());
+    auto nif = NifFile::Load(detail::WriteFraming(h, bodies, { 0 }, {}));
     CHECK(nif.has_value());
-    if (nif) CHECK_EQ(nif->RawCount(), 0u);
+    if (!nif) return;
+    CHECK_EQ(nif->RawCount(), 0u);
 
-    const CollisionGeometry g = ExtractCollision(f);
+    const CollisionGeometry g = ExtractCollision(*nif);
     CHECK_EQ(g.shapesDecoded, 2);
     CHECK_EQ(g.shapesSkipped, 1);   // the cylinder
 

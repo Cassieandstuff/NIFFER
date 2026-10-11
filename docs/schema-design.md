@@ -1,6 +1,6 @@
 # NIFFER — schema-first design
 
-Status: **steps 1–4 implemented** (2026-10-10). The normative spec is
+Status: **steps 1–6 implemented** (2026-10-10). The normative spec is
 [schema-language.md](schema-language.md). The model follows ESPER's
 (github.com/Cassieandstuff/ESPER, `docs/schema-design.md`), which settled the same questions for
 plugin records; this document records where NIF differs.
@@ -15,7 +15,7 @@ it.
 |---|---|---|
 | **Schema** | the descriptor-language spec, the `schema/` YAML descriptors (one file per block class), and a generated `schema.json` bundle | anyone, in any language |
 | **Generated C++** | field handles, typed views and engine tables, generated from the schema and committed | the engine and C++ consumers; they never touch YAML |
-| **`niffer::niffer`** | the engine (`niffer::Nif`, `niffer::Block`), the decode helpers, and the gate tools | C++ consumers |
+| **`niffer::niffer`** | the engine (`niffer::NifFile`, `niffer::Block`), the decode helpers, and the gate tools | C++ consumers |
 
 **One repo:** a schema change and the real-data run that proves it land in the same commit. NIFFER
 is clean-room, so that gate is the schema's only check. No layout is ever taken from `nif.xml`,
@@ -27,7 +27,7 @@ schema/**/*.yaml ──► tools/schemagen ──┬─► schema.json          
                                        ├─► include/niffer/generated/Views.h       (public typed views)
                                        └─► hpp/generated/Tables.h                 (engine tables, private)
                                                         │
-                                   niffer::Nif / niffer::Block (engine) ◄──┘
+                               niffer::NifFile / niffer::Block (engine) ◄──┘
 ```
 
 ## Repo layout
@@ -70,7 +70,7 @@ raw.
 
 ## Engine
 
-- **Container:** `niffer::Nif` loads a file: the header (parsed by the existing hand-written
+- **Container:** `niffer::NifFile` loads a file: the header (parsed by the hand-written
   `Header::Sync`, as ESPER keeps its container code in C++), one `niffer::Block` per block, the
   root refs, and any trailing bytes. `Save(force)` writes it back.
 - **Block:** holds its type name, original bytes, definition (none if raw), decoded value tree
@@ -82,7 +82,7 @@ raw.
   (`"transform/translation/x"`) for tools, and generated typed views:
 
   ```cpp
-  niffer::Nif nif = *niffer::Nif::LoadFile(path);
+  niffer::NifFile nif = *niffer::NifFile::LoadFile(path);
   for (niffer::Block& b : nif.blocks)
       if (auto shape = niffer::view::BSTriShape::From(b)) {
           niffer::NiRef<niffer::view::NiObject> shader = shape->ShaderProperty();
@@ -98,10 +98,10 @@ raw.
 ## Gates
 
 - `niffer-test` (CTest): the synthetic suite, including the schema engine over `tests/schema`.
-- `niffer-tool roundtrip --schema <dir>` (real data). For every SSE file:
-  - verbatim save and **forced** re-encode are both byte-identical to the input;
-  - every block the schema models decodes (no refusals), and it models at least what the typed
-    path types;
+- `niffer-tool roundtrip <dir>` (real data). For every SSE file:
+  - verbatim save and **forced** re-encode are both byte-identical to the input, and so is the
+    default packed load's save;
+  - every block with a descriptor decodes (no refusals);
   - every `ref`/`ptr` is null or in range, and every `to:` claim holds;
   - the `ref` graph is acyclic;
   - every `stringref` is empty or in range.
@@ -127,16 +127,16 @@ a general storage mode in the engine, not per-block code:
   nothing). Readers index an element with the views' generated field-index constants
   (`view::BSVertex::kPosition`). Per-attribute view accessors remain the convenient path for
   single reads; each of those decodes its element again.
-- **Measured** (`decode-compare`, all 83,178 shapes in the corpus, summed over threads): the
-  schema `DecodeShapeMesh` takes 17.3 s against the typed `DecodeMesh`'s 4.0 s, about 0.2 ms per
-  shape. Before element reuse it was 155.7 s. The rest of the gap is the interpreter's
+- **Measured** (`decode-compare`, all 83,178 shapes in the corpus, summed over threads, before
+  step 6 removed it with the typed path): the schema `DecodeShapeMesh` took 17.3 s against the
+  typed `DecodeMesh`'s 4.0 s, about 0.2 ms per shape. Before element reuse it was 155.7 s. The rest of the gap is the interpreter's
   per-field work (conditions, frames); a later optimization could compile a per-array element
   plan.
 
 ## Migration plan
 
-Each step ships on its own. The typed path (`NifFile` and the structs in `Niffer.h`) keeps working
-until step 6.
+Each step shipped on its own. The typed path (the hand-written `NifFile` and the block structs
+in `Niffer.h`) kept working until step 6 deleted it.
 
 1. **Done (2026-10-09). Spec, generator, engine; seed every typed layout.** Language 0.1, the
    generator (validation plus all four outputs), the engine, and the test schema. A one-shot
@@ -202,10 +202,20 @@ until step 6.
    stay on `TriFile`: TRI is its own file format, outside the NIF schema.
    `GlossinessToRoughness` and `DecodeVertexDesc` are pure functions and serve both paths. The
    typed `DecodeMesh` overloads stay until step 6.
-5. **Port SCT** (sct-assets, sct-pipeline, Scene Editor v2) to `niffer::Nif` and the views, and
-   bump SCT's NIFFER pin.
-6. **Delete the typed world:** the hand-written structs, `Sync` functions and registry. `Nif` takes
-   over `NifFile`'s name.
+5. **Done (2026-10-10). Port SCT.** SCT's `NifDocument` loads with the schema container and reads
+   every block through the views; geometry comes from `DecodeShapeMesh`, and the viewport's
+   collision from `ExtractCollision` (Skyrim-Content-Tools PR 15). Old and new `NifDocument`
+   were compared over the corpus: geometry, textures, shader flags, material values, alpha and
+   skin bindings are bit-identical. The differences are corrections: blocks the typed path kept
+   raw (`BSDamageStage` and `BSMasterParticleSystem` children, `BSFurnitureMarkerNode` and
+   `BSDecalPlacementVectorExtraData` as extra data), and `shaderType`, which the typed path
+   never exposed.
+6. **Done (2026-10-10). Delete the typed world.** The hand-written block structs, their `Sync`
+   functions, the registry, `UnknownBlock`, the math PODs and the typed `DecodeMesh` overloads
+   are gone, with `roundtrip`'s typed half and `decode-compare`. `Nif` took over `NifFile`'s
+   name; `niffer-tool roundtrip` is the schema gate. `Stream` remains for the header, footer and
+   TRI. The gates are unchanged: `roundtrip` GREEN (786,940 blocks, all modeled; 98.67%
+   decoded), `tri-roundtrip` 569 of 569, `collision-validate` identical to before.
 7. **Text form (optional):** a `niffer-yaml` target that decompiles a NIF to YAML through the
    schema and compiles it back. It writes blocks in faithful mode (byte-exact) or authoring mode
    (named refs, tables rebuilt).

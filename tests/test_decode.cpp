@@ -28,25 +28,42 @@ void run_decode_tests() {
         CHECK(L.hasSkin);
     }
 
-    // Full round of DecodeMesh on a hand-built full-precision vertex.
+    // DecodeMesh on a hand-built BSTriShape with one full-precision vertex.
     {
-        BSTriShape s;
-        s.vertexDesc = 0x0001B00000650407ull;  // 28B: pos@0 full, uv@16, nrm@20, tan@24
-        s.numVertices = 1;
-        s.numTriangles = 0;
-        s.geometryData.assign(28, 0);
-        float px = 1.5f, py = -2.0f, pz = 3.25f;
-        std::memcpy(&s.geometryData[0], &px, 4);
-        std::memcpy(&s.geometryData[4], &py, 4);
-        std::memcpy(&s.geometryData[8], &pz, 4);
-        auto m = DecodeMesh(s);
-        CHECK_EQ(m.numVertices, 1u);
-        CHECK(m.positions.size() == 3);
-        CHECK(std::fabs(m.positions[0] - 1.5f) < 1e-5f);
-        CHECK(std::fabs(m.positions[1] + 2.0f) < 1e-5f);
-        CHECK(std::fabs(m.positions[2] - 3.25f) < 1e-5f);
-        CHECK(m.uvs.size() == 2);   // hasUV
-        CHECK(m.normals.size() == 3);
+        std::vector<uint8_t> blk;
+        auto put = [&](auto v) {
+            const auto* p = reinterpret_cast<const uint8_t*>(&v);
+            blk.insert(blk.end(), p, p + sizeof v);
+        };
+        put(0xFFFFFFFFu); put(0u); put(-1);                  // name, extraData[], controller
+        put(14u);                                            // flags
+        for (int i = 0; i < 3; ++i) put(0.f);                // translation
+        for (int i = 0; i < 9; ++i) put(i % 4 == 0 ? 1.f : 0.f);   // rotation
+        put(1.f); put(-1);                                   // scale, collisionObject
+        for (int i = 0; i < 4; ++i) put(1.f);                // bound sphere
+        put(-1); put(-1); put(-1);                           // skin, shader, alpha
+        put(0x0001B00000650407ull);                          // 28B: pos@0 full, uv@16, nrm@20, tan@24
+        put(uint16_t{0}); put(uint16_t{1}); put(28u);        // numTriangles, numVertices, dataSize
+        put(1.5f); put(-2.0f); put(3.25f); put(0.f);         // position + w
+        put(uint32_t{0});                                    // uv (two halves)
+        put(uint32_t{0x7F7F7FFFu});                          // normal
+        put(uint32_t{0x7F7F7FFFu});                          // tangent
+        put(0u);                                             // particleDataSize
+        Block b = Block::Load(schema::Main(), "BSTriShape", blk);
+        auto shape = view::BSTriShape::From(b);
+        CHECK(shape.has_value());
+        if (shape) {
+            auto m = DecodeMesh(*shape);
+            CHECK_EQ(m.numVertices, 1u);
+            CHECK(m.positions.size() == 3);
+            if (m.positions.size() == 3) {
+                CHECK(std::fabs(m.positions[0] - 1.5f) < 1e-5f);
+                CHECK(std::fabs(m.positions[1] + 2.0f) < 1e-5f);
+                CHECK(std::fabs(m.positions[2] - 3.25f) < 1e-5f);
+            }
+            CHECK(m.uvs.size() == 2);   // hasUV
+            CHECK(m.normals.size() == 3);
+        }
     }
 
     // TRI morph delta decode: int16 * baseDiff.

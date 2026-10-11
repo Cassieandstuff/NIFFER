@@ -8,10 +8,10 @@
 #   include/niffer/Niffer.h  — the ONE header consumers include (the umbrella)
 #   include/niffer/Schema.h  — the schema engine, behind the umbrella
 #   include/niffer/generated — generated handles + views, behind the umbrella
-#   hpp/                     — private headers (Stream, registry, framing,
+#   hpp/                     — private headers (Stream, framing, collision,
 #                              generated/Tables.h)
-#   cpp/                     — the impl (cpp/blocks/ = typed block layouts,
-#                              cpp/engine/ = the schema engine)
+#   cpp/                     — the impl (cpp/engine/ = the schema engine,
+#                              cpp/collision/ = ExtractCollision)
 #   schema/                  — the YAML schema (docs/schema-language.md)
 #   tests/                   — synthetic self-verifying tests (CTest)
 #   tools/                   — niffer-tool (real-data gates), schemagen
@@ -23,7 +23,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(NIFFER
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "Clean-room C++23 NIF + FaceGen TRI library for Skyrim Special Edition"
     LANGUAGES CXX)
 
@@ -122,11 +122,11 @@ if(NIFFER_BUILD_TESTS)
 endif()
 
 # ── Tools (Tier 2: vanilla-corpus gates; need game data, not ctests) ──────────
-#   niffer-tool histogram|roundtrip|dump — see tools/niffer_tool.cpp
+#   niffer-tool roundtrip|tri-roundtrip|collision-validate|… — see tools/niffer_tool.cpp
 if(NIFFER_BUILD_TOOLS)
     add_executable(niffer-tool tools/niffer_tool.cpp)
     target_link_libraries(niffer-tool PRIVATE niffer::niffer)
-    # Whitebox like the tests: the tool dumps internal block/framing state.
+    # Whitebox like the tests: the tool reads the header and collision internals.
     target_include_directories(niffer-tool PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/hpp")
     if(MSVC)
         target_compile_options(niffer-tool PRIVATE /utf-8)

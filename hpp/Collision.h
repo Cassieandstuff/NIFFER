@@ -60,8 +60,8 @@ struct WorldTransforms {
     std::vector<Xform> world;
     std::vector<bool>  valid;
 };
-WorldTransforms ComputeWorldTransforms(Nif& nif, const Options& opt);
+WorldTransforms ComputeWorldTransforms(NifFile& nif, const Options& opt);
 
-CollisionGeometry Extract(Nif& nif, const Options& opt, Diagnostics* diag = nullptr);
+CollisionGeometry Extract(NifFile& nif, const Options& opt, Diagnostics* diag = nullptr);
 
 }  // namespace niffer::collision

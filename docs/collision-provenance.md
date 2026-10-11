@@ -30,7 +30,7 @@ block of its class in the corpus, and kept only if the test held.
    then invariants (unit vectors, orthonormal frames, points inside stored bounds, indices in
    range, values equal to a related block's).
 4. The hypotheses were encoded as descriptors and proved by the schema gate (`niffer-tool
-   roundtrip --schema --refs`): byte-exact verbatim, forced and packed re-encode, no refusals,
+   roundtrip --refs`): byte-exact verbatim, forced and packed re-encode, no refusals,
    every `to:` claim, acyclic `ref` graph.
 5. `niffer-tool collision-validate --sweep` measures the extractor's conventions against the
    render geometry (below).
@@ -194,8 +194,8 @@ word is always 0.
 
 ## ExtractCollision
 
-`cpp/collision/Collision.cpp` serializes the `NifFile`, loads it as a schema `Nif`, and reads
-through the generated views. Conventions, each chosen by measurement:
+`cpp/collision/Collision.cpp` reads a `NifFile` through the generated views. Conventions, each
+chosen by measurement:
 
 | Convention | Measurement |
 |---|---|

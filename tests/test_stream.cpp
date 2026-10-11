@@ -13,7 +13,7 @@ using namespace niffer;
 void run_stream_tests() {
     std::printf(" stream\n");
 
-    // Scalars + math PODs + strings, all in one buffer.
+    // Scalars + strings, all in one buffer.
     std::vector<uint8_t> buf;
     {
         Stream w = Stream::Writer(buf);
@@ -22,8 +22,6 @@ void run_stream_tests() {
         uint32_t u32 = 0xDEADBEEF;      w.U32(u32);
         int32_t  i32 = -12345;          w.I32(i32);
         float    f = 3.14159f;          w.F32(f);
-        Vec3     v3{1, 2, 3};           w.Vec3v(v3);
-        Quat     q{0.1f, 0.2f, 0.3f, 0.4f}; w.Quatv(q);
         std::string ss = "mcarofano";   w.ShortString(ss);
         std::string sz = "BSFadeNode";  w.SizedString(sz);
         std::string ln = "Gamebryo File Format, Version 20.2.0.7"; w.Line(ln, 0x0A);
@@ -36,8 +34,6 @@ void run_stream_tests() {
         uint32_t u32 = 0; r.U32(u32); CHECK_EQ(u32, 0xDEADBEEFu);
         int32_t i32 = 0;  r.I32(i32); CHECK_EQ(i32, -12345);
         float f = 0;      r.F32(f);   CHECK(f > 3.14f && f < 3.15f);
-        Vec3 v3;          r.Vec3v(v3); CHECK(v3.x == 1 && v3.y == 2 && v3.z == 3);
-        Quat q;           r.Quatv(q);  CHECK(q.w == 0.1f && q.z == 0.4f);
         std::string ss;   r.ShortString(ss); CHECK(ss == "mcarofano");
         std::string sz;   r.SizedString(sz); CHECK(sz == "BSFadeNode");
         std::string ln;   r.Line(ln, 0x0A);  CHECK(ln == "Gamebryo File Format, Version 20.2.0.7");

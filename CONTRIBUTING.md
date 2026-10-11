@@ -34,17 +34,14 @@ editing a descriptor, regenerate the outputs with the `niffer-schemagen` target 
 PyYAML) and commit them together with the YAML. Never edit generated files by hand.
 
 `to:` targets, `ref` vs `ptr`, and field meanings are claims about the data. Add one only when
-`niffer-tool roundtrip --schema` confirms it over the vanilla corpus; `--refs` shows the target
+`niffer-tool roundtrip` confirms it over the vanilla corpus; `--refs` shows the target
 classes each untyped reference field actually has.
-
-The typed path (`cpp/blocks/`) is being retired. Don't extend it; new coverage goes in the
-schema.
 
 ## Before you open a pull request
 
 - `ctest` passes: `niffer-test`, the generator tests, and the generated-output freshness checks.
-- With `-DNIFFER_BUILD_TOOLS=ON`, `niffer-tool roundtrip`, `niffer-tool roundtrip --schema` and
-  `niffer-tool tri-roundtrip` over the full extracted vanilla corpus stay **GREEN**: every SSE
-  file byte-identical, no new unknown or refused blocks, and no reference or string violations.
-- One description drives both read and write: one descriptor, or on the typed path one
-  `Sync(Stream&)`. Never add a separate read or write path for one direction.
+- With `-DNIFFER_BUILD_TOOLS=ON`, `niffer-tool roundtrip` and `niffer-tool tri-roundtrip` over
+  the full extracted vanilla corpus stay **GREEN**: every SSE file byte-identical, no new raw or
+  refused blocks, and no reference or string violations.
+- One description drives both read and write: one descriptor per block class, one `Sync(Stream&)`
+  for the header and for TRI. Never add a separate read or write path for one direction.

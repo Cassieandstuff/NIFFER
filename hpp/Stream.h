@@ -1,10 +1,11 @@
 #pragma once
 // ── Stream — the co-location serialization channel ────────────────────────────
-// One Stream drives BOTH directions of every layout: a block's Sync(Stream&)
-// reads INTO its fields in Read mode and writes FROM the same fields in Write
-// mode, so read and write layouts can never drift (the CLAUDE.md omnidirectional
-// rule). Little-endian, host-native (SSE x64). Sticky error: once !ok every op
-// is a no-op, so callers can run a whole block then check once.
+// One Stream drives BOTH directions of the file framing (Header::Sync, the
+// footer) and of TRI: Sync(Stream&) reads INTO its fields in Read mode and
+// writes FROM the same fields in Write mode, so read and write layouts can never
+// drift. Block bodies don't use it; the schema engine encodes those.
+// Little-endian, host-native (SSE x64). Sticky error: once !ok every op is a
+// no-op, so callers can run a whole structure then check once.
 //
 // Byte-exactness discipline: length-prefixed strings store their RAW content
 // bytes verbatim (including any embedded/trailing null), so re-emitting
@@ -69,53 +70,6 @@ public:
     void U64(uint64_t& v) { scalar(v); }
     void I32(int32_t& v)  { scalar(v); }
     void F32(float& v)    { scalar(v); }
-    void Half(uint16_t& v){ scalar(v); }   // raw half; decode at the view layer
-
-    template <class E>
-    void Enum(E& e) {
-        auto u = static_cast<std::underlying_type_t<E>>(e);
-        scalar(u);
-        if (reading()) e = static_cast<E>(u);
-    }
-
-    // ── math PODs (disk layout) ─────────────────────────────────────────────────
-    void Vec2v(Vec2& v) { F32(v.x); F32(v.y); }
-    void Vec3v(Vec3& v) { F32(v.x); F32(v.y); F32(v.z); }
-    void Vec4v(Vec4& v) { F32(v.x); F32(v.y); F32(v.z); F32(v.w); }
-    void Quatv(Quat& q) { F32(q.w); F32(q.x); F32(q.y); F32(q.z); }  // w-first
-    void Mat33v(Mat33& m) { for (float& f : m.m) F32(f); }
-    // The NiTransform *compound* (NiSkinData skin/bone transforms) is stored
-    // Rotation, Translation, Scale on disk.
-    void Transformv(NiTransform& t) { Mat33v(t.rotation); Vec3v(t.translation); F32(t.scale); }
-    // NiAVObject's INLINE transform uses the OPPOSITE field order on disk —
-    // Translation, Rotation, Scale — NOT the NiTransform compound layout. Byte
-    // round-trip can't catch a mix-up here (read-order == write-order preserves
-    // bytes while mislabeling fields), so the two orders are kept distinct.
-    void AvTransformv(NiTransform& t) { Vec3v(t.translation); Mat33v(t.rotation); F32(t.scale); }
-
-    // ── references ──────────────────────────────────────────────────────────────
-    void Ref(NiRefBase& r)        { scalar(r.index); }
-    void StringRef(NiStringRef& r){ scalar(r.index); }
-
-    // u32 count followed by that many refs (the ubiquitous NIF ref-array).
-    template <class T>
-    void RefArray(std::vector<NiRef<T>>& v) {
-        uint32_t count = static_cast<uint32_t>(v.size());
-        scalar(count);
-        if (!ok) return;
-        if (reading()) { if (!boundedResize(v, count, 4)) return; }
-        for (auto& r : v) scalar(r.index);
-    }
-
-    // u32 count followed by that many scalars (indices, ids, …).
-    template <class T>
-    void ScalarArray(std::vector<T>& v) {
-        uint32_t count = static_cast<uint32_t>(v.size());
-        scalar(count);
-        if (!ok) return;
-        if (reading()) { if (!boundedResize(v, count, sizeof(T))) return; }
-        for (auto& x : v) scalar(x);
-    }
 
     // ── strings (raw content stored verbatim; byte-exact round-trip) ────────────
     // u8 length prefix (Bethesda export strings; length historically counts the
@@ -156,7 +110,7 @@ public:
         }
     }
     // Read n raw bytes into a fresh vector (read mode); write the vector as-is
-    // (write mode). Used by UnknownBlock and blob-carrying fields.
+    // (write mode).
     void RawVector(std::vector<uint8_t>& v, size_t n) {
         if (!ok) return;
         if (reading()) {
@@ -174,19 +128,6 @@ private:
 
     void fail(const char* what) {
         if (ok) { ok = false; errorOffset = Position(); error = what; }
-    }
-
-    // Guard a count against the bytes actually left before resizing, so a bogus
-    // count (e.g. 0xFFFFFFFF from a mis-parsed layout) fails cleanly instead of
-    // attempting a multi-gigabyte allocation. Only meaningful in read mode.
-    template <class V>
-    bool boundedResize(V& v, uint32_t count, size_t elemBytes) {
-        if (static_cast<uint64_t>(count) * elemBytes > Remaining()) {
-            fail("array count exceeds remaining bytes");
-            return false;
-        }
-        v.resize(count);
-        return true;
     }
 
     template <class T>

@@ -4,8 +4,7 @@
 // (quantized-vertex decode, strip order, transform conventions, Havok scale) is
 // the one the corpus measurement selected. Evidence: docs/collision-provenance.md.
 //
-// Not on the round-trip path: the NifFile is serialized and re-read as a schema
-// Nif, and geometry is read through the generated views.
+// Not on the round-trip path: geometry is read through the generated views.
 #include "Collision.h"
 
 #include <algorithm>
@@ -108,7 +107,7 @@ const std::vector<V3>& SphereDirs() {
 
 class Extractor {
 public:
-    Extractor(Nif& nif, const Options& opt, Diagnostics* diag) : nif_(nif), opt_(opt), diag_(diag) {}
+    Extractor(NifFile& nif, const Options& opt, Diagnostics* diag) : nif_(nif), opt_(opt), diag_(diag) {}
 
     CollisionGeometry Run();
 
@@ -126,7 +125,7 @@ private:
         if (diag_) ++diag_->decoded[cls];
     }
 
-    Nif&              nif_;
+    NifFile&          nif_;
     const Options&    opt_;
     Diagnostics*      diag_;
     CollisionGeometry out_;
@@ -420,7 +419,7 @@ CollisionGeometry Extractor::Run() {
 
 }  // namespace
 
-WorldTransforms ComputeWorldTransforms(Nif& nif, const Options& opt) {
+WorldTransforms ComputeWorldTransforms(NifFile& nif, const Options& opt) {
     WorldTransforms wt;
     wt.world.resize(nif.blocks.size());
     wt.valid.assign(nif.blocks.size(), false);
@@ -440,20 +439,14 @@ WorldTransforms ComputeWorldTransforms(Nif& nif, const Options& opt) {
     return wt;
 }
 
-CollisionGeometry Extract(Nif& nif, const Options& opt, Diagnostics* diag) {
+CollisionGeometry Extract(NifFile& nif, const Options& opt, Diagnostics* diag) {
     return Extractor(nif, opt, diag).Run();
 }
 
 }  // namespace collision
 
-CollisionGeometry ExtractCollision(Nif& nif) {
+CollisionGeometry ExtractCollision(NifFile& nif) {
     return collision::Extract(nif, collision::Options{});
-}
-
-CollisionGeometry ExtractCollision(const NifFile& nif) {
-    auto loaded = Nif::Load(nif.Save());
-    if (!loaded) return {};
-    return ExtractCollision(*loaded);
 }
 
 }  // namespace niffer

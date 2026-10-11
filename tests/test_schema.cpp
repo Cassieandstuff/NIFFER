@@ -1,4 +1,4 @@
-// Schema engine tests: niffer::Block / niffer::Nif driven by the test-only
+// Schema engine tests: niffer::Block / niffer::NifFile driven by the test-only
 // schema in tests/schema (generated into tests/generated), which exercises
 // every language-0.1 construct, plus a smoke test of the real schema.
 #include "test_harness.h"
@@ -249,7 +249,7 @@ void Container() {
     h.numBlocks = static_cast<uint32_t>(bodies.size());
     const auto file = detail::WriteFraming(h, bodies, {1}, {});
 
-    auto nif = Nif::Load(file, Test());
+    auto nif = NifFile::Load(file, Test());
     CHECK(nif.has_value());
     if (!nif) return;
     CHECK_EQ(nif->blocks.size(), 4u);
@@ -270,14 +270,14 @@ void Container() {
     // Editing one block re-encodes only that block.
     CHECK(leaf->SetValue(33));
     auto saved = nif->Save();
-    auto again = Nif::Load(saved, Test());
+    auto again = NifFile::Load(saved, Test());
     CHECK(again.has_value() && tv::TLeaf::From(again->blocks[2])->Value() == 33u);
     CHECK(again.has_value() && again->blocks[3].Encode() == (std::vector<uint8_t>{0xDE, 0xAD}));
 
     // Non-SSE files are refused by the shared framing.
     Header le = h;
     le.userVersion = 11;
-    auto bad = Nif::Load(detail::WriteFraming(le, bodies, {1}, {}), Test());
+    auto bad = NifFile::Load(detail::WriteFraming(le, bodies, {1}, {}), Test());
     CHECK(!bad.has_value() && bad.error().kind == NifErrorKind::UnsupportedVersion);
 }
 
@@ -469,7 +469,7 @@ void Elements() {
 }
 
 // A one-shape file: a BSTriShape with three vertices (position, uv, normal) and
-// one triangle, decoded by both paths.
+// one triangle.
 void SchemaDecodeMesh() {
     const uint64_t desc = 6ull | (4ull << 8) | (5ull << 16) | (0x00Bull << 44);   // 24-byte vertex
     Bytes s;
@@ -497,19 +497,17 @@ void SchemaDecodeMesh() {
     h.numBlocks = 1;
     const auto file = detail::WriteFraming(h, {s.b}, {0}, {});
 
-    auto typed = NifFile::Load(file);
-    auto nif = Nif::Load(file);
-    CHECK(typed.has_value() && nif.has_value());
-    if (!typed || !nif) return;
-    auto* shape = dynamic_cast<BSTriShape*>(typed->blocks[0].get());
-    CHECK(shape != nullptr && nif->blocks[0].Modeled());
-    if (!shape) return;
-    const DecodedMesh a = DecodeMesh(*shape);
+    auto nif = NifFile::Load(file);
+    CHECK(nif.has_value());
+    if (!nif) return;
+    CHECK(nif->blocks[0].Modeled());
     const DecodedMesh b = DecodeShapeMesh(*nif, nif->blocks[0]);
     CHECK_EQ(b.numVertices, 3u);
-    CHECK(a.positions == b.positions && a.normals == b.normals && a.uvs == b.uvs);
-    CHECK(a.triangles == b.triangles && b.triangles == (std::vector<uint16_t>{0, 1, 2}));
-    CHECK(b.positions.size() == 9 && b.positions[8] == 9.5f && b.uvs[2] == 0.25f);
+    CHECK(b.triangles == (std::vector<uint16_t>{0, 1, 2}));
+    CHECK(b.positions.size() == 9 && b.uvs.size() == 6 && b.uvs[2] == 0.25f && b.uvs[5] == 0.5f);
+    if (b.positions.size() == 9)
+        for (int v = 0; v < 3; ++v)
+            for (int k = 0; k < 3; ++k) CHECK_EQ(b.positions[v * 3 + k], pos[v][k]);
     CHECK(b.normals.size() == 9 && b.normals[0] == 1.f && b.normals[2] == -1.f);
     CHECK(b.colors.empty() && b.boneWeights.empty() && b.tangents.empty());
 }

@@ -1,13 +1,16 @@
 // ── niffer-tool — Tier-2 corpus gates ─────────────────────────────────────────
 // Whitebox CLI (has the library's private hpp/ on its include path) driving the
 // vanilla-corpus ratchet:
-//   histogram <dir>        block-type census (header-only; works before any
-//                          typed block exists) — drives milestone ordering.
-//   roundtrip <dir>        Load→Save→memcmp over the tree. Invariant: every
-//                          SSE file byte-identical. Ratchet: unknown-block
-//                          instances → 0. LE/other-version files are reported
-//                          as unsupported, never as failures.
-//   dump <file.nif>        header + per-block index/type/size; unknowns flagged.
+//   histogram <dir>        block-type census (header-only, any version).
+//   roundtrip [--refs] <dir>
+//                          the real-data gate: byte-exact verbatim and forced
+//                          re-encode, no refusals, ref claims, an acyclic ref
+//                          graph, string refs in range. LE/other-version files
+//                          are reported as unsupported, never as failures.
+//   tri-roundtrip <dir>    TriFile Load→Save over every .tri.
+//   dump <file.nif>        header + per-block index/type/size; raw blocks flagged.
+//   decode <file.nif>      the first BSTriShape's decoded geometry.
+//   collision <file.nif>   ExtractCollision's output for one file.
 //   collision-validate [--sweep] <dir>
 //                          ExtractCollision against the corpus: compressed-mesh
 //                          vertices inside their stored bounds, and the
@@ -23,11 +26,9 @@
 
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
-#include <cstring>
 #include <execution>
 #include <filesystem>
 #include <fstream>
@@ -96,116 +97,11 @@ static int CmdHistogram(const fs::path& root) {
 }
 
 // ── roundtrip ─────────────────────────────────────────────────────────────────
-struct FileResult {
-    bool identical = false;
-    bool unsupported = false;
-    bool malformed = false;
-    size_t divergeOffset = 0;   // valid when !identical && loaded
-    std::map<std::string, uint64_t> unknownByType;
-    uint64_t layoutMismatchCount = 0;
-    std::string firstMismatchType;   // for a pinpoint report
-};
-
-static FileResult RoundtripOne(const fs::path& p) {
-    FileResult r;
-    auto bytes = ReadFile(p);
-    auto loaded = NifFile::Load(bytes);
-    if (!loaded) {
-        if (loaded.error().kind == NifErrorKind::UnsupportedVersion) r.unsupported = true;
-        else r.malformed = true;
-        return r;
-    }
-    for (auto& u : loaded->unknownBlocks) ++r.unknownByType[u.typeName];
-    r.layoutMismatchCount = loaded->layoutMismatches.size();
-    if (!loaded->layoutMismatches.empty())
-        r.firstMismatchType = loaded->layoutMismatches.front().typeName;
-    auto out = loaded->Save();
-    if (out.size() == bytes.size() && std::equal(out.begin(), out.end(), bytes.begin())) {
-        r.identical = true;
-    } else {
-        size_t n = std::min(out.size(), bytes.size()), i = 0;
-        while (i < n && out[i] == bytes[i]) ++i;
-        r.divergeOffset = i;
-    }
-    return r;
-}
-
-static int CmdRoundtrip(const fs::path& root) {
-    auto files = CollectNifs(root);
-    std::printf("roundtrip: %zu .nif files under %s\n", files.size(),
-                root.string().c_str());
-
-    // Positional parallel transform: results[i] corresponds to files[i].
-    std::vector<FileResult> results(files.size());
-    std::transform(std::execution::par, files.begin(), files.end(),
-                   results.begin(), [](const fs::path& p) { return RoundtripOne(p); });
-
-    uint64_t identical = 0, unsupported = 0, malformed = 0, diffs = 0;
-    uint64_t totalUnknown = 0, totalMismatch = 0;
-    std::map<std::string, uint64_t> unknownByType;
-    std::map<std::string, uint64_t> mismatchByType;
-    std::vector<size_t> diffFiles, mismatchFiles;
-    for (size_t i = 0; i < results.size(); ++i) {
-        auto& r = results[i];
-        if (r.unsupported) { ++unsupported; continue; }
-        if (r.malformed) { ++malformed; continue; }
-        if (r.identical) ++identical;
-        else { ++diffs; if (diffFiles.size() < 20) diffFiles.push_back(i); }
-        for (auto& [t, n] : r.unknownByType) { unknownByType[t] += n; totalUnknown += n; }
-        totalMismatch += r.layoutMismatchCount;
-        if (r.layoutMismatchCount) {
-            mismatchByType[r.firstMismatchType] += r.layoutMismatchCount;
-            if (mismatchFiles.size() < 8) mismatchFiles.push_back(i);
-        }
-    }
-    if (!mismatchByType.empty()) {
-        std::printf("\nLAYOUT MISMATCHES by type:\n");
-        for (auto& [t, n] : mismatchByType)
-            std::printf("  %8llu  %s\n", (unsigned long long)n, t.c_str());
-        std::printf("example files:\n");
-        for (size_t i : mismatchFiles)
-            std::printf("  %s\n", files[i].string().c_str());
-    }
-
-    if (!diffFiles.empty()) {
-        std::printf("\nBYTE-DIFF failures (first %zu):\n", diffFiles.size());
-        for (size_t i : diffFiles)
-            std::printf("  @%zu  %s\n", results[i].divergeOffset,
-                        files[i].string().c_str());
-    }
-    if (!unknownByType.empty()) {
-        std::vector<std::pair<std::string, uint64_t>> s(unknownByType.begin(),
-                                                        unknownByType.end());
-        std::sort(s.begin(), s.end(), [](auto& a, auto& b) { return a.second > b.second; });
-        std::printf("\nUNKNOWN block types (%llu instances, %zu types):\n",
-                    (unsigned long long)totalUnknown, s.size());
-        for (auto& [t, n] : s)
-            std::printf("  %10llu  %s\n", (unsigned long long)n, t.c_str());
-    }
-
-    std::printf("\n── roundtrip summary ──\n");
-    std::printf("  files            %zu\n", files.size());
-    std::printf("  byte-identical   %llu\n", (unsigned long long)identical);
-    std::printf("  byte-diff        %llu\n", (unsigned long long)diffs);
-    std::printf("  unsupported-ver  %llu\n", (unsigned long long)unsupported);
-    std::printf("  malformed        %llu\n", (unsigned long long)malformed);
-    std::printf("  unknown blocks   %llu instances\n", (unsigned long long)totalUnknown);
-    std::printf("  layout mismatch  %llu\n", (unsigned long long)totalMismatch);
-
-    bool gateGreen = (diffs == 0 && malformed == 0);
-    bool parity = gateGreen && totalUnknown == 0 && totalMismatch == 0;
-    std::printf("\n  GATE: %s   PARITY: %s\n",
-                gateGreen ? "GREEN (all supported files byte-identical)" : "RED",
-                parity ? "REACHED" : "not yet (unknowns/mismatches remain)");
-    return gateGreen ? 0 : 1;
-}
-
-// ── roundtrip --schema ────────────────────────────────────────────────────────
-// The schema path's real-data gate (docs/schema-design.md "Gates"). For every
-// SSE file, against the same bytes:
-//   - Nif verbatim save and FORCED re-encode are byte-identical to the input;
-//   - every block the typed path models, the schema models (no regressions),
-//     and no block with a descriptor is refused;
+// The real-data gate (docs/schema-design.md "Gates"). For every SSE file,
+// against the same bytes:
+//   - verbatim save and FORCED re-encode are byte-identical to the input, and
+//     the default (packed) load saves identically;
+//   - no block with a descriptor is refused;
 //   - every ref/ptr is null or in range and satisfies its `to:` claim;
 //   - the `ref` graph (ptr excluded) is acyclic;
 //   - every stringref is empty or in range.
@@ -216,9 +112,8 @@ struct SchemaFileResult {
     bool verbatimOk = false, forcedOk = false, packedOk = false;
     size_t forcedDiverge = 0;
     std::string forcedDivergeType;
-    uint64_t blocks = 0, modeled = 0, typedModeled = 0;
+    uint64_t blocks = 0, modeled = 0;
     std::map<std::string, std::pair<uint64_t, std::string>> refusals;   // type -> (n, first reason)
-    std::map<std::string, uint64_t> regressions;   // typed-modeled but schema-raw, by type
     std::map<std::string, uint64_t> refViolations; // "Owner.field -> Target: why"
     std::map<std::string, uint64_t> badStringRefs; // by field
     uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
@@ -264,20 +159,20 @@ static void WalkNamed(const schema::SchemaSet& s, const schema::TypeDef& t, cons
     }
 }
 
-static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
+static SchemaFileResult RoundtripOne(const fs::path& p, bool wantRefs) {
     SchemaFileResult r;
     auto bytes = ReadFile(p);
     const schema::SchemaSet& s = schema::Main();
     // Materialized: the forced re-encode below then proves every element of
     // every packed array, not just its stored bytes.
-    auto nif = Nif::Load(bytes, s, LoadMode::Materialized);
+    auto nif = NifFile::Load(bytes, s, LoadMode::Materialized);
     if (!nif) {
         if (nif.error().kind == NifErrorKind::UnsupportedVersion) r.unsupported = true;
         else r.malformed = true;
         return r;
     }
     // The default (packed) load must decode the same blocks and save identically.
-    if (auto packed = Nif::Load(bytes, s, LoadMode::Packed)) {
+    if (auto packed = NifFile::Load(bytes, s, LoadMode::Packed)) {
         bool same = packed->RawCount() == nif->RawCount();
         r.packedOk = same && packed->Save(false) == bytes && packed->Save(true) == bytes;
     }
@@ -298,20 +193,11 @@ static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
         }
     }
 
-    // Typed-path parity.
-    auto typed = NifFile::Load(bytes);
-    std::vector<bool> typedRaw(nif->blocks.size(), false);
-    if (typed) {
-        for (auto& u : typed->unknownBlocks) typedRaw[u.blockIndex] = true;
-        for (auto& m : typed->layoutMismatches) typedRaw[m.blockIndex] = true;
-    }
-
     const size_t nb = nif->blocks.size();
     r.blocks = nb;
     std::vector<std::vector<std::pair<int32_t, std::string>>> refEdges(nb);
     for (size_t i = 0; i < nb; ++i) {
         const Block& b = nif->blocks[i];
-        if (!typedRaw[i]) ++r.typedModeled;
         r.blockBytes += b.Original().size();
         if (!b.Modeled()) {
             r.rawBlockBytes += b.Original().size();
@@ -319,7 +205,6 @@ static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
                 auto& e = r.refusals[std::string(b.TypeName())];
                 if (e.first++ == 0) e.second = b.Refusal();
             }
-            if (!typedRaw[i]) ++r.regressions[std::string(b.TypeName())];
             continue;
         }
         ++r.modeled;
@@ -394,25 +279,25 @@ static SchemaFileResult SchemaRoundtripOne(const fs::path& p, bool wantRefs) {
     return r;
 }
 
-static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
+static int CmdRoundtrip(const fs::path& root, bool wantRefs) {
     auto files = CollectNifs(root);
     const auto& s = schema::Main();
-    std::printf("roundtrip --schema: %zu .nif files under %s (schema %s, language %s)\n",
+    std::printf("roundtrip: %zu .nif files under %s (schema %s, language %s)\n",
                 files.size(), root.string().c_str(), s.schemaVersion, s.languageVersion);
 
     std::vector<SchemaFileResult> results(files.size());
     std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
-                   [&](const fs::path& p) { return SchemaRoundtripOne(p, wantRefs); });
+                   [&](const fs::path& p) { return RoundtripOne(p, wantRefs); });
 
     uint64_t checked = 0, unsupported = 0, malformed = 0, verbatimBad = 0, forcedBad = 0, packedBad = 0;
-    uint64_t blocks = 0, modeled = 0, typedModeled = 0, badStrings = 0, cycles = 0;
+    uint64_t blocks = 0, modeled = 0, badStrings = 0, cycles = 0;
     std::map<std::string, uint64_t> badStringsByField, cyclesByEdge;
     uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
     uint64_t blockBytes = 0, rawBlockBytes = 0;
     std::map<std::string, uint64_t> opaqueBytes;
     std::map<std::string, std::string> cycleExample;
     std::map<std::string, std::pair<uint64_t, std::string>> refusals;
-    std::map<std::string, uint64_t> regressions, refViolations, forcedByType;
+    std::map<std::string, uint64_t> refViolations, forcedByType;
     std::map<std::string, std::map<std::string, uint64_t>> refTargets;
     std::vector<size_t> forcedFiles;
     for (size_t i = 0; i < results.size(); ++i) {
@@ -429,7 +314,6 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
         }
         blocks += r.blocks;
         modeled += r.modeled;
-        typedModeled += r.typedModeled;
         refsChecked += r.refsChecked;
         claimsChecked += r.claimsChecked;
         stringRefsChecked += r.stringRefsChecked;
@@ -442,7 +326,6 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
             if (agg.first == 0) agg.second = e.second;
             agg.first += e.first;
         }
-        for (auto& [t, n] : r.regressions) regressions[t] += n;
         for (auto& [k, n] : r.refViolations) refViolations[k] += n;
         for (auto& [f, m] : r.refTargets)
             for (auto& [t, n] : m) refTargets[f][t] += n;
@@ -463,10 +346,6 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
         std::printf("\nREFUSED blocks (descriptor exists, decode refused):\n");
         for (auto& [t, e] : refusals)
             std::printf("  %8llu  %s — %s\n", (unsigned long long)e.first, t.c_str(), e.second.c_str());
-    }
-    if (!regressions.empty()) {
-        std::printf("\nREGRESSIONS (typed path models, schema path raw):\n");
-        for (auto& [t, n] : regressions) std::printf("  %8llu  %s\n", (unsigned long long)n, t.c_str());
     }
     if (!refViolations.empty()) {
         std::printf("\nREF VIOLATIONS:\n");
@@ -500,26 +379,24 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
             if (n) std::printf("  %12llu  %s\n", (unsigned long long)n, f.c_str());
     }
 
-    uint64_t refused = 0, regressed = 0, violations = 0;
+    uint64_t refused = 0, violations = 0;
     for (auto& [t, e] : refusals) refused += e.first;
-    for (auto& [t, n] : regressions) regressed += n;
     for (auto& [k, n] : refViolations) violations += n;
 
-    std::printf("\n── roundtrip --schema summary ──\n");
+    std::printf("\n── roundtrip summary ──\n");
     std::printf("  files checked     %llu  (unsupported-ver %llu, malformed %llu)\n",
                 (unsigned long long)checked, (unsigned long long)unsupported, (unsigned long long)malformed);
     std::printf("  verbatim diff     %llu\n", (unsigned long long)verbatimBad);
     std::printf("  forced diff       %llu\n", (unsigned long long)forcedBad);
     std::printf("  packed-load diff  %llu\n", (unsigned long long)packedBad);
-    std::printf("  blocks            %llu  modeled %llu (%.2f%%), typed path %llu\n",
+    std::printf("  blocks            %llu  modeled %llu (%.2f%%)\n",
                 (unsigned long long)blocks, (unsigned long long)modeled,
-                blocks ? 100.0 * double(modeled) / double(blocks) : 0.0, (unsigned long long)typedModeled);
+                blocks ? 100.0 * double(modeled) / double(blocks) : 0.0);
     auto pct = [&](uint64_t n) { return blockBytes ? 100.0 * double(n) / double(blockBytes) : 0.0; };
     std::printf("  block bytes       %llu: decoded %.2f%%, opaque `bytes` %.2f%%, raw blocks %.2f%%\n",
                 (unsigned long long)blockBytes, pct(blockBytes - opaque - rawBlockBytes), pct(opaque),
                 pct(rawBlockBytes));
     std::printf("  refused           %llu\n", (unsigned long long)refused);
-    std::printf("  regressions       %llu\n", (unsigned long long)regressed);
     std::printf("  refs              %llu non-null, %llu checked against `to:`\n",
                 (unsigned long long)refsChecked, (unsigned long long)claimsChecked);
     std::printf("  ref violations    %llu\n", (unsigned long long)violations);
@@ -528,7 +405,7 @@ static int CmdSchemaRoundtrip(const fs::path& root, bool wantRefs) {
                 (unsigned long long)stringRefsChecked, (unsigned long long)badStrings);
 
     const bool green = malformed == 0 && verbatimBad == 0 && forcedBad == 0 && packedBad == 0 && refused == 0 &&
-                       regressed == 0 && violations == 0 && cycles == 0 && badStrings == 0;
+                       violations == 0 && cycles == 0 && badStrings == 0;
     std::printf("\n  GATE: %s\n", green ? "GREEN" : "RED");
     return green ? 0 : 1;
 }
@@ -549,8 +426,8 @@ static void HexDump(const std::vector<uint8_t>& b) {
 
 // ── dump ──────────────────────────────────────────────────────────────────────
 // `dump <file>`            — header + block table.
-// `dump <file> <blockIdx>` — additionally hexdump that block's serialized bytes
-//                            (an RE aid: works for typed and raw blocks alike).
+// `dump <file> <blockIdx>` — additionally hexdump that block's bytes (an RE aid:
+//                            works for modeled and raw blocks alike).
 static int CmdDump(const fs::path& file, int hexBlock) {
     auto bytes = ReadFile(file);
     auto loaded = NifFile::Load(bytes);
@@ -566,26 +443,18 @@ static int CmdDump(const fs::path& file, int hexBlock) {
                 f.header.version, f.header.userVersion, f.header.bsVersion,
                 f.blocks.size(), f.roots.size(), f.header.strings.size());
     for (size_t i = 0; i < f.blocks.size(); ++i) {
-        bool unknown = std::any_of(f.unknownBlocks.begin(), f.unknownBlocks.end(),
-                                   [&](auto& u) { return u.blockIndex == i; });
-        bool demoted = std::any_of(f.layoutMismatches.begin(), f.layoutMismatches.end(),
-                                   [&](auto& m) { return m.blockIndex == i; });
+        const Block& b = f.blocks[i];
+        std::string note;
+        if (!b.Modeled())
+            note = b.Refusal().empty() ? "   (raw: no descriptor)" : "   (REFUSED: " + std::string(b.Refusal()) + ")";
         std::printf("  [%3zu] size=%-6u %s%s\n", i, f.header.blockSizes[i],
-                    std::string(f.blocks[i]->TypeName()).c_str(),
-                    unknown ? "   (UNKNOWN/raw)" : demoted ? "   (DEMOTED/raw)" : "");
-    }
-    if (!f.layoutMismatches.empty()) {
-        std::printf("\nLAYOUT MISMATCHES:\n");
-        for (auto& m : f.layoutMismatches)
-            std::printf("  [%u] %s declared=%u consumed=%u\n", m.blockIndex,
-                        m.typeName.c_str(), m.declaredSize, m.consumedSize);
+                    std::string(b.TypeName()).c_str(), note.c_str());
     }
     if (hexBlock >= 0 && static_cast<size_t>(hexBlock) < f.blocks.size()) {
-        std::vector<uint8_t> body;
-        Stream w = Stream::Writer(body);
-        f.blocks[hexBlock]->Sync(w);
+        const Block& b = f.blocks[static_cast<size_t>(hexBlock)];
+        const std::vector<uint8_t> body(b.Original().begin(), b.Original().end());
         std::printf("\nblock [%d] %s  (%zu bytes):\n", hexBlock,
-                    std::string(f.blocks[hexBlock]->TypeName()).c_str(), body.size());
+                    std::string(b.TypeName()).c_str(), body.size());
         HexDump(body);
         std::printf("\nstring table:\n");
         for (size_t i = 0; i < f.header.strings.size(); ++i)
@@ -637,137 +506,21 @@ static int CmdTriRoundtrip(const fs::path& root) {
     return (diff == 0 && err == 0) ? 0 : 1;
 }
 
-// ── decode-compare ────────────────────────────────────────────────────────────
-// The step-4 gate: for every BSTriShape in the corpus, the schema path's
-// DecodeShapeMesh must equal the typed path's geometry (the selection logic SCT's
-// NifDocument uses over the typed DecodeMesh), array by array, bit for bit.
-// The one documented difference: a vertex layout with no position attribute
-// leaves the schema path's positions at zero, while the typed decoder reads the
-// first attribute's bytes as positions; it is reported, not counted as a mismatch.
-static DecodedMesh TypedShapeMesh(const NifFile& nif, const BSTriShape& shape) {
-    const NiSkinPartition* part = nullptr;
-    if (!shape.skin.IsNull())
-        if (auto* si = dynamic_cast<const NiSkinInstance*>(nif.GetBlock(shape.skin.index)))
-            part = dynamic_cast<const NiSkinPartition*>(nif.GetBlock(si->skinPartition.index));
-    if (auto* dyn = dynamic_cast<const BSDynamicTriShape*>(&shape)) {
-        DecodedMesh m = part ? DecodeMesh(*part) : DecodedMesh{};
-        const size_t nv = m.numVertices, have = dyn->dynamicData.size() / 16;
-        m.positions.assign(nv * 3, 0.f);
-        for (size_t v = 0; v < std::min(nv, have); ++v)
-            std::memcpy(&m.positions[v * 3], dyn->dynamicData.data() + v * 16, 12);
-        return m;
-    }
-    DecodedMesh m = DecodeMesh(shape);
-    if (m.numVertices == 0 && part) m = DecodeMesh(*part);
-    return m;
-}
-
-template <class T>
-static bool SameBits(const std::vector<T>& a, const std::vector<T>& b) {
-    return a.size() == b.size() && (a.empty() || std::memcmp(a.data(), b.data(), a.size() * sizeof(T)) == 0);
-}
-
-struct CompareResult {
-    uint64_t shapes = 0, equal = 0, noPositionLayouts = 0;
-    std::map<std::string, uint64_t> mismatches;   // array -> shapes
-    std::string firstMismatch;
-    double typedMs = 0, schemaMs = 0;
-};
-
-static CompareResult CompareOne(const fs::path& p) {
-    CompareResult r;
-    auto bytes = ReadFile(p);
-    auto typed = NifFile::Load(bytes);
-    auto nif = Nif::Load(bytes);
-    if (!typed || !nif) return r;
-    for (size_t i = 0; i < typed->blocks.size(); ++i) {
-        auto* shape = dynamic_cast<const BSTriShape*>(typed->blocks[i].get());
-        if (!shape) continue;
-        ++r.shapes;
-        auto t0 = std::chrono::steady_clock::now();
-        const DecodedMesh a = TypedShapeMesh(*typed, *shape);
-        auto t1 = std::chrono::steady_clock::now();
-        const DecodedMesh b = DecodeShapeMesh(*nif, nif->blocks[i]);
-        auto t2 = std::chrono::steady_clock::now();
-        r.typedMs += std::chrono::duration<double, std::milli>(t1 - t0).count();
-        r.schemaMs += std::chrono::duration<double, std::milli>(t2 - t1).count();
-
-        // Which layout fed the positions (shape or partition): no position
-        // attribute there means the typed decoder's positions are not real data.
-        uint64_t desc = shape->vertexDesc;
-        if (a.numVertices && shape->geometryData.empty() && !shape->skin.IsNull())
-            if (auto* si = dynamic_cast<const NiSkinInstance*>(typed->GetBlock(shape->skin.index)))
-                if (auto* pt = dynamic_cast<const NiSkinPartition*>(typed->GetBlock(si->skinPartition.index)))
-                    desc = pt->vertexDesc;
-        const bool noPos = !DecodeVertexDesc(desc).hasVertex && !dynamic_cast<const BSDynamicTriShape*>(shape);
-        if (noPos) ++r.noPositionLayouts;
-
-        bool ok = a.numVertices == b.numVertices;
-        auto check = [&](const char* name, bool same) {
-            if (same) return;
-            ok = false;
-            ++r.mismatches[name];
-            if (r.firstMismatch.empty())
-                r.firstMismatch = std::string(name) + " in " + p.string() + " block " + std::to_string(i);
-        };
-        if (a.numVertices != b.numVertices) check("numVertices", false);
-        if (!noPos) check("positions", SameBits(a.positions, b.positions));
-        else check("positions (size)", a.positions.size() == b.positions.size());
-        check("normals", SameBits(a.normals, b.normals));
-        check("tangents", SameBits(a.tangents, b.tangents));
-        check("uvs", SameBits(a.uvs, b.uvs));
-        check("colors", SameBits(a.colors, b.colors));
-        check("boneWeights", SameBits(a.boneWeights, b.boneWeights));
-        check("boneIndices", SameBits(a.boneIndices, b.boneIndices));
-        check("triangles", SameBits(a.triangles, b.triangles));
-        if (ok) ++r.equal;
-    }
-    return r;
-}
-
-static int CmdDecodeCompare(const fs::path& root) {
-    auto files = CollectNifs(root);
-    std::printf("decode-compare: %zu .nif files under %s\n", files.size(), root.string().c_str());
-    std::vector<CompareResult> results(files.size());
-    std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
-                   [](const fs::path& p) { return CompareOne(p); });
-    CompareResult t;
-    for (auto& r : results) {
-        t.shapes += r.shapes; t.equal += r.equal; t.noPositionLayouts += r.noPositionLayouts;
-        t.typedMs += r.typedMs; t.schemaMs += r.schemaMs;
-        for (auto& [k, n] : r.mismatches) t.mismatches[k] += n;
-        if (t.firstMismatch.empty()) t.firstMismatch = r.firstMismatch;
-    }
-    if (!t.mismatches.empty()) {
-        std::printf("\nMISMATCHES by array:\n");
-        for (auto& [k, n] : t.mismatches) std::printf("  %8llu  %s\n", (unsigned long long)n, k.c_str());
-        std::printf("  first: %s\n", t.firstMismatch.c_str());
-    }
-    std::printf("\n── decode-compare summary ──\n");
-    std::printf("  shapes            %llu, equal %llu\n", (unsigned long long)t.shapes, (unsigned long long)t.equal);
-    std::printf("  no-position layouts %llu (typed positions are not vertex data there; sizes compared)\n",
-                (unsigned long long)t.noPositionLayouts);
-    std::printf("  decode time       typed %.0f ms, schema %.0f ms (summed over threads)\n", t.typedMs, t.schemaMs);
-    const bool green = t.shapes > 0 && t.equal == t.shapes;
-    std::printf("\n  GATE: %s\n", green ? "GREEN" : "RED");
-    return green ? 0 : 1;
-}
-
 // ── decode ────────────────────────────────────────────────────────────────────
 // Spot-check the vertex decoder: decode the first BSTriShape's geometry.
 static int CmdDecode(const fs::path& file) {
     auto loaded = NifFile::LoadFile(file.string());
     if (!loaded) { std::printf("load failed: %s\n", loaded.error().message.c_str()); return 1; }
     for (auto& b : loaded->blocks) {
-        auto* s = dynamic_cast<BSTriShape*>(b.get());
+        auto s = view::BSTriShape::From(b);
         if (!s) continue;
-        auto L = DecodeVertexDesc(s->vertexDesc);
-        auto m = DecodeMesh(*s);
+        auto L = DecodeVertexDesc(s->VertexDesc());
+        auto m = DecodeShapeMesh(*loaded, b);
         std::printf("%s: vertexSize=%u full=%d uv=%d nrm=%d tan=%d col=%d skin=%d\n",
-                    std::string(s->TypeName()).c_str(), L.vertexSize, L.fullPrecision,
+                    std::string(b.TypeName()).c_str(), L.vertexSize, L.fullPrecision,
                     L.hasUV, L.hasNormal, L.hasTangent, L.hasColor, L.hasSkin);
         std::printf("  verts=%u tris=%zu\n", m.numVertices, m.triangles.size() / 3);
-        if (m.numVertices > 0)
+        if (!m.positions.empty())
             std::printf("  pos[0]=(%.3f, %.3f, %.3f)  uv[0]=(%.3f, %.3f)\n",
                         m.positions[0], m.positions[1], m.positions[2],
                         m.uvs.empty() ? 0.f : m.uvs[0], m.uvs.empty() ? 0.f : m.uvs[1]);
@@ -835,14 +588,13 @@ struct ValidateResult {
 static ValidateResult ValidateOne(const fs::path& p, const std::vector<Variant>& variants) {
     ValidateResult r;
     auto bytes = ReadFile(p);
-    auto typed = NifFile::Load(bytes);
-    auto nif = Nif::Load(bytes);
-    if (!typed || !nif) return r;
+    auto nif = NifFile::Load(bytes);
+    if (!nif) return r;
     r.loaded = true;
 
     std::vector<std::pair<size_t, DecodedMesh>> meshes;
-    for (size_t i = 0; i < typed->blocks.size(); ++i)
-        if (auto* s = dynamic_cast<BSTriShape*>(typed->blocks[i].get())) {
+    for (size_t i = 0; i < nif->blocks.size(); ++i)
+        if (auto s = view::BSTriShape::From(nif->blocks[i])) {
             DecodedMesh m = DecodeMesh(*s);
             if (!m.positions.empty()) meshes.emplace_back(i, std::move(m));
         }
@@ -999,21 +751,19 @@ int main(int argc, char** argv) {
     if (argc < 3) {
         std::printf("usage:\n"
                     "  niffer-tool histogram <dir>\n"
-                    "  niffer-tool roundtrip <dir>\n"
-                    "  niffer-tool roundtrip --schema [--refs] <dir>\n"
+                    "  niffer-tool roundtrip [--refs] <dir>\n"
                     "  niffer-tool tri-roundtrip <dir>\n"
                     "  niffer-tool dump <file.nif> [blockIdx]\n"
                     "  niffer-tool decode <file.nif>\n"
-                    "  niffer-tool decode-compare <dir>\n"
                     "  niffer-tool collision <file.nif>\n"
                     "  niffer-tool collision-validate [--sweep] <dir>\n");
         return 2;
     }
     if (std::string(argv[1]) == "decode") return CmdDecode(argv[2]);
-    if (std::string(argv[1]) == "roundtrip" && std::string(argv[2]) == "--schema") {
-        bool refs = argc >= 5 && std::string(argv[3]) == "--refs";
-        if (argc < (refs ? 5 : 4)) { std::printf("roundtrip --schema needs a directory\n"); return 2; }
-        return CmdSchemaRoundtrip(argv[refs ? 4 : 3], refs);
+    if (std::string(argv[1]) == "roundtrip") {
+        bool refs = std::string(argv[2]) == "--refs";
+        if (argc < (refs ? 4 : 3)) { std::printf("roundtrip --refs needs a directory\n"); return 2; }
+        return CmdRoundtrip(argv[refs ? 3 : 2], refs);
     }
     if (std::string(argv[1]) == "collision-validate") {
         bool sweep = argc >= 4 && std::string(argv[2]) == "--sweep";
@@ -1022,9 +772,7 @@ int main(int argc, char** argv) {
     std::string cmd = argv[1];
     fs::path arg = argv[2];
     if (cmd == "collision") return CmdCollision(arg);
-    if (cmd == "decode-compare") return CmdDecodeCompare(arg);
     if (cmd == "histogram") return CmdHistogram(arg);
-    if (cmd == "roundtrip") return CmdRoundtrip(arg);
     if (cmd == "tri-roundtrip") return CmdTriRoundtrip(arg);
     if (cmd == "dump") return CmdDump(arg, argc >= 4 ? std::atoi(argv[3]) : -1);
     std::printf("unknown command: %s\n", cmd.c_str());

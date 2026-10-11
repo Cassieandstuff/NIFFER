@@ -14,7 +14,9 @@
 #                              cpp/collision/ = ExtractCollision)
 #   schema/                  — the YAML schema (docs/schema-language.md)
 #   tests/                   — synthetic self-verifying tests (CTest)
-#   tools/                   — niffer-tool (real-data gates), schemagen
+#   tools/                   — niffer-tool (real-data gates), niffer-yaml, schemagen
+#   yaml/                    — niffer::yaml, the optional NIF <-> YAML target
+#   third_party/rapidyaml    — vendored for niffer::yaml only (MIT)
 #
 # Dependency-free LEAF library. The MSVC runtime (static /MT vs dynamic /MD) is
 # deliberately NOT set here — it inherits CMAKE_MSVC_RUNTIME_LIBRARY from the
@@ -23,7 +25,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(NIFFER
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "Clean-room C++23 NIF + FaceGen TRI library for Skyrim Special Edition"
     LANGUAGES CXX)
 
@@ -35,6 +37,7 @@ endif()
 
 option(NIFFER_BUILD_TESTS "Build NIFFER tests" ${PROJECT_IS_TOP_LEVEL})
 option(NIFFER_BUILD_TOOLS "Build niffer-tool (the real-data corpus gates)" OFF)
+option(NIFFER_BUILD_YAML "Build niffer-yaml: NIF <-> YAML text (vendors rapidyaml)" ${PROJECT_IS_TOP_LEVEL})
 
 # ── niffer ────────────────────────────────────────────────────────────────────
 file(GLOB_RECURSE NIFFER_SOURCES CONFIGURE_DEPENDS
@@ -96,6 +99,34 @@ if(NIFFER_SCHEMAGEN_AVAILABLE)
         VERBATIM)
 endif()
 
+# ── niffer-yaml (optional): NIF <-> YAML text ─────────────────────────────────
+# A separate target so the core stays a dependency-free leaf: only this target
+# uses rapidyaml (MIT, vendored as one header in third_party/rapidyaml).
+# Consumers link niffer::yaml and include <niffer-yaml/NifferYaml.h>.
+if(NIFFER_BUILD_YAML)
+    add_library(niffer_yaml STATIC
+        yaml/include/niffer-yaml/NifferYaml.h
+        yaml/cpp/Text.h
+        yaml/cpp/Decompile.cpp
+        yaml/cpp/Compile.cpp
+        yaml/cpp/Rapidyaml.cpp)
+    add_library(niffer::yaml ALIAS niffer_yaml)
+    target_include_directories(niffer_yaml
+        PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/yaml/include>
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/yaml/cpp")
+    target_include_directories(niffer_yaml SYSTEM PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/third_party/rapidyaml")
+    target_link_libraries(niffer_yaml PUBLIC niffer::niffer)
+    if(MSVC)
+        target_compile_options(niffer_yaml PRIVATE /W4 /wd4100 /utf-8)
+    endif()
+
+    add_executable(niffer-yaml tools/niffer_yaml.cpp)
+    target_link_libraries(niffer-yaml PRIVATE niffer::yaml)
+    if(MSVC)
+        target_compile_options(niffer-yaml PRIVATE /utf-8)
+    endif()
+endif()
+
 # ── Tests (Tier 1: self-verifying synthetic round-trips) ──────────────────────
 if(NIFFER_BUILD_TESTS)
     enable_testing()
@@ -110,6 +141,17 @@ if(NIFFER_BUILD_TESTS)
         target_compile_options(niffer-test PRIVATE /utf-8)
     endif()
     add_test(NAME niffer-test COMMAND niffer-test)
+
+    if(NIFFER_BUILD_YAML)
+        add_executable(niffer-yaml-test tests/yaml/test_yaml.cpp)
+        target_link_libraries(niffer-yaml-test PRIVATE niffer::yaml)
+        target_include_directories(niffer-yaml-test PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests" "${CMAKE_CURRENT_SOURCE_DIR}/hpp")
+        if(MSVC)
+            target_compile_options(niffer-yaml-test PRIVATE /utf-8)
+        endif()
+        add_test(NAME niffer-yaml-test COMMAND niffer-yaml-test)
+    endif()
 
     if(NIFFER_SCHEMAGEN_AVAILABLE)
         add_test(NAME niffer-schema-fresh

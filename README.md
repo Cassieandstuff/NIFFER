@@ -18,7 +18,8 @@ Skyrim Content Tools' Scene Editor.
   (vertices from the shape, its skin partition, or a FaceGen head's dynamic data),
   `DecodeMorphDeltas` / `ApplyMorphs` for TRI, `ExtractCollision` for bhk collision.
 
-No dependencies beyond the standard library.
+No dependencies beyond the standard library. The optional `niffer::yaml` target (NIF ↔ YAML
+text) uses rapidyaml, vendored.
 
 ## Using it
 
@@ -68,6 +69,7 @@ ctest --test-dir build -C RelWithDebInfo
 |---|---|---|
 | `NIFFER_BUILD_TESTS` | ON when top-level | `niffer-test`, the synthetic self-verifying suite (registered with CTest) |
 | `NIFFER_BUILD_TOOLS` | OFF | `niffer-tool`, the real-data corpus gates |
+| `NIFFER_BUILD_YAML` | ON when top-level | `niffer::yaml`, the `niffer-yaml` CLI and `niffer-yaml-test` |
 
 `niffer-tool` needs extracted game meshes, so it is not part of CTest:
 
@@ -124,6 +126,34 @@ declared target classes, the owning-reference graph must be acyclic, and every s
 index must be in range. The byte round-trip alone can't catch a mislabeled field; these checks
 can.
 
+## YAML text form
+
+`niffer::yaml` (an optional target; `#include <niffer-yaml/NifferYaml.h>`) decompiles a NIF to
+YAML through the schema and compiles it back, byte-exact:
+
+```
+niffer-yaml decompile meshes/clutter/barrel01.nif barrel01.yaml
+niffer-yaml compile barrel01.yaml barrel01.nif      # the same bytes, or your edits
+niffer-yaml roundtrip <extracted meshes>            # the gate over a whole corpus
+```
+
+```yaml
+blocks:
+  - BSFadeNode:  # 0
+      name: 0  # "Barrel01"
+      extraData:
+        - 1  # BSXFlags
+      transform:
+        translation: {x: 0, y: 0, z: 0}
+        rotation: {m: [1, 0, 0, 0, 1, 0, 0, 0, 1]}
+        scale: 1
+```
+
+This is **faithful** mode: every field is written as stored, counts and indices included, and
+an edit that leaves the file inconsistent is refused with the line it concerns. The format is
+specified in [docs/yaml-format.md](docs/yaml-format.md). An authoring mode (named refs, derived
+counts) is planned.
+
 ## Status
 
 The schema models every SSE block class in the vanilla corpus, including vertices, triangles,
@@ -149,3 +179,7 @@ NIFFER, including SKSE plugins.
 
 NIFFER is also made available by its copyright holder under other terms, so contributions are
 accepted only under a Contributor License Agreement; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Third-party code: [`third_party/rapidyaml`](third_party/rapidyaml) is rapidyaml 0.15.2 by Joao
+Paulo Magalhaes, under the MIT license (its `LICENSE.txt` is alongside). Only the optional
+`niffer::yaml` target uses it; the core library contains no third-party code.

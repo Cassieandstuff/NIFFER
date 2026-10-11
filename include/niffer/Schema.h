@@ -228,6 +228,16 @@ public:
     // refused, is raw (Modeled() == false) and keeps its bytes.
     static Block Load(const schema::SchemaSet& set, std::string_view typeName,
                       std::span<const uint8_t> bytes, LoadMode mode = LoadMode::Packed);
+    // A block of class `typeName` built from a value tree (the layout's root
+    // struct, with no packed arrays): `root` is encoded, and the bytes decoded
+    // again. The block is returned, as if loaded from those bytes, only when the
+    // decode gives back exactly `root`; a tree that contradicts itself (a count
+    // field that doesn't match its array, a field present where its condition is
+    // false, a union case its selector doesn't pick) is refused, with the first
+    // differing path in `error`.
+    static std::optional<Block> Build(const schema::SchemaSet& set, std::string_view typeName,
+                                      const Value& root, LoadMode mode = LoadMode::Packed,
+                                      std::string* error = nullptr);
 
     std::string_view          TypeName() const { return typeName_; }
     bool                      Modeled() const { return def_ != nullptr; }

@@ -1,6 +1,6 @@
 # NIFFER — schema-first design
 
-Status: **steps 1–6 implemented** (2026-10-10). The normative spec is
+Status: **steps 1–7 implemented** (2026-10-10; step 7 in faithful mode). The normative spec is
 [schema-language.md](schema-language.md). The model follows ESPER's
 (github.com/Cassieandstuff/ESPER, `docs/schema-design.md`), which settled the same questions for
 plugin records; this document records where NIF differs.
@@ -76,6 +76,9 @@ raw.
 - **Block:** holds its type name, original bytes, definition (none if raw), decoded value tree
   and a dirty bit. Encode emits the original bytes unless the block is dirty or the encode is
   forced. Values are decoded when the block loads, so refusal is known immediately.
+  `Block::Build` makes a block from a value tree instead of bytes: it encodes the tree, decodes
+  the result, and accepts the block only when the decode gives back the same tree (the YAML
+  compiler uses it; any other producer of value trees can too).
 - **Value kinds:** integers, `f32` (raw bits), block refs, string refs, strings, bytes, structs,
   arrays. Conditional fields can be absent.
 - **Access:** generated handles (`niffer::fields::NiNode::children`), string paths
@@ -216,9 +219,18 @@ in `Niffer.h`) kept working until step 6 deleted it.
    name; `niffer-tool roundtrip` is the schema gate. `Stream` remains for the header, footer and
    TRI. The gates are unchanged: `roundtrip` GREEN (786,940 blocks, all modeled; 98.67%
    decoded), `tri-roundtrip` 569 of 569, `collision-validate` identical to before.
-7. **Text form (optional):** a `niffer-yaml` target that decompiles a NIF to YAML through the
-   schema and compiles it back. It writes blocks in faithful mode (byte-exact) or authoring mode
-   (named refs, tables rebuilt).
+7. **Done (2026-10-10), faithful mode. Text form.** The optional `niffer::yaml` target (and the
+   `niffer-yaml` CLI) decompiles a NIF to YAML through the schema and compiles it back
+   ([yaml-format.md](yaml-format.md)). Faithful mode writes every field as stored, so it is
+   byte-exact; an inconsistent edit is refused with its line. Compile builds each block with
+   the new engine call `Block::Build` (encode the tree, decode the bytes, require the same tree
+   back), so no YAML-specific layout code exists. rapidyaml 0.15.2 (MIT) parses, vendored in
+   `third_party/` for this target only. Gate: `niffer-yaml roundtrip`, 22,760 of 22,760 NIFs
+   byte-identical (14.0 GB of YAML for 2.3 GB of NIF, about 2 minutes).
+8. **Authoring mode (next):** text for hand editing: refs by block name instead of index,
+   counts and sizes derived, the string and type tables rebuilt on compile. Open questions:
+   how unnamed blocks are named, which fields count as derived (the schema's length fields are
+   the obvious set), and how header facts that faithful mode keeps verbatim are recomputed.
 
 ## Decisions
 
@@ -232,3 +244,9 @@ Settled 2026-10-09:
 - **Verbatim unless modified,** with a forced re-encode real-data gate.
 - **The container stays in C++** (header, block framing, footer), as ESPER's plugin container does.
 - **Clean-room and dual-licensed:** descriptors are written from real-data verification only.
+
+Settled 2026-10-10:
+
+- **YAML text form: faithful mode first,** byte-exact, with authoring mode as its own step.
+- **rapidyaml (MIT) parses it,** vendored as one header in `third_party/` and used only by the
+  optional `niffer::yaml` target; the core stays dependency-free.

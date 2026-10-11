@@ -12,7 +12,10 @@ also uses it under other terms (dual licensing).
   entry cites the file and block it was confirmed against.
 - **External contributions need a signed CLA** (see CONTRIBUTING.md). Never merge an
   external PR without one.
-- Stay a dependency-free leaf. Any dependency must be permissively licensed.
+- Stay a dependency-free leaf. Any dependency must be permissively licensed and live in an
+  optional target, never the core. The one so far: rapidyaml 0.15.2 (MIT), vendored in
+  `third_party/rapidyaml` for `niffer::yaml` only. Third-party code keeps its own license and
+  isn't the owner's; never mix it into NIFFER's own sources.
 
 ## Public surface
 
@@ -22,6 +25,10 @@ also uses it under other terms (dual licensing).
   header there that consumers would include directly. Internals live in private `hpp/`
   (`"Stream.h"`, `"Framing.h"`, `"Collision.h"`, `"generated/Tables.h"`).
 - Everything is in `namespace niffer` (generated: `niffer::fields`, `niffer::view`).
+- **Optional `niffer::yaml`** (`yaml/`, `-DNIFFER_BUILD_YAML`): NIF ↔ YAML text. Its consumers
+  include `<niffer-yaml/NifferYaml.h>`, which lives outside `include/niffer/`. Format:
+  [docs/yaml-format.md](docs/yaml-format.md). Like the engine it is generic over the schema;
+  never add per-block code to it.
 - Never set `CMAKE_MSVC_RUNTIME_LIBRARY`. NIFFER builds under the consumer's choice
   (static-CRT SKSE plugins and dynamic-CRT desktop tools both consume it).
 
@@ -76,8 +83,8 @@ were deleted in migration step 6). Design and migration history:
 ## Gates
 
 - `ctest` (top-level build): `niffer-test` (synthetic: stream, header, TRI, decode helpers, and
-  the schema engine over `tests/schema`), `niffer-schemagen-test` (generator validation), and
-  the two freshness checks.
+  the schema engine over `tests/schema`), `niffer-yaml-test` (decompile/compile on a hand-built
+  file), `niffer-schemagen-test` (generator validation), and the two freshness checks.
 - With `-DNIFFER_BUILD_TOOLS=ON`, over the local extracted SE corpus at
   `D:/Modding/Development/Common/Vanilla Source Files/1170`:
   - `niffer-tool roundtrip <dir>`: the real-data gate. It loads materialized, so forced
@@ -92,6 +99,10 @@ were deleted in migration step 6). Design and migration history:
     the 11,096 files with both. `--sweep` re-measures each extraction convention
     (docs/collision-provenance.md).
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
+- With `-DNIFFER_BUILD_YAML=ON` (the default at top level), over the same corpus:
+  - `niffer-yaml roundtrip <dir>`: decompile → compile → save. 22,760 of 22,760 NIFs
+    byte-identical with the same blocks modeled, none refused; 14.0 GB of YAML for 2.3 GB of
+    NIF, about 2 minutes. A change to the language, the engine or `yaml/` must keep it GREEN.
 - **Bulk reads** go through `Block::ForEachElement` and the views' field-index constants
   (`view::BSVertex::kPosition`): one decode per element, no allocation in the steady state.
 

@@ -42,6 +42,9 @@ classes each untyped reference field actually has.
 - `ctest` passes: `niffer-test`, the generator tests, and the generated-output freshness checks.
 - With `-DNIFFER_BUILD_TOOLS=ON`, `niffer-tool roundtrip` and `niffer-tool tri-roundtrip` over
   the full extracted vanilla corpus stay **GREEN**: every SSE file byte-identical, no new raw or
-  refused blocks, and no reference or string violations.
+  refused blocks, and no reference or string violations. If you touched the engine, the
+  language or `yaml/`, `niffer-yaml roundtrip` over the corpus stays GREEN too.
+- Third-party code goes only in `third_party/`, only for an optional target, and only under a
+  permissive license; NIFFER's own sources never contain any.
 - One description drives both read and write: one descriptor per block class, one `Sync(Stream&)`
   for the header and for TRI. Never add a separate read or write path for one direction.

@@ -620,6 +620,109 @@ Block Block::Load(const SchemaSet& set, std::string_view typeName,
     return b;
 }
 
+namespace {
+
+// Whether `given` and `decoded` (both of type `t`) differ; when they do, `at`
+// is extended to the first differing path ("field/2/sub") and why.
+bool Differs(const SchemaSet& s, const TypeDef& t, const Value& given, const Value& decoded, std::string& at) {
+    if (given.present != decoded.present) {
+        at += given.present ? " (given, but its condition is false)" : " (absent, but its condition holds)";
+        return true;
+    }
+    if (!given.present) return false;
+    if (given.packed) {
+        at += " (a packed array: pass a materialized value)";
+        return true;
+    }
+    switch (t.kind) {
+    case Kind::Struct:
+        for (uint16_t i = 0; i < t.refCount; ++i) {
+            const FieldDef& fd = s.fields[t.ref + i];
+            std::string sub = at + "/" + fd.name;
+            if (i >= given.items.size()) {
+                at = sub + " (missing)";
+                return true;
+            }
+            if (Differs(s, s.types[fd.type], given.items[i], decoded.items[i], sub)) {
+                at = std::move(sub);
+                return true;
+            }
+        }
+        return false;
+    case Kind::Array:
+        if (given.items.size() != decoded.items.size()) {
+            at += " (" + std::to_string(given.items.size()) + " elements given, " +
+                  std::to_string(decoded.items.size()) + " decoded)";
+            return true;
+        }
+        for (size_t i = 0; i < given.items.size(); ++i) {
+            std::string sub = at + "/" + std::to_string(i);
+            if (Differs(s, s.types[t.ref], given.items[i], decoded.items[i], sub)) {
+                at = std::move(sub);
+                return true;
+            }
+        }
+        return false;
+    case Kind::Union: {
+        auto caseName = [&](uint64_t c) {
+            return c < t.refCount ? std::string(s.cases[t.ref + c].name) : std::string("none");
+        };
+        if (given.bits != decoded.bits) {
+            at += " (case " + caseName(given.bits) + " given, the selector picks " + caseName(decoded.bits) + ")";
+            return true;
+        }
+        if (given.items.size() != decoded.items.size()) {
+            at += " (case value)";
+            return true;
+        }
+        if (given.items.empty()) return false;
+        const CaseDef& cd = s.cases[t.ref + given.bits];
+        std::string sub = at + "/" + cd.name;
+        if (Differs(s, s.types[cd.type], given.items[0], decoded.items[0], sub)) {
+            at = std::move(sub);
+            return true;
+        }
+        return false;
+    }
+    case Kind::SizedString:
+        if (given.str == decoded.str) return false;
+        break;
+    case Kind::Bytes:
+        if (given.bytes == decoded.bytes) return false;
+        break;
+    default:
+        if (given.bits == decoded.bits) return false;
+        break;
+    }
+    at += " (the value doesn't survive encoding: out of range for its type?)";
+    return true;
+}
+
+}  // namespace
+
+std::optional<Block> Block::Build(const SchemaSet& set, std::string_view typeName, const Value& root,
+                                  LoadMode mode, std::string* error) {
+    auto refuse = [&](std::string why) -> std::optional<Block> {
+        if (error) *error = std::move(why);
+        return std::nullopt;
+    };
+    const schema::BlockDef* def = set.Find(typeName);
+    if (!def) return refuse("no descriptor for " + std::string(typeName));
+    if (def->abstract) return refuse(std::string(typeName) + " is abstract");
+
+    std::vector<uint8_t> bytes;
+    Encoder enc(set, bytes);
+    enc.Encode(set.types[def->type], root, nullptr);
+
+    Block check = Load(set, typeName, bytes, LoadMode::Materialized);
+    if (!check.Modeled()) return refuse("the encoded bytes don't decode: " + check.Refusal());
+    std::string at;
+    if (Differs(set, set.types[def->type], root, check.value_, at))
+        return refuse("decodes differently at " + (at.empty() ? std::string("the root") : at.substr(1)));
+    if (mode == LoadMode::Materialized) return check;
+    return Load(set, typeName, bytes, mode);
+}
+
 bool Block::IsA(uint16_t blockIndex) const {
     return def_ && set_->IsA(set_->IndexOf(def_), blockIndex);
 }

@@ -544,6 +544,79 @@ void RealSchemaSmoke() {
     }
 }
 
+// Block::Build: a value tree in, a block out only when the tree is consistent.
+void BuildFromValue() {
+    auto fieldIndex = [](const char* block, const char* field) -> uint16_t {
+        const auto& s = Test();
+        const auto& t = s.types[s.Find(block)->type];
+        for (uint16_t i = 0; i < t.refCount; ++i)
+            if (std::string(s.fields[t.ref + i].name) == field) return i;
+        return 0xFFFF;
+    };
+
+    // A decoded tree builds back to the same bytes, in either load mode.
+    const auto all = MakeTAll();
+    Block src = Block::Load(Test(), "TAll", all, LoadMode::Materialized);
+    CHECK(src.Modeled());
+    std::string err;
+    auto built = Block::Build(Test(), "TAll", *src.Root(), LoadMode::Packed, &err);
+    CHECK(built.has_value() && err.empty());
+    if (built) {
+        CHECK(built->Modeled() && !built->Dirty());
+        CHECK(built->Encode() == all);
+        CHECK(built->Encode(true) == all);
+    }
+    auto mat = Block::Build(Test(), "TAll", *src.Root(), LoadMode::Materialized);
+    CHECK(mat.has_value() && mat->Encode() == all);
+
+    // A count field that disagrees with its array is refused.
+    {
+        Value v = *src.Root();
+        v.items[fieldIndex("TAll", "count")].bits = 4;   // byCount holds 3
+        err.clear();
+        CHECK(!Block::Build(Test(), "TAll", v, LoadMode::Packed, &err).has_value());
+        CHECK(!err.empty());
+    }
+    // A field given where its condition is false is refused, and named.
+    {
+        Value v = *src.Root();
+        Value& minOne = v.items[fieldIndex("TAll", "minOne")];   // sel = -3
+        CHECK(!minOne.present);
+        minOne.present = true;
+        err.clear();
+        CHECK(!Block::Build(Test(), "TAll", v, LoadMode::Packed, &err).has_value());
+        CHECK(err.find("minOne") != std::string::npos);
+        CHECK(err.find("condition is false") != std::string::npos);
+    }
+    // A value out of range for its type is refused.
+    {
+        Value v = *src.Root();
+        v.items[fieldIndex("TAll", "u8v")].bits = 0x1FF;
+        err.clear();
+        CHECK(!Block::Build(Test(), "TAll", v, LoadMode::Packed, &err).has_value());
+        CHECK(err.find("u8v") != std::string::npos);
+    }
+    // A union case the selector doesn't pick is refused.
+    {
+        Block u = Block::Load(Test(), "TNew", MakeTNew(6), LoadMode::Materialized);   // kind 6: case many
+        CHECK(u.Modeled());
+        Value v = *u.Root();
+        v.items[fieldIndex("TNew", "kind")].bits = 4;   // kind & 3 == 0: the default case
+        err.clear();
+        CHECK(!Block::Build(Test(), "TNew", v, LoadMode::Packed, &err).has_value());
+        CHECK(err.find("pick") != std::string::npos);
+    }
+    // No descriptor, abstract class, packed input.
+    CHECK(!Block::Build(Test(), "Nope", Value{}).has_value());
+    CHECK(!Block::Build(Test(), "TBase", Value{}).has_value());
+    {
+        Block packed = Block::Load(Test(), "TAll", all);   // byCount and rows stay packed
+        err.clear();
+        CHECK(!Block::Build(Test(), "TAll", *packed.Root(), LoadMode::Packed, &err).has_value());
+        CHECK(err.find("packed") != std::string::npos);
+    }
+}
+
 }  // namespace
 
 void run_schema_tests() {
@@ -556,6 +629,7 @@ void run_schema_tests() {
     Language02();
     Packed();
     Elements();
+    BuildFromValue();
     SchemaDecodeMesh();
     RealSchemaSmoke();
 }

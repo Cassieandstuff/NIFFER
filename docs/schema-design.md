@@ -1,6 +1,6 @@
 # NIFFER — schema-first design
 
-Status: **steps 1–7 implemented** (2026-10-10; step 7 in faithful mode). The normative spec is
+Status: **steps 1–8 implemented** (2026-10-10). The normative spec is
 [schema-language.md](schema-language.md). The model follows ESPER's
 (github.com/Cassieandstuff/ESPER, `docs/schema-design.md`), which settled the same questions for
 plugin records; this document records where NIF differs.
@@ -227,10 +227,23 @@ in `Niffer.h`) kept working until step 6 deleted it.
    back), so no YAML-specific layout code exists. rapidyaml 0.15.2 (MIT) parses, vendored in
    `third_party/` for this target only. Gate: `niffer-yaml roundtrip`, 22,760 of 22,760 NIFs
    byte-identical (14.0 GB of YAML for 2.3 GB of NIF, about 2 minutes).
-8. **Authoring mode (next):** text for hand editing: refs by block name instead of index,
-   counts and sizes derived, the string and type tables rebuilt on compile. Open questions:
-   how unnamed blocks are named, which fields count as derived (the schema's length fields are
-   the obvious set), and how header facts that faithful mode keeps verbatim are recomputed.
+8. **Done (2026-10-10). Authoring mode.** Text for hand editing
+   ([yaml-format.md](yaml-format.md#authoring-mode)): blocks keyed by an id (their name where
+   unique, else `Class#n`), refs by id, string refs as strings, and every derivable length field
+   left out. The engine gained `Block::DeriveLengths` / `Block::OmitDerivable`: a length field
+   is one the schema names as a later container's count or size, so the rule is generic. The
+   header keeps only author, scripts and groups. The corpus was measured before choosing the
+   derivations: block types are in first-use order and maxStringLength is the longest string
+   in all 22,760 files, export strings always end in one NUL, there are no unused or duplicate
+   strings, and 21,009 files use first-use string order (1,751 animated files don't). Gate:
+   `niffer-yaml roundtrip --authoring`, all 22,760 the same file (21,009 byte-identical), and
+   decompiling the result gives the same text.
+
+   Not derived: a field that means a size without sizing anything in the schema, such as
+   BSTriShape's `dataSize` (vertex and triangle bytes; it only gates those two arrays). An
+   edit that grows the vertex array has to update it by hand. Deriving it would take a
+   language construct for computed fields (a size over several fields), which doesn't exist
+   yet.
 
 ## Decisions
 
@@ -250,3 +263,6 @@ Settled 2026-10-10:
 - **YAML text form: faithful mode first,** byte-exact, with authoring mode as its own step.
 - **rapidyaml (MIT) parses it,** vendored as one header in `third_party/` and used only by the
   optional `niffer::yaml` target; the core stays dependency-free.
+- **Authoring mode's derivations follow the corpus:** ids from unique names, length fields from
+  the schema's `count:` / `size:` links, header tables in first-use order. Byte-exactness where
+  vanilla follows those conventions, and the same file otherwise.

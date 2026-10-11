@@ -617,6 +617,70 @@ void BuildFromValue() {
     }
 }
 
+// Block::OmitDerivable / DeriveLengths: counts and sizes left out, then put back.
+void DerivedLengths() {
+    auto field = [](const char* block, const Value& root, const char* name) -> const Value& {
+        const auto& s = Test();
+        const auto& t = s.types[s.Find(block)->type];
+        for (uint16_t i = 0; i < t.refCount; ++i)
+            if (std::string(s.fields[t.ref + i].name) == name) return root.items[i];
+        return root;
+    };
+
+    // TAll: a count field, a byte-size field and a struct-local count.
+    {
+        const auto bytes = MakeTAll();
+        Block src = Block::Load(Test(), "TAll", bytes, LoadMode::Materialized);
+        Value v = *src.Root();
+        Block::OmitDerivable(Test(), "TAll", v);
+        CHECK(!field("TAll", v, "count").present);
+        CHECK(!field("TAll", v, "blobSize").present);
+        CHECK(!field("TAll", v, "counted").items[0].present);   // Counted.n
+        CHECK(field("TAll", v, "u32v").present);                   // not a length
+        std::string err;
+        CHECK(Block::DeriveLengths(Test(), "TAll", v, &err) && err.empty());
+        CHECK(v == *src.Root());
+        auto b = Block::Build(Test(), "TAll", v);
+        CHECK(b.has_value() && b->Encode() == bytes);
+    }
+    // TNew: a byte-window size, measured by encoding the window.
+    {
+        const auto bytes = MakeTNew(6);
+        Block src = Block::Load(Test(), "TNew", bytes, LoadMode::Materialized);
+        Value v = *src.Root();
+        Block::OmitDerivable(Test(), "TNew", v);
+        CHECK(!field("TNew", v, "windowSize").present);
+        CHECK(Block::DeriveLengths(Test(), "TNew", v));
+        CHECK(v == *src.Root());
+    }
+    // TShared: one count, two arrays. Growing both derives the new count;
+    // growing one is refused; with no arrays present it can't be derived.
+    {
+        Bytes x;
+        x.put<uint8_t>(2).raw({ 1, 2 }).put<uint16_t>(10).put<uint16_t>(20);
+        Block src = Block::Load(Test(), "TShared", x.b, LoadMode::Materialized);
+        CHECK(src.Modeled());
+        Value v = *src.Root();
+        Block::OmitDerivable(Test(), "TShared", v);
+        CHECK(!v.items[0].present);
+        Value grown = v;
+        grown.items[1].items.push_back(grown.items[1].items[0]);
+        grown.items[2].items.push_back(grown.items[2].items[0]);
+        CHECK(Block::DeriveLengths(Test(), "TShared", grown));
+        CHECK_EQ(grown.items[0].bits, 3u);
+        auto b = Block::Build(Test(), "TShared", grown);
+        CHECK(b.has_value());
+        Value lopsided = v;
+        lopsided.items[1].items.push_back(lopsided.items[1].items[0]);
+        std::string err;
+        CHECK(!Block::DeriveLengths(Test(), "TShared", lopsided, &err));
+        CHECK(err.find("n sizes containers of different lengths (3, 2)") != std::string::npos);
+        // An explicit count is kept as given (Build then checks it).
+        Value given = *src.Root();
+        CHECK(Block::DeriveLengths(Test(), "TShared", given) && given == *src.Root());
+    }
+}
+
 }  // namespace
 
 void run_schema_tests() {
@@ -630,6 +694,7 @@ void run_schema_tests() {
     Packed();
     Elements();
     BuildFromValue();
+    DerivedLengths();
     SchemaDecodeMesh();
     RealSchemaSmoke();
 }

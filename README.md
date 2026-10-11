@@ -132,27 +132,29 @@ can.
 YAML through the schema and compiles it back, byte-exact:
 
 ```
-niffer-yaml decompile meshes/clutter/barrel01.nif barrel01.yaml
-niffer-yaml compile barrel01.yaml barrel01.nif      # the same bytes, or your edits
-niffer-yaml roundtrip <extracted meshes>            # the gate over a whole corpus
+niffer-yaml decompile --authoring meshes/clutter/barrel01.nif barrel01.yaml
+niffer-yaml compile barrel01.yaml barrel01.nif      # the same file, or your edits
+niffer-yaml roundtrip [--authoring] <extracted meshes>   # the gate over a whole corpus
 ```
 
 ```yaml
 blocks:
-  - BSFadeNode:  # 0
-      name: 0  # "Barrel01"
-      extraData:
-        - 1  # BSXFlags
-      transform:
-        translation: {x: 0, y: 0, z: 0}
-        rotation: {m: [1, 0, 0, 0, 1, 0, 0, 0, 1]}
-        scale: 1
+  Barrel01: !BSFadeNode
+    name: "Barrel01"
+    extraData:
+      - BSX
+    collisionObject: bhkCollisionObject#0
+    children:
+      - "Barrel01:0"
 ```
 
-This is **faithful** mode: every field is written as stored, counts and indices included, and
-an edit that leaves the file inconsistent is refused with the line it concerns. The format is
-specified in [docs/yaml-format.md](docs/yaml-format.md). An authoring mode (named refs, derived
-counts) is planned.
+Two modes, specified in [docs/yaml-format.md](docs/yaml-format.md):
+
+- **Authoring** (above), for editing by hand: blocks keyed by id (their name where unique),
+  refs by id, strings inline, and counts, sizes and the header's tables derived on compile.
+- **Faithful** (the default), byte-exact: every field as stored, counts and indices included.
+
+Either way, an edit that leaves a block inconsistent is refused with the line it concerns.
 
 ## Status
 

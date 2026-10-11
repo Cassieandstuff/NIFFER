@@ -1,9 +1,12 @@
-// ── Decompile — NifFile → faithful-mode YAML ─────────────────────────────────
+// ── Decompile — NifFile → YAML (faithful or authoring mode) ──────────────────
 // Walks each block's value tree against its schema type and writes it as YAML
 // (docs/yaml-format.md). Generic over the schema: nothing here knows a block
 // class by name. Small values (a few scalars) are written in flow style on one
-// line; larger ones in block style. Refs and string refs carry a comment naming
-// what they point at; comments are ignored by Compile.
+// line; larger ones in block style.
+//   - faithful: every field as stored; refs and string refs are indices, with a
+//     comment naming what they point at (comments are ignored by Compile);
+//   - authoring: blocks are keyed by an id, refs name ids, string refs are the
+//     strings, and length fields that the engine can derive are left out.
 #include "Text.h"
 
 #include <niffer-yaml/NifferYaml.h>
@@ -12,7 +15,9 @@
 #include <bit>
 #include <cmath>
 #include <cstdio>
+#include <map>
 #include <optional>
+#include <set>
 
 namespace niffer::yaml {
 
@@ -49,24 +54,64 @@ bool HasPacked(const Value& v) {
     return false;
 }
 
+// A name that can be written as a plain YAML scalar (an id in a key, a list or
+// a flow sequence) without quotes.
+bool PlainId(std::string_view s) {
+    if (s.empty() || s == "null" || s == "Null" || s == "NULL" || s == "true" || s == "false" ||
+        s == "True" || s == "False" || s == "~")
+        return false;
+    const char c0 = s[0];
+    if (!((c0 >= 'A' && c0 <= 'Z') || (c0 >= 'a' && c0 <= 'z') || c0 == '_')) return false;
+    for (char c : s)
+        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' ||
+              c == '.' || c == '#' || c == '-'))
+            return false;
+    return true;
+}
+
+// The block's name for its id: the root field called `name` when it is a
+// string ref (NiObjectNET, NiExtraData, shader properties).
+std::optional<std::string> BlockName(const NifFile& nif, const Block& b) {
+    if (!b.Modeled()) return std::nullopt;
+    const SchemaSet& s = *b.Schema();
+    const TypeDef& t = s.types[b.Def()->type];
+    for (uint16_t i = 0; i < t.refCount; ++i) {
+        const auto& fd = s.fields[t.ref + i];
+        if (std::string_view(fd.name) != "name" || s.types[fd.type].kind != Kind::StringRef) continue;
+        const Value& v = b.Root()->items[i];
+        const auto idx = static_cast<uint32_t>(v.bits);
+        if (!v.present || idx >= nif.header.strings.size()) return std::nullopt;
+        return nif.header.strings[idx];
+    }
+    return std::nullopt;
+}
+
 class Writer {
 public:
-    explicit Writer(const NifFile& nif) : nif_(nif) {}
+    Writer(const NifFile& nif, Mode mode) : nif_(nif), authoring_(mode == Mode::Authoring) {}
 
-    std::string Run() {
-        out_ += "# NIFFER YAML, faithful mode (docs/yaml-format.md). Compile with niffer-yaml.\n";
+    std::expected<std::string, Error> Run() {
         const SchemaSet& schema = nif_.blocks.empty() || !nif_.blocks[0].Schema() ? schema::Main()
                                                                                   : *nif_.blocks[0].Schema();
-        out_ += "niffer: {format: faithful, version: " + std::to_string(kFormatVersion) + ", schema: ";
+        if (authoring_) {
+            out_ += "# NIFFER YAML, authoring mode (docs/yaml-format.md). Compile with niffer-yaml.\n";
+            out_ += "niffer: {format: authoring, version: " + std::to_string(kFormatVersion) + ", schema: ";
+            AssignIds();
+        } else {
+            out_ += "# NIFFER YAML, faithful mode (docs/yaml-format.md). Compile with niffer-yaml.\n";
+            out_ += "niffer: {format: faithful, version: " + std::to_string(kFormatVersion) + ", schema: ";
+        }
         out_ += schema.schemaVersion;
         out_ += "}\n";
-        Header();
+        if (authoring_) AuthoringHeader();
+        else Header();
         out_ += nif_.blocks.empty() ? "blocks: []\n" : "blocks:\n";
-        for (size_t i = 0; i < nif_.blocks.size(); ++i) BlockEntry(i);
+        for (size_t i = 0; i < nif_.blocks.size() && !error_; ++i) BlockEntry(i);
         out_ += "roots: [";
         for (size_t i = 0; i < nif_.roots.size(); ++i) {
             if (i) out_ += ", ";
-            out_ += std::to_string(nif_.roots[i]);
+            if (authoring_) Link(nif_.roots[i], "roots");
+            else out_ += std::to_string(nif_.roots[i]);
         }
         out_ += "]\n";
         if (!nif_.trailing.empty()) {
@@ -74,10 +119,111 @@ public:
             Hex(nif_.trailing.data(), nif_.trailing.size(), 2);
             out_ += '\n';
         }
+        if (error_) return std::unexpected(*error_);
         return std::move(out_);
     }
 
 private:
+    // ── authoring: ids, refs, header ─────────────────────────────────────────
+    // A block's id is its name when that is unique, non-empty and UTF-8 text;
+    // otherwise `<Class>#<n>`, n counting the blocks of that class.
+    void AssignIds() {
+        const size_t n = nif_.blocks.size();
+        std::vector<std::optional<std::string>> names(n);
+        std::map<std::string, size_t> uses;
+        for (size_t i = 0; i < n; ++i) {
+            names[i] = BlockName(nif_, nif_.blocks[i]);
+            if (names[i]) ++uses[*names[i]];
+        }
+        std::set<std::string> taken;
+        for (size_t i = 0; i < n; ++i) {
+            const auto& nm = names[i];
+            if (nm && !nm->empty() && uses[*nm] == 1 && text::ValidUtf8(*nm) && !HasControl(*nm)) taken.insert(*nm);
+        }
+        ids_.resize(n);
+        std::map<std::string, size_t> ordinal;
+        for (size_t i = 0; i < n; ++i) {
+            const std::string cls(nif_.blocks[i].TypeName());
+            const size_t k = ordinal[cls]++;
+            const auto& nm = names[i];
+            if (nm && taken.count(*nm) && uses[*nm] == 1) {
+                ids_[i] = *nm;
+                continue;
+            }
+            std::string id = cls + "#" + std::to_string(k);
+            while (taken.count(id)) id += "'";   // a name that looks like an ordinal id
+            taken.insert(id);
+            ids_[i] = std::move(id);
+        }
+    }
+
+    static bool HasControl(std::string_view s) {
+        for (char c : s)
+            if (static_cast<uint8_t>(c) < 0x20 || c == 0x7F) return true;
+        return false;
+    }
+
+    void Id(std::string_view id) {
+        if (PlainId(id)) out_ += id;
+        else text::AppendString(out_, id);
+    }
+
+    // A ref as an id, `~` for null. One that points nowhere can't be written.
+    void Link(int64_t index, std::string_view where) {
+        if (index == -1) {
+            out_ += '~';
+            return;
+        }
+        if (index < 0 || static_cast<size_t>(index) >= ids_.size()) {
+            Fail(std::string(where) + ": ref " + std::to_string(index) + " points at no block");
+            out_ += '~';
+            return;
+        }
+        Id(ids_[static_cast<size_t>(index)]);
+    }
+
+    void Fail(std::string message) {
+        if (error_) return;
+        error_ = Error{};
+        error_->message = "block " + std::to_string(block_) + " (" + std::string(nif_.blocks.empty() ? "" :
+                          nif_.blocks[std::min(block_, nif_.blocks.size() - 1)].TypeName()) + "): " +
+                          std::move(message);
+    }
+
+    // The header's free-form facts. Everything else is derived on compile: the
+    // version facts (SSE's), the type and string tables (first-use order), the
+    // block count and sizes, and maxStringLength (the longest string).
+    void AuthoringHeader() {
+        const niffer::Header& h = nif_.header;
+        out_ += "header:\n";
+        auto shortString = [&](const char* key, const std::string& v) {
+            out_ += "  ";
+            out_ += key;
+            out_ += ": ";
+            // Written without the terminating NUL every vanilla file has.
+            const bool terminated = !v.empty() && v.back() == '\0' &&
+                                    v.find('\0') == v.size() - 1;
+            if (terminated) {
+                text::AppendString(out_, std::string_view(v).substr(0, v.size() - 1));
+            } else {
+                out_ += "!verbatim ";
+                text::AppendString(out_, v);
+            }
+            out_ += '\n';
+        };
+        shortString("author", h.author);
+        shortString("processScript", h.processScript);
+        shortString("exportScript", h.exportScript);
+        if (!h.groups.empty()) {
+            out_ += "  groups: [";
+            for (size_t i = 0; i < h.groups.size(); ++i) {
+                if (i) out_ += ", ";
+                out_ += std::to_string(h.groups[i]);
+            }
+            out_ += "]\n";
+        }
+    }
+
     // ── header ───────────────────────────────────────────────────────────────
     void Header() {
         const niffer::Header& h = nif_.header;
@@ -125,13 +271,22 @@ private:
     // ── blocks ───────────────────────────────────────────────────────────────
     void BlockEntry(size_t i) {
         const Block& b = nif_.blocks[i];
-        out_ += "  - ";
-        out_ += b.TypeName();
-        out_ += ':';
+        block_ = i;
+        const int indent = authoring_ ? 4 : 6;
+        if (authoring_) {
+            out_ += "  ";
+            Id(ids_[i]);
+            out_ += ": !";
+            out_ += b.TypeName();
+        } else {
+            out_ += "  - ";
+            out_ += b.TypeName();
+            out_ += ':';
+        }
         if (!b.Modeled()) {
             out_ += ' ';
-            Hex(b.Original().data(), b.Original().size(), 6);
-            out_ += "  # " + std::to_string(i) + ", raw: ";
+            Hex(b.Original().data(), b.Original().size(), indent);
+            out_ += authoring_ ? "  # raw: " : "  # " + std::to_string(i) + ", raw: ";
             out_ += b.Refusal().empty() ? std::string("no descriptor") : b.Refusal();
             out_ += '\n';
             return;
@@ -144,14 +299,21 @@ private:
             materialized = Block::Load(s, b.TypeName(), b.Encode(), LoadMode::Materialized);
             root = materialized->Root();
         }
+        Value authored;
+        if (authoring_) {   // length fields the engine can derive are left out
+            authored = *root;
+            Block::OmitDerivable(s, b.TypeName(), authored);
+            root = &authored;
+        }
         set_ = &s;
         const TypeDef& t = s.types[b.Def()->type];
+        const std::string note = authoring_ ? "\n" : "  # " + std::to_string(i) + "\n";
         if (!AnyPresent(t, *root)) {
-            out_ += " {}  # " + std::to_string(i) + "\n";
+            out_ += " {}" + note;
             return;
         }
-        out_ += "  # " + std::to_string(i) + "\n";
-        Fields(t, *root, 6, false);
+        out_ += note;
+        Fields(t, *root, indent, false);
     }
 
     bool AnyPresent(const TypeDef& t, const Value& v) const {
@@ -415,8 +577,22 @@ private:
             }
             return;
         }
-        case Kind::I8: case Kind::I16: case Kind::I32: case Kind::I64:
-        case Kind::Ref: case Kind::Ptr: case Kind::StringRef: {
+        case Kind::Ref: case Kind::Ptr:
+            if (authoring_) {
+                Link(static_cast<int32_t>(static_cast<uint32_t>(bits)), "a ref");
+                return;
+            }
+            [[fallthrough]];
+        case Kind::StringRef:
+            if (authoring_ && t.kind == Kind::StringRef) {
+                const auto idx = static_cast<uint32_t>(bits);
+                if (idx == 0xFFFFFFFFu) out_ += '~';
+                else if (idx < nif_.header.strings.size()) text::AppendString(out_, nif_.header.strings[idx]);
+                else Fail("string ref " + std::to_string(idx) + " is past the string table");
+                return;
+            }
+            [[fallthrough]];
+        case Kind::I8: case Kind::I16: case Kind::I32: case Kind::I64: {
             // Sign-extend: refs are i32 (-1 = null), and an empty string ref
             // (0xFFFFFFFF) reads as -1 too.
             const int shift = 64 - static_cast<int>(8 * n);
@@ -432,6 +608,7 @@ private:
 
     // `  # <target class>` for a ref, `  # "<string>"` for a string ref.
     void Comment(const TypeDef& t, const Value& v) {
+        if (authoring_) return;   // ids and strings speak for themselves
         if (t.kind == Kind::Ref || t.kind == Kind::Ptr) {
             const Block* target = nif_.GetBlock(static_cast<int32_t>(static_cast<uint32_t>(v.bits)));
             if (target) {
@@ -465,13 +642,17 @@ private:
         out_ += '"';
     }
 
-    const NifFile&   nif_;
-    const SchemaSet* set_ = nullptr;
-    std::string      out_;
+    const NifFile&           nif_;
+    bool                     authoring_;
+    const SchemaSet*         set_ = nullptr;
+    std::string              out_;
+    std::vector<std::string> ids_;     // authoring: per block
+    size_t                   block_ = 0;
+    std::optional<Error>     error_;
 };
 
 }  // namespace
 
-std::string Decompile(const NifFile& nif) { return Writer(nif).Run(); }
+std::expected<std::string, Error> Decompile(const NifFile& nif, Mode mode) { return Writer(nif, mode).Run(); }
 
 }  // namespace niffer::yaml

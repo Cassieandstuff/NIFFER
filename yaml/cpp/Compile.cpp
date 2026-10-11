@@ -1,9 +1,11 @@
-// ── Compile — faithful-mode YAML → NifFile ───────────────────────────────────
+// ── Compile — YAML (faithful or authoring mode) → NifFile ────────────────────
 // Parses the text with rapidyaml, then reads each block's mapping against its
 // schema type into a value tree and hands it to Block::Build, which encodes it
-// and accepts it only if decoding gives the same tree back. Generic over the
-// schema: nothing here knows a block class by name. Every error carries the
-// line of the YAML node it is about.
+// and accepts it only if decoding gives the same tree back. Authoring mode
+// first resolves ids to block indices, interns strings into a fresh string
+// table, and has the engine derive the length fields left out
+// (Block::DeriveLengths). Generic over the schema: nothing here knows a block
+// class by name. Every error carries the line of the YAML node it is about.
 #include "Text.h"
 
 #include <niffer-yaml/NifferYaml.h>
@@ -12,9 +14,11 @@
 #include <rapidyaml.hpp>
 #endif
 
+#include <algorithm>
 #include <bit>
 #include <cmath>
 #include <cstring>
+#include <unordered_map>
 
 namespace niffer::yaml {
 
@@ -41,10 +45,15 @@ public:
         if (!tree_.is_map(root)) throw Failure{ root, "expected a mapping at the top level" };
         Format(Child(root, "niffer"));
         NifFile f;
-        Header(Child(root, "header"), f.header);
-        Blocks(Child(root, "blocks"), f);
+        if (authoring_) {
+            AuthoringHeader(root, f.header);
+            AuthoringBlocks(Child(root, "blocks"), f);
+        } else {
+            Header(Child(root, "header"), f.header);
+            Blocks(Child(root, "blocks"), f);
+        }
         for (id_type r = First(Seq(Child(root, "roots"))); r != ryml::NONE; r = tree_.next_sibling(r))
-            f.roots.push_back(static_cast<int32_t>(Signed(r, 32)));
+            f.roots.push_back(authoring_ ? Link(r) : static_cast<int32_t>(Signed(r, 32)));
         const id_type trailing = tree_.find_child(root, ryml::csubstr("trailing", 8));
         if (trailing != ryml::NONE) f.trailing = Hex(trailing);
         Known(root, { "niffer", "header", "blocks", "roots", "trailing" });
@@ -129,10 +138,12 @@ private:
     }
 
     // ── format + header ──────────────────────────────────────────────────────
-    void Format(id_type n) const {
+    void Format(id_type n) {
         Map(n);
-        if (Text(Child(n, "format")) != "faithful")
-            throw Failure{ Child(n, "format"), "only format 'faithful' is supported" };
+        const std::string_view format = Text(Child(n, "format"));
+        if (format != "faithful" && format != "authoring")
+            throw Failure{ Child(n, "format"), "format is 'faithful' or 'authoring'" };
+        authoring_ = format == "authoring";
         if (Unsigned(Child(n, "version"), 32) != static_cast<uint64_t>(kFormatVersion))
             throw Failure{ Child(n, "version"), "unsupported format version (this build reads " +
                                                     std::to_string(kFormatVersion) + ")" };
@@ -157,6 +168,99 @@ private:
             h.groups.push_back(static_cast<uint32_t>(Unsigned(c, 32)));
         Known(n, { "versionLine", "version", "endian", "userVersion", "bsVersion", "author", "processScript",
                    "exportScript", "blockTypes", "maxStringLength", "strings", "groups" });
+    }
+
+    // ── authoring: header, blocks, ids, strings ──────────────────────────────
+    // Only the free-form facts are written; the rest is SSE's or derived once
+    // the blocks are read (FinishHeader).
+    void AuthoringHeader(id_type root, niffer::Header& h) const {
+        h.versionLine = "Gamebryo File Format, Version 20.2.0.7";
+        h.version     = kNifVersion;
+        h.endian      = 1;
+        h.userVersion = kUserVersion;
+        h.bsVersion   = kStreamVersion;
+        h.author = h.processScript = h.exportScript = std::string("\0", 1);
+        const id_type n = tree_.find_child(root, ryml::csubstr("header", 6));
+        if (n == ryml::NONE) return;
+        Map(n);
+        auto shortString = [&](std::string_view key, std::string& out) {
+            const id_type c = tree_.find_child(n, ryml::csubstr(key.data(), key.size()));
+            if (c == ryml::NONE) return;
+            if (Tag(c) == "!verbatim") {
+                out = std::string(Text(c));
+                return;
+            }
+            out = String(c);
+            out += '\0';   // ShortStrings end with a NUL in every vanilla file
+        };
+        shortString("author", h.author);
+        shortString("processScript", h.processScript);
+        shortString("exportScript", h.exportScript);
+        const id_type groups = tree_.find_child(n, ryml::csubstr("groups", 6));
+        if (groups != ryml::NONE)
+            for (id_type c = First(Seq(groups)); c != ryml::NONE; c = tree_.next_sibling(c))
+                h.groups.push_back(static_cast<uint32_t>(Unsigned(c, 32)));
+        Known(n, { "author", "processScript", "exportScript", "groups" });
+    }
+
+    // `blocks` is a mapping from each block's id to its class (the tag) and its
+    // fields; file order is the order written.
+    void AuthoringBlocks(id_type n, NifFile& f) {
+        if (tree_.is_seq(n) && tree_.num_children(n) == 0) return;   // blocks: []
+        Map(n);
+        for (id_type e = First(n); e != ryml::NONE; e = tree_.next_sibling(e)) {
+            const std::string id(Key(e));
+            if (!ids_.emplace(id, static_cast<int32_t>(ids_.size())).second)
+                throw Failure{ e, "id '" + id + "' is used twice" };
+        }
+        niffer::Header& h = f.header;
+        for (id_type e = First(n); e != ryml::NONE; e = tree_.next_sibling(e)) {
+            if (!tree_.has_val_tag(e)) throw Failure{ e, "a block is tagged with its class: id: !Class" };
+            std::string type(Tag(e));
+            type.erase(0, type.find_first_not_of('!'));
+
+            auto ti = std::find(h.blockTypes.begin(), h.blockTypes.end(), type);
+            if (ti == h.blockTypes.end()) ti = h.blockTypes.insert(h.blockTypes.end(), type);
+            h.blockTypeIndex.push_back(static_cast<uint16_t>(ti - h.blockTypes.begin()));
+
+            if (!tree_.is_map(e)) {   // raw: the block's bytes
+                f.blocks.push_back(Block::Load(set_, type, Hex(e), mode_));
+            } else {
+                const schema::BlockDef* def = set_.Find(type);
+                if (!def || def->abstract)
+                    throw Failure{ e, "no descriptor for '" + type + "': write the block as raw hex" };
+                Value root = Parse(set_.types[def->type], e);
+                std::string why;
+                if (!Block::DeriveLengths(set_, type, root, &why)) throw Failure{ e, type + ": " + why };
+                auto b = Block::Build(set_, type, root, mode_, &why);
+                if (!b) throw Failure{ e, type + ": " + why };
+                f.blocks.push_back(std::move(*b));
+            }
+            h.blockSizes.push_back(static_cast<uint32_t>(f.blocks.back().Original().size()));
+        }
+        h.numBlocks = static_cast<uint32_t>(f.blocks.size());
+        h.strings = strings_;
+        h.maxStringLength = 0;
+        for (const std::string& str : h.strings)
+            h.maxStringLength = std::max(h.maxStringLength, static_cast<uint32_t>(str.size()));
+    }
+
+    // A ref: an id, or ~ for null.
+    int32_t Link(id_type n) const {
+        if (tree_.has_val(n) && !tree_.is_map(n) && !tree_.is_seq(n) && tree_.val_is_null(n)) return -1;
+        const std::string id = String(n);
+        const auto it = ids_.find(id);
+        if (it == ids_.end()) throw Failure{ n, "no block has the id '" + id + "'" };
+        return it->second;
+    }
+
+    // A string ref: the string (interned in first-use order), or ~ for none.
+    uint32_t Intern(id_type n) const {
+        if (tree_.has_val(n) && !tree_.is_map(n) && !tree_.is_seq(n) && tree_.val_is_null(n)) return 0xFFFFFFFFu;
+        std::string str = String(n);
+        const auto [it, added] = stringIndex_.emplace(str, static_cast<uint32_t>(strings_.size()));
+        if (added) strings_.push_back(std::move(str));
+        return it->second;
     }
 
     // ── blocks ───────────────────────────────────────────────────────────────
@@ -205,11 +309,22 @@ private:
         case Kind::U64: v.bits = Unsigned(n, 64); break;
         case Kind::I8:  v.bits = static_cast<uint8_t>(Signed(n, 8)); break;
         case Kind::I16: v.bits = static_cast<uint16_t>(Signed(n, 16)); break;
-        case Kind::I32: case Kind::Ref: case Kind::Ptr:
+        case Kind::Ref: case Kind::Ptr:
+            if (authoring_) {
+                v.bits = static_cast<uint32_t>(Link(n));
+                break;
+            }
+            v.bits = static_cast<uint32_t>(Signed(n, 32));
+            break;
+        case Kind::I32:
             v.bits = static_cast<uint32_t>(Signed(n, 32));
             break;
         case Kind::I64: v.bits = static_cast<uint64_t>(Signed(n, 64)); break;
         case Kind::StringRef: {
+            if (authoring_) {
+                v.bits = Intern(n);
+                break;
+            }
             // -1 (empty) or an index; 4294967295 is accepted as -1 too.
             const auto x = text::ParseInt(Text(n));
             if (!x || (x->negative && x->magnitude != 1) || (!x->negative && x->magnitude > 0xFFFFFFFFull))
@@ -302,6 +417,10 @@ private:
     const ryml::Tree& tree_;
     const SchemaSet&  set_;
     LoadMode          mode_;
+    bool              authoring_ = false;
+    std::unordered_map<std::string, int32_t>          ids_;          // authoring: id -> block index
+    mutable std::vector<std::string>                  strings_;      // authoring: the new string table
+    mutable std::unordered_map<std::string, uint32_t> stringIndex_;
 };
 
 Error At(const ryml::Tree& tree, const ryml::Parser& parser, id_type node, std::string message) {

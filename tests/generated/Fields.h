@@ -16,6 +16,7 @@ class TLeaf;
 class TNew;
 class TNew2;
 class TRest;
+class TShared;
 }  // namespace niffer_test::view
 
 namespace niffer_test::fields {
@@ -109,6 +110,13 @@ namespace TNew2 {
 // TRest : NiObject
 namespace TRest {
     inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> data{ 6, { { 0 }, 1 } };
+}
+
+// TShared : NiObject
+namespace TShared {
+    inline constexpr ::niffer::FieldRef<uint8_t> n{ 7, { { 0 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> a{ 7, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint16_t>> b{ 7, { { 2 }, 1 } };
 }
 
 }  // namespace niffer_test::fields

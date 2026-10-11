@@ -53,6 +53,8 @@ inline constexpr TypeDef kTypes[] = {
     { Kind::Struct, LenKind::None, 0, 60, 3, 0, 0, "TNew2" },  // 41: block:TNew2
     { Kind::Struct, LenKind::None, 0, 63, 1, 0, 0, "TRest" },  // 42: block:TRest
     { Kind::Bytes, LenKind::Rest, 0, 0, 0, 0, 0, nullptr },  // 43: bytes
+    { Kind::Struct, LenKind::None, 0, 64, 3, 0, 0, "TShared" },  // 44: block:TShared
+    { Kind::Array, LenKind::Field, 0, 3, 0, 0, 0, nullptr },  // 45: u8[field]
 };
 
 inline constexpr FieldDef kFields[] = {
@@ -120,6 +122,9 @@ inline constexpr FieldDef kFields[] = {
     { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 61
     { "p", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 62
     { "data", 43, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 63
+    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 64
+    { "a", 45, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 65
+    { "b", 4, 0, 0, CondOp::Min, 0, 0, 2ll, 0, kNoField, 0ull, false },  // 66
 };
 
 inline constexpr CaseDef kCases[] = {
@@ -138,6 +143,7 @@ inline constexpr BlockDef kBlocks[] = {
     { "TNew", 0, 36, 0, false },  // 4
     { "TNew2", 0, 41, 0, false },  // 5
     { "TRest", 0, 42, 0, false },  // 6
+    { "TShared", 0, 44, 0, false },  // 7
 };
 
 inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kBlocks, "0.0.1", "0.2" };

@@ -82,3 +82,11 @@ fields:
   - { name: pad, type: u32 }
   - { name: kind, type: u8 }
   - { name: p, type: Probe }
+---
+block: TShared
+inherits: NiObject
+doc: One count sizing two arrays, one of them conditional on it.
+fields:
+  - { name: n, type: u8 }
+  - { name: a, type: "u8[count: n]" }
+  - { name: b, type: "u16[count: n]", if: { field: n, min: 2 } }

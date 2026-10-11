@@ -1,16 +1,19 @@
-# NIFFER YAML — faithful mode
+# NIFFER YAML
 
 Format version **1**. This is the normative description of the text that `niffer::yaml::Decompile`
 writes and `niffer::yaml::Compile` reads (target `niffer::yaml`, CLI `niffer-yaml`). It is a
 view of the schema (spec: [schema-language.md](schema-language.md)): field names, case names and
-layouts all come from `schema/`.
+layouts all come from `schema/`. There are two modes; the `niffer.format` key says which, and
+Compile reads both.
 
-**Faithful** means byte-exact. Compiling the decompiled text saves the original file's bytes,
-and every field is written as stored: counts, header string-table indices and block indices
-included. Nothing is derived on compile except what the container always re-measures (block
-count, sizes and type indices). An edit that leaves the file inconsistent is refused, not
-repaired. A later **authoring** mode (named refs, derived counts, rebuilt tables) will be a
-separate format.
+- **Faithful** is byte-exact. Compiling the decompiled text saves the original file's bytes,
+  and every field is written as stored: counts, header string-table indices and block indices
+  included. Nothing is derived on compile except what the container always re-measures (block
+  count, sizes and type indices). An edit that leaves the file inconsistent is refused, not
+  repaired. Most of this document describes faithful mode.
+- **Authoring** is for editing by hand: blocks are keyed by ids, refs name ids, string refs
+  are strings, and counts, sizes and the header's tables are derived on compile. See
+  [Authoring mode](#authoring-mode).
 
 ## Document
 
@@ -113,12 +116,78 @@ itself is refused, naming the first differing field:
 Every error carries the line and column of the YAML node it is about: a field name that isn't in
 the layout, a value of the wrong shape, a class missing from `blockTypes`, a refused block.
 
+## Authoring mode
+
+```yaml
+niffer: {format: authoring, version: 1, schema: 0.2.0}
+header:
+  author: "mcarofano"
+  processScript: ""
+  exportScript: " PE Static Art"
+blocks:
+  Barrel01: !BSFadeNode
+    name: "Barrel01"
+    extraData:
+      - BSX
+    controller: ~
+    flags: 524302
+    transform:
+      translation: {x: 0, y: 0, z: 0}
+      rotation: {m: [1, 0, 0, 0, 1, 0, 0, 0, 1]}
+      scale: 1
+    collisionObject: bhkCollisionObject#0
+    children:
+      - "Barrel01:0"
+    effects: []
+  BSX: !BSXFlags
+    name: "BSX"
+    integerData: 130
+  ...
+roots: [Barrel01]
+```
+
+Values are written as in faithful mode, with these differences.
+
+- **Blocks** are a mapping from each block's **id** to its value, tagged with its class
+  (`id: !Class`). File order is the order written; moving an entry moves the block. An id is
+  any string, unique in the file. Decompile uses the block's name (its root `name` string ref)
+  when that is non-empty, unique in the file and printable UTF-8, and `<Class>#<n>` otherwise
+  (`n` counts the blocks of that class from 0). A raw block is `id: !Class "<hex>"`. Refs
+  inside a raw block are opaque indices: reordering blocks around one breaks them.
+- **Refs** (`ref`, `ptr`) and `roots` name ids; `~` is null.
+- **String refs** are the strings themselves (double-quoted, or `!hex`); `~` is "no string",
+  and `""` is a reference to an empty string. Compile builds the string table from them in
+  first-use order: blocks in order, each block's fields in layout order.
+- **Length fields** are left out wherever they can be derived. A length field is one the
+  schema names as the element count or byte size of a later array or bytes field (`count:` /
+  `size:` in the descriptor). Compile sets an omitted length field to the length of the present
+  containers it sizes; when one field sizes several, they must agree. A length field that
+  sizes nothing present is written explicitly; so is any whose stored value doesn't match its
+  containers. A field that only means a size, without sizing anything in the schema
+  (BSTriShape's `dataSize`, which gates its vertices and triangles), is an ordinary field:
+  keep it right by hand.
+- **Header:** only `author`, `processScript` and `exportScript` (each written without the NUL
+  that ends it in every vanilla file; `!verbatim "..."` writes one exactly as stored), and
+  `groups` when it isn't empty. All keys are optional. Everything else is derived on compile:
+  the version facts (SSE's), the block-type table (first-use order), the string table (above),
+  `maxStringLength` (the longest string), and the block count and sizes. The SE corpus follows
+  these conventions without exception, except that 1,751 of its 22,760 files order their string
+  tables differently (animation sequences list their strings in another order).
+
+So compiling an authoring decompile gives **the same file up to the string table's order**:
+byte-identical where the file used first-use order, otherwise the same blocks, values and
+strings with the string refs renumbered. Decompile refuses (an error, not text) a file
+authoring mode can't express: a ref or string ref that points at nothing.
+
 ## Gate
 
-`niffer-yaml roundtrip <dir>` decompiles and compiles every SSE NIF under `<dir>` and requires
-the saved bytes to equal the file and the same blocks to be modeled. CTest's `niffer-yaml-test`
-covers the awkward cases on a hand-built file: NaN payloads (f32 and half), negative zero,
-non-UTF-8 and NUL-carrying strings, a raw block, a packed vertex array, edits, and refusals.
+`niffer-yaml roundtrip [--authoring] <dir>` decompiles and compiles every SSE NIF under `<dir>`.
+Faithful mode requires the saved bytes to equal the file and the same blocks to be modeled.
+Authoring mode requires the same file up to the string table's order (and counts how many are
+byte-identical), and that decompiling the compiled file gives the same text again. CTest's
+`niffer-yaml-test` covers the awkward cases on a hand-built file: NaN payloads (f32 and half),
+negative zero, non-UTF-8 and NUL-carrying strings, a raw block, a packed vertex array, ids,
+edits, and refusals in both modes.
 
 ## Linking
 

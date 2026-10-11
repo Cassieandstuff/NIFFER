@@ -723,6 +723,151 @@ std::optional<Block> Block::Build(const SchemaSet& set, std::string_view typeNam
     return Load(set, typeName, bytes, mode);
 }
 
+// ── Length fields ─────────────────────────────────────────────────────────────
+namespace {
+
+// Finds, for every length field in a value tree, the lengths of the present
+// containers (arrays, bytes) it sizes. A field sizes a container when the
+// container's FieldDef names it (lenUp / lenField), as the decoder reads it.
+class LengthPass {
+public:
+    struct Target {
+        Value*                value;
+        const FieldDef*       field;
+        bool                  condHolds;
+        std::vector<uint64_t> lengths;
+        bool                  window = false;   // some container is a byte window
+    };
+
+    // `windows`: also measure byte windows (that encodes them, so do it once
+    // every count inside them is final).
+    LengthPass(const SchemaSet& s, bool windows) : set_(s), windows_(windows) {}
+
+    void Walk(const TypeDef& t, Value& v) {
+        if (!v.present || v.packed) return;
+        switch (t.kind) {
+        case Kind::Struct:
+            frames_.push_back({ &t, &v });
+            for (uint16_t i = 0; i < t.refCount && i < v.items.size(); ++i) {
+                const FieldDef& fd = set_.fields[t.ref + i];
+                Value& fv = v.items[i];
+                if (!fv.present) continue;
+                Walk(set_.types[fd.type], fv);
+                if (fd.lenField != schema::kNoField) Record(fd, fv);
+            }
+            frames_.pop_back();
+            return;
+        case Kind::Array:
+            for (Value& item : v.items) Walk(set_.types[t.ref], item);
+            return;
+        case Kind::Union:
+            if (!v.items.empty() && v.bits < t.refCount) {
+                const CaseDef& cd = set_.cases[t.ref + v.bits];
+                if (cd.type != schema::kNoField) Walk(set_.types[cd.type], v.items[0]);
+            }
+            return;
+        default:
+            return;
+        }
+    }
+
+    std::vector<Target> targets;
+
+private:
+    struct MFrame {
+        const TypeDef* type;
+        Value*         value;
+    };
+
+    void Record(const FieldDef& fd, const Value& container) {
+        if (fd.lenUp >= frames_.size()) return;
+        const size_t at = frames_.size() - 1 - fd.lenUp;
+        const MFrame& owner = frames_[at];
+        if (fd.lenField >= owner.type->refCount || fd.lenField >= owner.value->items.size()) return;
+        Value* target = &owner.value->items[fd.lenField];
+
+        const TypeDef& ct = set_.types[fd.type];
+        uint64_t length = 0;
+        bool window = false;
+        if (ct.kind == Kind::Bytes) {
+            length = container.bytes.size();
+        } else if (ct.len == LenKind::Window) {
+            window = true;
+            if (!windows_) return;
+            std::vector<uint8_t> bytes;
+            Encoder enc(set_, bytes);
+            for (const MFrame& f : frames_) enc.PushFrame(f.type, f.value);
+            enc.Encode(ct, container, &fd);
+            length = bytes.size();
+        } else {
+            length = container.items.size();
+        }
+
+        for (Target& t : targets)
+            if (t.value == target) {
+                t.lengths.push_back(length);
+                t.window = t.window || window;
+                return;
+            }
+        Scope scope(set_);
+        for (size_t i = 0; i <= at; ++i) scope.Push(frames_[i].type, frames_[i].value);
+        const FieldDef& tfd = set_.fields[owner.type->ref + fd.lenField];
+        targets.push_back({ target, &tfd, scope.CondHolds(tfd), { length }, window });
+    }
+
+    const SchemaSet&    set_;
+    bool                windows_;
+    std::vector<MFrame> frames_;
+};
+
+bool AllEqual(const std::vector<uint64_t>& v) {
+    for (uint64_t x : v)
+        if (x != v.front()) return false;
+    return !v.empty();
+}
+
+}  // namespace
+
+bool Block::DeriveLengths(const SchemaSet& set, std::string_view typeName, Value& root, std::string* error) {
+    const schema::BlockDef* def = set.Find(typeName);
+    if (!def) {
+        if (error) *error = "no descriptor for " + std::string(typeName);
+        return false;
+    }
+    const TypeDef& t = set.types[def->type];
+    // Counts and byte sizes first; then byte windows, whose encoded size can
+    // depend on counts inside them.
+    for (const bool windows : { false, true }) {
+        LengthPass pass(set, windows);
+        pass.Walk(t, root);
+        for (LengthPass::Target& tg : pass.targets) {
+            if (tg.value->present || !tg.condHolds || tg.window != windows) continue;
+            if (!AllEqual(tg.lengths)) {
+                if (error) {
+                    *error = std::string(tg.field->name) + " sizes containers of different lengths (";
+                    for (size_t i = 0; i < tg.lengths.size(); ++i)
+                        *error += (i ? ", " : "") + std::to_string(tg.lengths[i]);
+                    *error += ")";
+                }
+                return false;
+            }
+            *tg.value = Value{};
+            tg.value->bits = tg.lengths.front();
+        }
+    }
+    return true;
+}
+
+void Block::OmitDerivable(const SchemaSet& set, std::string_view typeName, Value& root) {
+    const schema::BlockDef* def = set.Find(typeName);
+    if (!def) return;
+    LengthPass pass(set, true);
+    pass.Walk(set.types[def->type], root);
+    for (LengthPass::Target& tg : pass.targets)
+        if (tg.value->present && tg.condHolds && AllEqual(tg.lengths) && tg.lengths.front() == tg.value->bits)
+            tg.value->present = false;
+}
+
 bool Block::IsA(uint16_t blockIndex) const {
     return def_ && set_->IsA(set_->IndexOf(def_), blockIndex);
 }

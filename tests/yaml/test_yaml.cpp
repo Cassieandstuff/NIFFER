@@ -96,7 +96,7 @@ void run_yaml_tests() {
     if (!nif) return;
     CHECK_EQ(nif->RawCount(), 1u);   // only ZZZ_Unknown
 
-    const std::string text = yaml::Decompile(*nif);
+    const std::string text = *yaml::Decompile(*nif);
     CHECK(text.find("!bits 0x7FC01234") != std::string::npos);   // f32 NaN payload
     CHECK(text.find("!bits 0x7E01") != std::string::npos);       // half NaN
     CHECK(text.find("!hex \"636166e9\"") != std::string::npos);  // not UTF-8
@@ -114,7 +114,7 @@ void run_yaml_tests() {
     }
     CHECK(back->Save() == bytes);
     CHECK_EQ(back->RawCount(), 1u);
-    CHECK(yaml::Decompile(*back) == text);
+    CHECK(*yaml::Decompile(*back) == text);
     auto mat = yaml::Compile(text, schema::Main(), LoadMode::Materialized);
     CHECK(mat.has_value() && mat->Save() == bytes);
 
@@ -172,10 +172,96 @@ void run_yaml_tests() {
     }
 }
 
+// Authoring mode: ids, strings and derived counts; edits by id; refusals.
+void run_authoring_tests() {
+    std::printf(" yaml authoring\n");
+    const auto bytes = MakeFile();
+    auto nif = NifFile::Load(bytes);
+    CHECK(nif.has_value());
+    if (!nif) return;
+
+    const auto decompiled = yaml::Decompile(*nif, yaml::Mode::Authoring);
+    CHECK(decompiled.has_value());
+    if (!decompiled) return;
+    const std::string& text = *decompiled;
+    CHECK(text.find("format: authoring") != std::string::npos);
+    CHECK(text.find("  \"Scene Root\": !BSFadeNode\n") != std::string::npos);   // id = the unique name
+    CHECK(text.find("  BSXFlags#0: !BSXFlags\n") != std::string::npos);         // no name
+    CHECK(text.find("  BSTriShape#0: !BSTriShape\n") != std::string::npos);     // name isn't UTF-8
+    CHECK(text.find("  ZZZ_Unknown#0: !ZZZ_Unknown \"deadbeef\"") != std::string::npos);   // raw
+    CHECK(text.find("    name: \"Scene Root\"\n") != std::string::npos);        // string refs are strings
+    CHECK(text.find("    name: !hex \"636166e9\"\n") != std::string::npos);
+    CHECK(text.find("      - BSTriShape#0\n") != std::string::npos);            // refs name ids
+    CHECK(text.find("numVertices") == std::string::npos);                        // derived
+    CHECK(text.find("numTriangles") == std::string::npos);
+    CHECK(text.find("dataSize") != std::string::npos);                           // not a length field
+    CHECK(text.find("  author: \"me\"\n") != std::string::npos);                 // without its NUL
+    CHECK(text.find("strings") == std::string::npos);                            // tables are derived
+    CHECK(text.find("roots: [\"Scene Root\"]") != std::string::npos);
+
+    auto back = yaml::Compile(text);
+    CHECK(back.has_value());
+    if (!back) {
+        std::printf("  compile: line %zu: %s\n", back.error().line, back.error().message.c_str());
+        return;
+    }
+    // The unused third string is gone; everything else is the same file.
+    CHECK(back->header.strings == (std::vector<std::string>{ "Scene Root", std::string("caf\xE9", 4) }));
+    CHECK(back->header.author == std::string("me\0", 3));
+    CHECK(back->header.blockTypes == nif->header.blockTypes);
+    CHECK_EQ(back->header.maxStringLength, 10u);
+    CHECK(back->trailing == nif->trailing && back->roots == nif->roots);
+    for (size_t i = 0; i < nif->blocks.size(); ++i)
+        CHECK(back->blocks[i].Encode() == nif->blocks[i].Encode());   // same string indices here
+    CHECK(*yaml::Decompile(*back, yaml::Mode::Authoring) == text);
+
+    // Edits by id: a renamed block with its refs, and a dropped triangle
+    // (numTriangles follows).
+    {
+        std::string edited = Replace(text, "  BSTriShape#0: !BSTriShape", "  Barrel: !BSTriShape");
+        edited = Replace(edited, "      - BSTriShape#0\n", "      - Barrel\n");
+        CHECK(edited.find("triangles: [{a: 0, b: 1, c: 2}]") != std::string::npos);
+        edited = Replace(edited, "triangles: [{a: 0, b: 1, c: 2}]", "triangles: []");
+        auto r = yaml::Compile(edited);
+        CHECK(r.has_value());
+        if (r) {
+            auto shape = view::BSTriShape::From(r->blocks[3]);
+            CHECK(shape.has_value() && shape->NumTriangles() == 0 && shape->Triangles().empty());
+            auto node = view::NiNode::From(r->blocks[0]);
+            CHECK(node.has_value() && node->Children().size() == 1 && node->Children()[0].index == 3);
+        } else {
+            std::printf("  edit: line %zu: %s\n", r.error().line, r.error().message.c_str());
+        }
+    }
+    // Refusals.
+    {
+        auto r = yaml::Compile(Replace(text, "      - BSTriShape#0\n", "      - Nowhere\n"));
+        CHECK(!r.has_value() && r.error().message.find("'Nowhere'") != std::string::npos && r.error().line > 0);
+    }
+    {
+        auto r = yaml::Compile(Replace(text, "  BSXFlags#0: !BSXFlags", "  \"Scene Root\": !BSXFlags"));
+        CHECK(!r.has_value() && r.error().message.find("used twice") != std::string::npos);
+    }
+    {
+        auto r = yaml::Compile(Replace(text, "  BSXFlags#0: !BSXFlags", "  BSXFlags#0:"));
+        CHECK(!r.has_value() && r.error().message.find("tagged") != std::string::npos);
+    }
+    // A ref to nothing can't be written in authoring mode.
+    {
+        NifFile broken = *NifFile::Load(bytes);
+        auto node = view::NiNode::From(broken.blocks[0]);
+        CHECK(node && node->SetChildren({ NiRef<view::NiAVObject>{ { 99 } } }));
+        auto r = yaml::Decompile(broken, yaml::Mode::Authoring);
+        CHECK(!r.has_value() && r.error().message.find("points at no block") != std::string::npos);
+        CHECK(yaml::Decompile(broken).has_value());   // faithful mode writes it as is
+    }
+}
+
 int main() {
     std::setvbuf(stdout, nullptr, _IONBF, 0);
     std::printf("niffer-yaml tests\n");
     run_yaml_tests();
+    run_authoring_tests();
     std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;
 }

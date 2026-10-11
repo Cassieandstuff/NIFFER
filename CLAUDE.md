@@ -100,9 +100,13 @@ were deleted in migration step 6). Design and migration history:
     (docs/collision-provenance.md).
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
 - With `-DNIFFER_BUILD_YAML=ON` (the default at top level), over the same corpus:
-  - `niffer-yaml roundtrip <dir>`: decompile → compile → save. 22,760 of 22,760 NIFs
-    byte-identical with the same blocks modeled, none refused; 14.0 GB of YAML for 2.3 GB of
-    NIF, about 2 minutes. A change to the language, the engine or `yaml/` must keep it GREEN.
+  - `niffer-yaml roundtrip <dir>` (faithful): decompile → compile → save. 22,760 of 22,760
+    NIFs byte-identical with the same blocks modeled, none refused; 14.0 GB of YAML for 2.3 GB
+    of NIF, about 2 minutes.
+  - `niffer-yaml roundtrip --authoring <dir>`: the same file up to the string table's order in
+    all 22,760 (21,009 byte-identical; the other 1,751 order their string tables differently),
+    and decompiling the result gives the same text. About 3 minutes.
+  - A change to the language, the engine or `yaml/` must keep both GREEN.
 - **Bulk reads** go through `Block::ForEachElement` and the views' field-index constants
   (`view::BSVertex::kPosition`): one decode per element, no allocation in the steady state.
 

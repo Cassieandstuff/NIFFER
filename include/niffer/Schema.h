@@ -238,6 +238,16 @@ public:
     static std::optional<Block> Build(const schema::SchemaSet& set, std::string_view typeName,
                                       const Value& root, LoadMode mode = LoadMode::Packed,
                                       std::string* error = nullptr);
+    // Length fields: a field that gives the element count or byte size of a
+    // later array or bytes field (`count: <field>`, `size: <field>`).
+    // DeriveLengths sets every ABSENT length field whose condition holds to the
+    // length of the present containers it sizes, which must agree (false, with
+    // `error`, when they don't). OmitDerivable clears (present = false) every
+    // length field whose value DeriveLengths would give back. A text form uses
+    // the pair to leave counts out. `root` must hold no packed arrays.
+    static bool DeriveLengths(const schema::SchemaSet& set, std::string_view typeName, Value& root,
+                              std::string* error = nullptr);
+    static void OmitDerivable(const schema::SchemaSet& set, std::string_view typeName, Value& root);
 
     std::string_view          TypeName() const { return typeName_; }
     bool                      Modeled() const { return def_ != nullptr; }

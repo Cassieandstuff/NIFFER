@@ -23,6 +23,7 @@ class TLeaf;
 class TNew;
 class TNew2;
 class TRest;
+class TShared;
 
 class Counted {
 public:
@@ -385,6 +386,29 @@ public:
     bool SetData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(0), v); }
 protected:
     explicit TRest(::niffer::Block& b) : NiObject(b) {}
+};
+
+class TShared : public NiObject {
+public:
+    static constexpr uint16_t kBlock = 7;
+    static std::optional<TShared> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return TShared(b);
+        return std::nullopt;
+    }
+    // n
+    static constexpr uint16_t kN = 0;
+    uint8_t N() const { return b_->GetAt<uint8_t>(p_.Child(0)).value_or(uint8_t{}); }
+    bool SetN(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(0), v); }
+    // a
+    static constexpr uint16_t kA = 1;
+    std::vector<uint8_t> A() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(1)).value_or(std::vector<uint8_t>{}); }
+    bool SetA(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(1), v); }
+    // b
+    static constexpr uint16_t kB = 2;
+    std::optional<std::vector<uint16_t>> B() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(2)); }
+    bool SetB(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(2), v); }
+protected:
+    explicit TShared(::niffer::Block& b) : NiObject(b) {}
 };
 
 }  // namespace niffer_test::view

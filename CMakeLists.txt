@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(NIFFER
-    VERSION 0.3.0
+    VERSION 0.4.0
     DESCRIPTION "Clean-room C++23 NIF + FaceGen TRI library for Skyrim Special Edition"
     LANGUAGES CXX)
 

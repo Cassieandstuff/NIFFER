@@ -5,7 +5,7 @@ doc: >-
 fields:
   - { name: numPartitions, type: u32 }
   - { name: dataSize, type: u32, doc: "Bytes of vertexData: numVertices * vertexSize." }
-  - { name: vertexSize, type: u32 }
+  - { name: vertexSize, type: u32, compute: { field: vertexDesc, mask: 15, times: 4 }, doc: "The vertexDesc's vertex size (low nibble, in u32s), in bytes. Holds in all 27,794 SSE NiSkinPartitions." }
   - { name: vertexDesc, type: u64, doc: "BSVertexDesc, the same layout as BSTriShape's." }
   - { name: vertexData, type: "BSVertex[]", size: dataSize, packed: true }
   - { name: partitions, type: "SkinPartition[count: numPartitions]" }

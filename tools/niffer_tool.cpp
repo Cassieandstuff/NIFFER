@@ -103,6 +103,7 @@ static int CmdHistogram(const fs::path& root) {
 //     the default (packed) load saves identically;
 //   - no block with a descriptor is refused;
 //   - every ref/ptr is null or in range and satisfies its `to:` claim;
+//   - every computed field holds its `compute:` claim;
 //   - the `ref` graph (ptr excluded) is acyclic;
 //   - every stringref is empty or in range.
 // `--refs` additionally reports, per ref field without `to:`, the classes its
@@ -117,6 +118,8 @@ struct SchemaFileResult {
     std::map<std::string, uint64_t> refViolations; // "Owner.field -> Target: why"
     std::map<std::string, uint64_t> badStringRefs; // by field
     uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
+    uint64_t computedChecked = 0;                   // blocks whose computed fields were checked
+    std::map<std::string, uint64_t> computeViolations;   // "Class: path (why)"
     uint64_t blockBytes = 0, rawBlockBytes = 0;
     std::map<std::string, uint64_t> opaqueBytes;    // `bytes` fields, by field
     std::string cycle;                              // first ref cycle's edge, "" if none
@@ -208,6 +211,9 @@ static SchemaFileResult RoundtripOne(const fs::path& p, bool wantRefs) {
             continue;
         }
         ++r.modeled;
+        ++r.computedChecked;
+        if (const std::string bad = Block::ComputedMismatch(s, b.TypeName(), *b.Root()); !bad.empty())
+            ++r.computeViolations[std::string(b.TypeName()) + ": " + bad.substr(0, bad.find(" is "))];
 
         const schema::TypeDef& layout = s.types[b.Def()->type];
         for (uint16_t fi = 0; fi < layout.refCount && fi < b.Root()->items.size(); ++fi) {
@@ -294,7 +300,7 @@ static int CmdRoundtrip(const fs::path& root, bool wantRefs) {
     std::map<std::string, uint64_t> badStringsByField, cyclesByEdge;
     uint64_t refsChecked = 0, claimsChecked = 0, stringRefsChecked = 0;
     uint64_t blockBytes = 0, rawBlockBytes = 0;
-    std::map<std::string, uint64_t> opaqueBytes;
+    std::map<std::string, uint64_t> opaqueBytes, computeViolations;
     std::map<std::string, std::string> cycleExample;
     std::map<std::string, std::pair<uint64_t, std::string>> refusals;
     std::map<std::string, uint64_t> refViolations, forcedByType;
@@ -317,6 +323,7 @@ static int CmdRoundtrip(const fs::path& root, bool wantRefs) {
         refsChecked += r.refsChecked;
         claimsChecked += r.claimsChecked;
         stringRefsChecked += r.stringRefsChecked;
+        for (auto& [k, n] : r.computeViolations) computeViolations[k] += n;
         blockBytes += r.blockBytes;
         rawBlockBytes += r.rawBlockBytes;
         for (auto& [f, n] : r.opaqueBytes) opaqueBytes[f] += n;
@@ -357,6 +364,10 @@ static int CmdRoundtrip(const fs::path& root, bool wantRefs) {
             std::printf("  %8llu  %s\n            e.g. %s\n", (unsigned long long)n, e.c_str(),
                         cycleExample[e].c_str());
     }
+    if (!computeViolations.empty()) {
+        std::printf("\nCOMPUTE VIOLATIONS (a `compute:` claim that doesn't hold), first per block:\n");
+        for (auto& [k, n] : computeViolations) std::printf("  %8llu  %s\n", (unsigned long long)n, k.c_str());
+    }
     if (!badStringsByField.empty()) {
         std::printf("\nBAD STRINGREFS by field:\n");
         for (auto& [f, n] : badStringsByField) std::printf("  %8llu  %s\n", (unsigned long long)n, f.c_str());
@@ -379,8 +390,9 @@ static int CmdRoundtrip(const fs::path& root, bool wantRefs) {
             if (n) std::printf("  %12llu  %s\n", (unsigned long long)n, f.c_str());
     }
 
-    uint64_t refused = 0, violations = 0;
+    uint64_t refused = 0, violations = 0, computeBad = 0;
     for (auto& [t, e] : refusals) refused += e.first;
+    for (auto& [k, n] : computeViolations) computeBad += n;
     for (auto& [k, n] : refViolations) violations += n;
 
     std::printf("\n── roundtrip summary ──\n");
@@ -401,11 +413,12 @@ static int CmdRoundtrip(const fs::path& root, bool wantRefs) {
                 (unsigned long long)refsChecked, (unsigned long long)claimsChecked);
     std::printf("  ref violations    %llu\n", (unsigned long long)violations);
     std::printf("  ref cycles        %llu files\n", (unsigned long long)cycles);
+    std::printf("  computed fields   %llu blocks violate a `compute:` claim\n", (unsigned long long)computeBad);
     std::printf("  stringrefs        %llu checked, %llu bad\n",
                 (unsigned long long)stringRefsChecked, (unsigned long long)badStrings);
 
     const bool green = malformed == 0 && verbatimBad == 0 && forcedBad == 0 && packedBad == 0 && refused == 0 &&
-                       violations == 0 && cycles == 0 && badStrings == 0;
+                       violations == 0 && cycles == 0 && badStrings == 0 && computeBad == 0;
     std::printf("\n  GATE: %s\n", green ? "GREEN" : "RED");
     return green ? 0 : 1;
 }

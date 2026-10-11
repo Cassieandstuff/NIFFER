@@ -1,6 +1,6 @@
 # NIFFER schema language — specification
 
-**Language version 0.2.** This document is normative. It defines what a descriptor in `schema/`
+**Language version 0.3.** This document is normative. It defines what a descriptor in `schema/`
 means, so that any implementation can decode and encode Skyrim SE NIF blocks exactly as
 NIFFER's engine does. When this document and the code disagree, that is a bug in one of them.
 `tools/schemagen` is the reference validator, and `niffer::Block` is the reference engine. The
@@ -73,10 +73,11 @@ forever.
 
 ### 3.3 Field references
 
-`T[count: <field>]`, `size: <field>`, `if:` (§4.2) and a union's `by:` (§4.3) name another
-field. The name resolves to the **nearest earlier field**: first among the fields before this one
-in the same struct, then among the fields before the enclosing field in each enclosing struct,
-outward to the block. So an array element can read a count or flag that lives on the block.
+`T[count: <field>]`, `size: <field>`, `if:` (§4.2), a union's `by:` (§4.3) and a `compute:`
+source (§6.2) name another field. The name resolves to the **nearest earlier field**: first
+among the fields before this one in the same struct, then among the fields before the enclosing
+field in each enclosing struct, outward to the block. So an array element can read a count or
+flag that lives on the block. (A `compute:` may also name a later field of its own struct.)
 
 The referenced field must be an integer scalar (`u8`–`u64`, `i8`–`i64`). It may itself be
 conditional; when it is absent, a condition on it is false, a union on it selects no case (not
@@ -121,6 +122,7 @@ fields:
 | `size` | `bytes` (§3.1) and `T[]` byte windows (§3.2) |
 | `if` | a condition (§4.2) |
 | `packed` | arrays only: a storage hint (§4.4) |
+| `compute` | integer fields only: how the field's value follows from other fields (§6.2) |
 | `doc` | free text: what the field means and how it was verified. Ignored by engines. |
 
 ### 4.2 Conditional fields
@@ -209,13 +211,42 @@ verified: [ "clutter/barrel01.nif#0" ]
   decoded with its layout.
 - A block whose type name has no concrete descriptor is **raw** (§7.1).
 
-## 6. Derived lengths
+## 6. Derived fields
+
+Some fields restate what other fields already say: a count, a byte size, a value packed into a
+bitfield. Their values are part of the data and are decoded and re-encoded like any other, but
+an engine can derive them, so that edits keep them true (§7.3) and text forms can leave them out.
+
+### 6.1 Length fields
 
 A field that a later array or `bytes` uses as its count or size (`count: <field>`,
-`size: <field>`) is a **length field**. Its value is part of the data and is decoded and
-re-encoded like any other. When an array or byte run is **replaced through the editing API**, the
-engine sets its length field to the new length. A length field is never recomputed from an array
-that is absent.
+`size: <field>`) is a **length field**. When an array or byte run is **replaced through the
+editing API**, the engine sets its length field to the new length. A length field is never
+recomputed from an array that is absent.
+
+### 6.2 Computed fields
+
+`compute:` on an integer field states how its value follows from other fields, where the schema
+doesn't already say it through a length:
+
+```yaml
+- { name: dataSize,   type: u32, compute: { size: [vertices, triangles] } }
+- { name: vertexSize, type: u32, compute: { field: vertexDesc, mask: 15, times: 4 } }
+```
+
+| Form | Value |
+|---|---|
+| `size: [f, …]` | the encoded byte size of the named fields, summed. An absent field counts 0. The fields are siblings in the same struct, before or after this one. |
+| `field: f` with optional `shift` (0–63, default 0), `mask` (default all bits) and `times` (≥ 1, default 1) | `((f >> shift) & mask) * times`. `f` is an integer field: an earlier field (§3.3), or a later one in the same struct. |
+
+- A computed field can't also be a length field (§6.1), and can't be computed from itself.
+- `compute:` is a **claim about the data**, like `to:` (§8): add it only when the real-data gate
+  confirms that every block in the corpus holds it. The gate reports any block that doesn't.
+- Decoding doesn't use it: the field is read from the bytes like any other, and a file whose
+  stored value disagrees still decodes and round-trips.
+- An engine recomputes computed fields after every edit through the editing API (§7.3), and may
+  derive a missing one from its rule (NIFFER: `Block::DeriveFields`).
+- Generated views give a computed field a getter but no setter.
 
 ## 7. Semantics
 
@@ -248,8 +279,10 @@ the original bytes. It is NIFFER's real-data gate.
 ### 7.3 Editing
 
 - **No-op sets:** setting a value equal to the current one doesn't modify anything.
-- **Derived lengths:** see §6. A byte-window array's size field is set to the encoded size of
+- **Derived lengths:** see §6.1. A byte-window array's size field is set to the encoded size of
   its elements.
+- **Computed fields:** after every edit, every computed field whose condition holds is set to its
+  computation (§6.2).
 - **Unions:** the selector field decides the case. Storing a value into a case that isn't
   selected fails.
 
@@ -272,7 +305,7 @@ consumers never run the generator.
 
 | Output | Content |
 |---|---|
-| `schema.json` | The resolved schema for data consumers: `schemaVersion`, `languageVersion`, `structs[]` and `blocks[]`. Each block has `name`, `parent`, `abstract`, and its full `layout` (inherited fields first; each field names the block that declares it in `declaredBy`), plus `verified` and `doc` when present. Every field has `name` and a resolved `type` (`kind`, and `fields`, `element`, `count`, `countPrefix`, `countField`, `size`, `sizeField`, `to`, `by` and `cases` as applicable), plus `if` when conditional. Named structs appear expanded at each use. |
+| `schema.json` | The resolved schema for data consumers: `schemaVersion`, `languageVersion`, `structs[]` and `blocks[]`. Each block has `name`, `parent`, `abstract`, and its full `layout` (inherited fields first; each field names the block that declares it in `declaredBy`), plus `verified` and `doc` when present. Every field has `name` and a resolved `type` (`kind`, and `fields`, `element`, `count`, `countPrefix`, `countField`, `size`, `sizeField`, `to`, `by` and `cases` as applicable), plus `if` when conditional and `compute` (`{"size": [...]}` or `{"field", "mask", "shift", "times"}`, defaults omitted) when computed. Named structs appear expanded at each use. |
 | `hpp/generated/Tables.h` | the engine's constexpr tables (`niffer::schema::SchemaSet`). Private to the library. |
 | `include/niffer/generated/Fields.h` | typed handles: `niffer::fields::<Block>::<field>[::<field>]`; struct fields expose `::self` |
 | `include/niffer/generated/Views.h` | typed views (`niffer::view::<Name>`): accessors only, over the generic engine. Block views inherit as the blocks do. A union field gets `<Field>Case()` (the selected case's index, or −1) and one accessor per case, `<Field><Case>()`, which is empty unless that case is selected. |
@@ -299,3 +332,4 @@ language version rejects them by name.
 |---|---|
 | 0.1 | Initial: scalars, `ref`/`ptr`, `stringref`, `sizedstring`, `bytes`, structs, arrays (fixed, rest, count prefix, count field), `if:` conditions, block inheritance, `to:` |
 | 0.2 | adds `half`, `union:` (selector field with optional mask, `when` values, `default`, empty cases), byte-window arrays (`T[]` + `size:`), `packed: true`, references to conditional fields, and named structs that read enclosing fields (resolved per use site) |
+| 0.3 | adds `compute:` (computed fields: a summed byte size, or a shifted, masked and scaled field), recomputed on every edit and checked by the gate |

@@ -601,7 +601,7 @@ inline constexpr FieldDef kFields[] = {
     { "vertexDesc", 89, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 228
     { "numTriangles", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 229
     { "numVertices", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 230
-    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 231
+    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Size, 0, 2 },  // 231
     { "vertices", 115, 0, 13, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 232
     { "triangles", 87, 0, 12, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 233
     { "particleDataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 234
@@ -909,7 +909,7 @@ inline constexpr FieldDef kFields[] = {
     { "vertexDesc", 89, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 536
     { "numTriangles", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 537
     { "numVertices", 47, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 538
-    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 539
+    { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Size, 2, 2 },  // 539
     { "vertices", 115, 0, 13, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 540
     { "triangles", 87, 0, 12, CondOp::Ne, 0, 14, 0ll, 0, kNoField, 0ull, true },  // 541
     { "particleDataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 542
@@ -1327,7 +1327,7 @@ inline constexpr FieldDef kFields[] = {
     { "bones", 109, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 954
     { "numPartitions", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 955
     { "dataSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 956
-    { "vertexSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 957
+    { "vertexSize", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Bits, 0, 0, 0, 3, 15ull, 0, 4 },  // 957
     { "vertexDesc", 89, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 958
     { "vertexData", 288, 0, 1, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 959
     { "partitions", 289, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 960
@@ -1671,6 +1671,7 @@ inline constexpr CaseDef kCases[] = {
 };
 inline constexpr int64_t kWhens[] = { 5ll, 1ll, 2ll, 3ll, 5ll, 1ll, 2ll, 3ll, 5ll, 1ll, 3ll, 0ll, 2ll, 3ll, 4ll, 1ll, 5ll, 6ll, 11ll, 14ll, 16ll, 4ll, 1ll, 3ll, 0ll, 8ll };
 inline constexpr uint16_t kLinks[] = { 58, 59, 70, 107, 108, 121, 118, 48, 66, 128, 132, 111, 113, 76, 112, 8, 18, 39, 45, 49, 18, 78, 55, 58, 59, 70, 72, 107, 108, 121, 123, 8, 18, 38, 106, 23, 25, 22, 41, 74, 106, 101, 58, 55, 58, 59, 70, 8, 73, 85, 97, 57, 64, 65, 117, 63, 67, 102, 99, 104, 55, 58, 43, 83, 109, 120, 147, 147, 148, 151, 134, 129, 131, 133, 136, 137, 138, 141, 142, 143, 144, 152, 154, 124, 127, 135 };
+inline constexpr uint16_t kSums[] = { 15, 16, 15, 16 };
 
 inline constexpr BlockDef kBlocks[] = {
     { "BSBehaviorGraphExtraData", 66, 90, 1, false },  // 0
@@ -1830,6 +1831,6 @@ inline constexpr BlockDef kBlocks[] = {
     { "bhkTransformShape", 150, 357, 1, false },  // 154
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kBlocks, "0.2.0", "0.2" };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.3.0", "0.3" };
 
 }  // namespace niffer::schema::tables

@@ -90,3 +90,16 @@ fields:
   - { name: n, type: u8 }
   - { name: a, type: "u8[count: n]" }
   - { name: b, type: "u16[count: n]", if: { field: n, min: 2 } }
+---
+block: TComputed
+inherits: NiObject
+doc: Both compute forms; the summed array is gated on the sum, as BSTriShape's vertices are.
+fields:
+  - { name: desc, type: u64 }
+  - { name: total, type: u32, compute: { size: [items, blob] } }
+  - { name: unit, type: u16, compute: { field: desc, mask: 15, times: 4 } }
+  - { name: high, type: u8, compute: { field: desc, shift: 8, mask: 255 } }
+  - { name: n, type: u8 }
+  - { name: items, type: "u16[count: n]", if: { field: total, ne: 0 } }
+  - { name: blobSize, type: u8 }
+  - { name: blob, type: bytes, size: blobSize, if: { field: total, ne: 0 } }

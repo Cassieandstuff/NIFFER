@@ -1778,10 +1778,9 @@ public:
     static constexpr uint16_t kNumVertices = 13;
     uint16_t NumVertices() const { return b_->GetAt<uint16_t>(p_.Child(13)).value_or(uint16_t{}); }
     bool SetNumVertices(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(13), v); }
-    // dataSize — Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit.
+    // dataSize — Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Holds in all 61,511 SSE BSTriShapes.
     static constexpr uint16_t kDataSize = 14;
     uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(14)).value_or(uint32_t{}); }
-    bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(14), v); }
     // vertices
     static constexpr uint16_t kVertices = 15;
     std::vector<::niffer::view::BSVertex> Vertices() const {
@@ -3954,10 +3953,9 @@ public:
     static constexpr uint16_t kDataSize = 1;
     uint32_t DataSize() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
     bool SetDataSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
-    // vertexSize
+    // vertexSize — The vertexDesc's vertex size (low nibble, in u32s), in bytes. Holds in all 27,794 SSE NiSkinPartitions.
     static constexpr uint16_t kVertexSize = 2;
     uint32_t VertexSize() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
-    bool SetVertexSize(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
     // vertexDesc — BSVertexDesc, the same layout as BSTriShape's.
     static constexpr uint16_t kVertexDesc = 3;
     uint64_t VertexDesc() const { return b_->GetAt<uint64_t>(p_.Child(3)).value_or(uint64_t{}); }

@@ -32,7 +32,7 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit("schemagen: PyYAML is required (pip install pyyaml)")
 
-LANGUAGE_VERSION = "0.2"
+LANGUAGE_VERSION = "0.3"
 
 # spelling -> (C++ Kind, C++ value type, byte size)
 SCALARS = {
@@ -65,7 +65,8 @@ RESERVED_FIELDS = {"self", "block", "cursor", "path", "from"}
 BLOCK_KEYS = {"block", "inherits", "abstract", "fields", "verified", "doc"}
 STRUCT_KEYS = {"struct", "size", "fields", "doc"}
 MANIFEST_KEYS = {"manifest", "schemaVersion"}
-FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "packed", "doc"}
+FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "packed", "compute", "doc"}
+COMPUTE_KEYS = {"size", "field", "mask", "shift", "times"}
 # Kinds a packed array's elements may not contain: packed storage is never
 # walked for references, strings or opaque bytes.
 UNPACKABLE = {"Ref", "Ptr", "StringRef", "SizedString", "Bytes"}
@@ -190,6 +191,9 @@ class Field:
     cond: tuple | None = None           # (op, up, index, value, fieldName, opSpelling)
     sel: tuple | None = None            # Union: (up, index, mask, fieldName)
     packed: bool = False                # storage hint (spec §4.4)
+    # compute (spec §6.2): ("Size", [names], [indices]) or
+    # ("Bits", up, index, mask, shift, times, sourceName)
+    compute: tuple | None = None
     doc: str | None = None
     declared_by: str | None = None      # block that declares it (block layouts)
 
@@ -410,6 +414,7 @@ class Schema:
         fields). `chain` is the enclosing structs' fields, outermost first."""
         if not isinstance(raw_fields, list):
             fail(where, "'fields' must be a list")
+        pending_sizes: list[Field] = []   # `compute: {size: …}` names resolve after the struct
         for i, fd in enumerate(raw_fields):
             fwhere = f"{where}.fields[{i}]"
             if not isinstance(fd, dict):
@@ -462,8 +467,14 @@ class Schema:
                 fail(fwhere, "'size' applies only to bytes and to T[] arrays")
 
             if len_name is not None:
-                up, idx, _ = self.lookup(fwhere, len_name, scopes)
+                up, idx, target = self.lookup(fwhere, len_name, scopes)
+                if target.compute is not None:
+                    fail(fwhere, f"'{len_name}' is computed, so it can't also be a count or size")
                 f.len_ref = (up, idx, len_name)
+            if "compute" in fd:
+                self.parse_compute(fwhere, f, fd["compute"], scopes)
+                if f.compute[0] == "Size" or f.compute[2] is None:
+                    pending_sizes.append(f)
             if "if" in fd:
                 c = fd["if"]
                 if not isinstance(c, dict) or "field" not in c:
@@ -475,6 +486,59 @@ class Schema:
                 up, idx, _ = self.lookup(fwhere, c["field"], scopes)
                 f.cond = (COND_OPS[ops[0]], up, idx, operand, c["field"], ops[0])
             out.append(f)
+        # A size sums fields of its own struct, before or after it; a bitfield
+        # source not found earlier may be a later field of this struct.
+        for f in pending_sizes:
+            if f.compute[0] == "Bits":
+                _, _, _, mask, shift, times, src = f.compute
+                hits = [k for k, g in enumerate(out) if g.name == src]
+                if not hits:
+                    fail(f.where, f"compute: no field '{src}' (an earlier one, or one of this struct)")
+                if out[hits[0]] is f:
+                    fail(f.where, "compute: a field can't be computed from itself")
+                if out[hits[0]].type.kind not in INTEGER_KINDS:
+                    fail(f.where, f"compute: '{src}' must be an integer scalar")
+                f.compute = ("Bits", 0, hits[0], mask, shift, times, src)
+                continue
+            names = f.compute[1]
+            idxs = []
+            for n in names:
+                hits = [k for k, g in enumerate(out) if g.name == n]
+                if not hits:
+                    fail(f.where, f"compute size: no field '{n}' in this struct")
+                if out[hits[0]] is f:
+                    fail(f.where, "compute size: a field can't sum itself")
+                idxs.append(hits[0])
+            f.compute = ("Size", names, idxs)
+
+    def parse_compute(self, where: str, f: Field, c, scopes):
+        if f.type.kind not in INTEGER_KINDS:
+            fail(where, "'compute' applies only to integer fields")
+        if not isinstance(c, dict):
+            fail(where, "'compute' must be a mapping: {size: [fields]} or {field: f, mask, shift, times}")
+        check_keys(f"{where}.compute", c, COMPUTE_KEYS)
+        if ("size" in c) == ("field" in c):
+            fail(where, "'compute' needs exactly one of 'size' or 'field'")
+        if "size" in c:
+            if set(c) != {"size"}:
+                fail(where, "compute 'size' takes no mask, shift or times")
+            names = c["size"]
+            if not isinstance(names, list) or not names or not all(isinstance(n, str) for n in names):
+                fail(where, "compute 'size' must be a non-empty list of field names")
+            if len(set(names)) != len(names):
+                fail(where, "compute 'size' names a field twice")
+            f.compute = ("Size", list(names), [])
+            return
+        try:
+            up, idx, _ = self.lookup(where, c["field"], scopes)
+        except LookupMiss:
+            up, idx = 0, None   # resolved once the struct is complete
+        mask = check_int(where, c.get("mask", 0), "the compute mask")
+        shift = check_int(where, c.get("shift", 0), "the compute shift")
+        times = check_int(where, c.get("times", 1), "the compute 'times'")
+        if mask < 0 or not 0 <= shift < 64 or times < 1:
+            fail(where, "compute needs mask >= 0, 0 <= shift < 64 and times >= 1")
+        f.compute = ("Bits", up, idx, mask, shift, times, c["field"])
 
     def kinds_in(self, t: Type) -> set[str]:
         out = {t.kind}
@@ -711,6 +775,7 @@ class Tables:
         self.whens: list[int] = []
         self.links: list[int] = []
         self.link_index: dict[tuple, int] = {}
+        self.sums: list[int] = []
         self.block_type: dict[str, int] = {}
         for s in schema.structs:
             self.intern(Type(kind="Struct", key=s.key, struct=s))
@@ -765,8 +830,14 @@ class Tables:
                 sup, sidx, smask = f.sel[0], f.sel[1], f.sel[2]
             else:
                 sup, sidx, smask = 0, None, 0
+            comp = None
+            if f.compute and f.compute[0] == "Size":
+                comp = ("Size", len(self.sums), len(f.compute[2]))
+                self.sums.extend(f.compute[2])
+            elif f.compute:
+                comp = f.compute
             self.fields.append((f.name, ft, len_up, len_field, op, cup, cidx, cval, sup, sidx, smask,
-                                f.packed))
+                                f.packed, comp))
         return idx
 
 
@@ -799,10 +870,16 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out.append("};")
     out.append("")
     out.append("inline constexpr FieldDef kFields[] = {")
-    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask, packed) in enumerate(tables.fields):
+    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask, packed, comp) in enumerate(tables.fields):
+        tail = ""
+        if comp and comp[0] == "Size":
+            tail = f", Compute::Size, {comp[1]}, {comp[2]}"
+        elif comp:
+            _, up, idx, mask, shift, times, _ = comp
+            tail = f", Compute::Bits, 0, 0, {up}, {idx}, {mask}ull, {shift}, {times}"
         out.append(f"    {{ {c_str(name)}, {ft}, {lup}, {field_or_none(lf)}, CondOp::{op}, {cup}, "
                    f"{field_or_none(cf)}, {c_int64(cval)}, {sup}, {field_or_none(sf)}, {smask}ull, "
-                   f"{'true' if packed else 'false'} }},  // {i}")
+                   f"{'true' if packed else 'false'}{tail} }},  // {i}")
     out.append("};")
     out.append("")
     spans = {}
@@ -824,6 +901,11 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
         spans["links"] = "kLinks"
     else:
         spans["links"] = "std::span<const uint16_t>{}"
+    if tables.sums:
+        out.append("inline constexpr uint16_t kSums[] = { " + ", ".join(map(str, tables.sums)) + " };")
+        spans["sums"] = "kSums"
+    else:
+        spans["sums"] = "std::span<const uint16_t>{}"
     out.append("")
     out.append("inline constexpr BlockDef kBlocks[] = {")
     for i, b in enumerate(tables.blocks):
@@ -834,7 +916,8 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out.append("};")
     out.append("")
     out.append(f"inline constexpr SchemaSet kSchema{{ kTypes, kFields, {spans['cases']}, {spans['whens']}, "
-               f"{spans['links']}, kBlocks, {c_str(schema.version)}, {c_str(LANGUAGE_VERSION)} }};")
+               f"{spans['links']}, {spans['sums']}, kBlocks, {c_str(schema.version)}, "
+               f"{c_str(LANGUAGE_VERSION)} }};")
     out.append("")
     out.append(f"}}  // namespace {ns}")
     out.append("")
@@ -935,7 +1018,7 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
         out.append(f"class {b.name};")
     out.append("")
 
-    def value_accessor(lines, acc: str, p: str, t: Type | None, optional: bool):
+    def value_accessor(lines, acc: str, p: str, t: Type | None, optional: bool, settable: bool = True):
         """Accessors for the value of type `t` at path expression `p`."""
         if t is None:   # empty union case
             lines.append(f"    bool {acc}() const {{ return b_->Has({p}); }}")
@@ -962,7 +1045,8 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
             lines.append(f"    std::optional<{vt}> {acc}() const {{ return b_->GetAt<{vt}>({p}); }}")
         else:
             lines.append(f"    {vt} {acc}() const {{ return b_->GetAt<{vt}>({p}).value_or({vt}{{}}); }}")
-        lines.append(f"    bool Set{acc}(const {vt}& v) const {{ return b_->SetAt<{vt}>({p}, v); }}")
+        if settable:
+            lines.append(f"    bool Set{acc}(const {vt}& v) const {{ return b_->SetAt<{vt}>({p}, v); }}")
 
     def accessors(fields: list[Field], start: int) -> list[str]:
         lines = []
@@ -982,7 +1066,8 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
                     lines.append(f"    static constexpr uint16_t k{acc}{pascal(case.name)} = {c};")
                     value_accessor(lines, acc + pascal(case.name), f"{p}.Child({c})", case.type, True)
                 continue
-            value_accessor(lines, acc, p, f.type, f.cond is not None)
+            # A computed field has no setter: every edit recomputes it (spec §6.2).
+            value_accessor(lines, acc, p, f.type, f.cond is not None, f.compute is None)
         return lines
 
     # Struct views, dependencies first (a struct view returns nested ones by value).
@@ -1103,6 +1188,12 @@ def field_json(f: Field) -> dict:
         d["if"] = {"field": f.cond[4], f.cond[5]: f.cond[3]}
     if f.packed:
         d["packed"] = True
+    if f.compute and f.compute[0] == "Size":
+        d["compute"] = {"size": list(f.compute[1])}
+    elif f.compute:
+        _, _, _, mask, shift, times, src = f.compute
+        d["compute"] = {"field": src, **({"mask": mask} if mask else {}),
+                        **({"shift": shift} if shift else {}), **({"times": times} if times != 1 else {})}
     if f.declared_by:
         d["declaredBy"] = f.declared_by
     if f.doc:

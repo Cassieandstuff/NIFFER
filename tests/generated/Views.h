@@ -19,6 +19,7 @@ class TNewPickMany;
 class NiObject;
 class TAll;
 class TBase;
+class TComputed;
 class TLeaf;
 class TNew;
 class TNew2;
@@ -287,9 +288,49 @@ protected:
     explicit TAll(::niffer::Block& b) : TBase(b) {}
 };
 
-class TLeaf : public TBase {
+class TComputed : public NiObject {
 public:
     static constexpr uint16_t kBlock = 3;
+    static std::optional<TComputed> From(::niffer::Block& b) {
+        if (b.Modeled() && b.IsA(kBlock)) return TComputed(b);
+        return std::nullopt;
+    }
+    // desc
+    static constexpr uint16_t kDesc = 0;
+    uint64_t Desc() const { return b_->GetAt<uint64_t>(p_.Child(0)).value_or(uint64_t{}); }
+    bool SetDesc(const uint64_t& v) const { return b_->SetAt<uint64_t>(p_.Child(0), v); }
+    // total
+    static constexpr uint16_t kTotal = 1;
+    uint32_t Total() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    // unit
+    static constexpr uint16_t kUnit = 2;
+    uint16_t Unit() const { return b_->GetAt<uint16_t>(p_.Child(2)).value_or(uint16_t{}); }
+    // high
+    static constexpr uint16_t kHigh = 3;
+    uint8_t High() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
+    // n
+    static constexpr uint16_t kN = 4;
+    uint8_t N() const { return b_->GetAt<uint8_t>(p_.Child(4)).value_or(uint8_t{}); }
+    bool SetN(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(4), v); }
+    // items
+    static constexpr uint16_t kItems = 5;
+    std::optional<std::vector<uint16_t>> Items() const { return b_->GetAt<std::vector<uint16_t>>(p_.Child(5)); }
+    bool SetItems(const std::vector<uint16_t>& v) const { return b_->SetAt<std::vector<uint16_t>>(p_.Child(5), v); }
+    // blobSize
+    static constexpr uint16_t kBlobSize = 6;
+    uint8_t BlobSize() const { return b_->GetAt<uint8_t>(p_.Child(6)).value_or(uint8_t{}); }
+    bool SetBlobSize(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(6), v); }
+    // blob
+    static constexpr uint16_t kBlob = 7;
+    std::optional<std::vector<uint8_t>> Blob() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(7)); }
+    bool SetBlob(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(7), v); }
+protected:
+    explicit TComputed(::niffer::Block& b) : NiObject(b) {}
+};
+
+class TLeaf : public TBase {
+public:
+    static constexpr uint16_t kBlock = 4;
     static std::optional<TLeaf> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return TLeaf(b);
         return std::nullopt;
@@ -304,7 +345,7 @@ protected:
 
 class TNew : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 4;
+    static constexpr uint16_t kBlock = 5;
     static std::optional<TNew> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return TNew(b);
         return std::nullopt;
@@ -353,7 +394,7 @@ protected:
 
 class TNew2 : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 5;
+    static constexpr uint16_t kBlock = 6;
     static std::optional<TNew2> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return TNew2(b);
         return std::nullopt;
@@ -375,7 +416,7 @@ protected:
 
 class TRest : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 6;
+    static constexpr uint16_t kBlock = 7;
     static std::optional<TRest> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return TRest(b);
         return std::nullopt;
@@ -390,7 +431,7 @@ protected:
 
 class TShared : public NiObject {
 public:
-    static constexpr uint16_t kBlock = 7;
+    static constexpr uint16_t kBlock = 8;
     static std::optional<TShared> From(::niffer::Block& b) {
         if (b.Modeled() && b.IsA(kBlock)) return TShared(b);
         return std::nullopt;

@@ -1,6 +1,6 @@
 {
- "schemaVersion": "0.2.0",
- "languageVersion": "0.2",
+ "schemaVersion": "0.3.0",
+ "languageVersion": "0.3",
  "structs": [
   {
    "name": "AvTransform",
@@ -3223,8 +3223,14 @@
      "type": {
       "kind": "u32"
      },
+     "compute": {
+      "size": [
+       "vertices",
+       "triangles"
+      ]
+     },
      "declaredBy": "BSTriShape",
-     "doc": "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit."
+     "doc": "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Holds in all 61,511 SSE BSTriShapes."
     },
     {
      "name": "vertices",
@@ -7397,8 +7403,14 @@
      "type": {
       "kind": "u32"
      },
+     "compute": {
+      "size": [
+       "vertices",
+       "triangles"
+      ]
+     },
      "declaredBy": "BSTriShape",
-     "doc": "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit."
+     "doc": "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Holds in all 61,511 SSE BSTriShapes."
     },
     {
      "name": "vertices",
@@ -13129,7 +13141,13 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "NiSkinPartition"
+     "compute": {
+      "field": "vertexDesc",
+      "mask": 15,
+      "times": 4
+     },
+     "declaredBy": "NiSkinPartition",
+     "doc": "The vertexDesc's vertex size (low nibble, in u32s), in bytes. Holds in all 27,794 SSE NiSkinPartitions."
     },
     {
      "name": "vertexDesc",

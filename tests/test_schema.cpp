@@ -638,7 +638,7 @@ void DerivedLengths() {
         CHECK(!field("TAll", v, "counted").items[0].present);   // Counted.n
         CHECK(field("TAll", v, "u32v").present);                   // not a length
         std::string err;
-        CHECK(Block::DeriveLengths(Test(), "TAll", v, &err) && err.empty());
+        CHECK(Block::DeriveFields(Test(), "TAll", v, &err) && err.empty());
         CHECK(v == *src.Root());
         auto b = Block::Build(Test(), "TAll", v);
         CHECK(b.has_value() && b->Encode() == bytes);
@@ -650,7 +650,7 @@ void DerivedLengths() {
         Value v = *src.Root();
         Block::OmitDerivable(Test(), "TNew", v);
         CHECK(!field("TNew", v, "windowSize").present);
-        CHECK(Block::DeriveLengths(Test(), "TNew", v));
+        CHECK(Block::DeriveFields(Test(), "TNew", v));
         CHECK(v == *src.Root());
     }
     // TShared: one count, two arrays. Growing both derives the new count;
@@ -666,18 +666,93 @@ void DerivedLengths() {
         Value grown = v;
         grown.items[1].items.push_back(grown.items[1].items[0]);
         grown.items[2].items.push_back(grown.items[2].items[0]);
-        CHECK(Block::DeriveLengths(Test(), "TShared", grown));
+        CHECK(Block::DeriveFields(Test(), "TShared", grown));
         CHECK_EQ(grown.items[0].bits, 3u);
         auto b = Block::Build(Test(), "TShared", grown);
         CHECK(b.has_value());
         Value lopsided = v;
         lopsided.items[1].items.push_back(lopsided.items[1].items[0]);
         std::string err;
-        CHECK(!Block::DeriveLengths(Test(), "TShared", lopsided, &err));
+        CHECK(!Block::DeriveFields(Test(), "TShared", lopsided, &err));
         CHECK(err.find("n sizes containers of different lengths (3, 2)") != std::string::npos);
         // An explicit count is kept as given (Build then checks it).
         Value given = *src.Root();
-        CHECK(Block::DeriveLengths(Test(), "TShared", given) && given == *src.Root());
+        CHECK(Block::DeriveFields(Test(), "TShared", given) && given == *src.Root());
+    }
+}
+
+template <class V> constexpr bool kHasSetTotal = requires(V v) { v.SetTotal(0u); };
+template <class V> constexpr bool kHasSetItems = requires(V v) { v.SetItems(std::vector<uint16_t>{}); };
+
+// A TComputed block: desc 0x1207 (unit = 7 * 4, high = 0x12), two u16 items,
+// three blob bytes, so total = 4 + 3. With `empty`, no items and no blob: total 0.
+std::vector<uint8_t> MakeTComputed(bool empty = false, uint32_t total = 7) {
+    Bytes x;
+    x.put<uint64_t>(0x1207).put<uint32_t>(empty ? 0 : total).put<uint16_t>(28).put<uint8_t>(0x12);
+    if (empty) {
+        x.put<uint8_t>(0).put<uint8_t>(0);
+    } else {
+        x.put<uint8_t>(2).put<uint16_t>(10).put<uint16_t>(20).put<uint8_t>(3).raw({ 1, 2, 3 });
+    }
+    return x.b;
+}
+
+// compute: claims checked, fields derived and omitted, edits recompute.
+void ComputedFields() {
+    // A computed field has no setter: edits recompute it.
+    static_assert(!kHasSetTotal<tv::TComputed>);
+    static_assert(kHasSetItems<tv::TComputed>);
+
+    const auto bytes = MakeTComputed();
+    Block b = Block::Load(Test(), "TComputed", bytes, LoadMode::Materialized);
+    CHECK(b.Modeled());
+    CHECK(Block::ComputedMismatch(Test(), "TComputed", *b.Root()).empty());
+    {
+        Block wrong = Block::Load(Test(), "TComputed", MakeTComputed(false, 8), LoadMode::Materialized);
+        CHECK(wrong.Modeled());
+        CHECK_EQ(Block::ComputedMismatch(Test(), "TComputed", *wrong.Root()), std::string("total is 8, computes to 7"));
+    }
+    // Omitted with the length fields, derived back.
+    {
+        Value v = *b.Root();
+        Block::OmitDerivable(Test(), "TComputed", v);
+        CHECK(!v.items[1].present && !v.items[2].present && !v.items[3].present);   // total, unit, high
+        CHECK(!v.items[4].present && !v.items[6].present);                         // n, blobSize
+        CHECK(v.items[0].present && v.items[5].present);                           // desc, items
+        std::string err;
+        CHECK(Block::DeriveFields(Test(), "TComputed", v, &err) && err.empty());
+        CHECK(v == *b.Root());
+        auto built = Block::Build(Test(), "TComputed", v);
+        CHECK(built.has_value() && built->Encode() == bytes);
+    }
+    // Nothing summed: total computes to 0, which gates the arrays off; the
+    // counts size nothing present, so they stay.
+    {
+        const auto none = MakeTComputed(true);
+        Block e = Block::Load(Test(), "TComputed", none, LoadMode::Materialized);
+        CHECK(e.Modeled() && Block::ComputedMismatch(Test(), "TComputed", *e.Root()).empty());
+        Value v = *e.Root();
+        Block::OmitDerivable(Test(), "TComputed", v);
+        CHECK(!v.items[1].present && v.items[4].present);
+        CHECK(Block::DeriveFields(Test(), "TComputed", v));
+        auto built = Block::Build(Test(), "TComputed", v);
+        CHECK(built.has_value() && built->Encode() == none);
+    }
+    // An edit through a view recomputes: one more item, total 9; a new desc, unit follows.
+    {
+        Block edit = Block::Load(Test(), "TComputed", bytes);
+        auto view = tv::TComputed::From(edit);
+        CHECK(view.has_value());
+        if (view) {
+            CHECK(view->SetItems({ 10, 20, 30 }));
+            CHECK_EQ(view->N(), 3);
+            CHECK_EQ(view->Total(), 9u);
+            CHECK(view->SetDesc(0x3405));
+            CHECK_EQ(view->Unit(), 20);
+            CHECK_EQ(view->High(), 0x34);
+            CHECK(Block::ComputedMismatch(Test(), "TComputed", *Block::Load(Test(), "TComputed", edit.Encode(),
+                                                                           LoadMode::Materialized).Root()).empty());
+        }
     }
 }
 
@@ -695,6 +770,7 @@ void run_schema_tests() {
     Elements();
     BuildFromValue();
     DerivedLengths();
+    ComputedFields();
     SchemaDecodeMesh();
     RealSchemaSmoke();
 }

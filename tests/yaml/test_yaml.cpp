@@ -194,7 +194,7 @@ void run_authoring_tests() {
     CHECK(text.find("      - BSTriShape#0\n") != std::string::npos);            // refs name ids
     CHECK(text.find("numVertices") == std::string::npos);                        // derived
     CHECK(text.find("numTriangles") == std::string::npos);
-    CHECK(text.find("dataSize") != std::string::npos);                           // not a length field
+    CHECK(text.find("dataSize") == std::string::npos);                           // computed (§6.2)
     CHECK(text.find("  author: \"me\"\n") != std::string::npos);                 // without its NUL
     CHECK(text.find("strings") == std::string::npos);                            // tables are derived
     CHECK(text.find("roots: [\"Scene Root\"]") != std::string::npos);
@@ -216,7 +216,7 @@ void run_authoring_tests() {
     CHECK(*yaml::Decompile(*back, yaml::Mode::Authoring) == text);
 
     // Edits by id: a renamed block with its refs, and a dropped triangle
-    // (numTriangles follows).
+    // (numTriangles and dataSize follow).
     {
         std::string edited = Replace(text, "  BSTriShape#0: !BSTriShape", "  Barrel: !BSTriShape");
         edited = Replace(edited, "      - BSTriShape#0\n", "      - Barrel\n");
@@ -227,6 +227,7 @@ void run_authoring_tests() {
         if (r) {
             auto shape = view::BSTriShape::From(r->blocks[3]);
             CHECK(shape.has_value() && shape->NumTriangles() == 0 && shape->Triangles().empty());
+            CHECK(shape.has_value() && shape->DataSize() == 3 * 24);   // recomputed: vertices only
             auto node = view::NiNode::From(r->blocks[0]);
             CHECK(node.has_value() && node->Children().size() == 1 && node->Children()[0].index == 3);
         } else {

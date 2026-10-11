@@ -4,7 +4,7 @@
 // and accepts it only if decoding gives the same tree back. Authoring mode
 // first resolves ids to block indices, interns strings into a fresh string
 // table, and has the engine derive the length fields left out
-// (Block::DeriveLengths). Generic over the schema: nothing here knows a block
+// (Block::DeriveFields). Generic over the schema: nothing here knows a block
 // class by name. Every error carries the line of the YAML node it is about.
 #include "Text.h"
 
@@ -231,7 +231,7 @@ private:
                     throw Failure{ e, "no descriptor for '" + type + "': write the block as raw hex" };
                 Value root = Parse(set_.types[def->type], e);
                 std::string why;
-                if (!Block::DeriveLengths(set_, type, root, &why)) throw Failure{ e, type + ": " + why };
+                if (!Block::DeriveFields(set_, type, root, &why)) throw Failure{ e, type + ": " + why };
                 auto b = Block::Build(set_, type, root, mode_, &why);
                 if (!b) throw Failure{ e, type + ": " + why };
                 f.blocks.push_back(std::move(*b));

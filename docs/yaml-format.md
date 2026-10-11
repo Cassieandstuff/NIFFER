@@ -158,14 +158,16 @@ Values are written as in faithful mode, with these differences.
 - **String refs** are the strings themselves (double-quoted, or `!hex`); `~` is "no string",
   and `""` is a reference to an empty string. Compile builds the string table from them in
   first-use order: blocks in order, each block's fields in layout order.
-- **Length fields** are left out wherever they can be derived. A length field is one the
-  schema names as the element count or byte size of a later array or bytes field (`count:` /
-  `size:` in the descriptor). Compile sets an omitted length field to the length of the present
-  containers it sizes; when one field sizes several, they must agree. A length field that
-  sizes nothing present is written explicitly; so is any whose stored value doesn't match its
-  containers. A field that only means a size, without sizing anything in the schema
-  (BSTriShape's `dataSize`, which gates its vertices and triangles), is an ordinary field:
-  keep it right by hand.
+- **Derived fields** are left out wherever they can be derived (schema-language.md §6):
+  - a **length field**, one the schema names as the element count or byte size of a later
+    array or bytes field (`count:` / `size:` in the descriptor). Compile sets an omitted length
+    field to the length of the present containers it sizes; when one field sizes several, they
+    must agree. A length field that sizes nothing present is written explicitly;
+  - a **computed field** (`compute:` in the descriptor), such as BSTriShape's `dataSize` (the
+    byte size of its vertices and triangles) or NiSkinPartition's `vertexSize`. Compile sets an
+    omitted one to its computation.
+
+  Either is written explicitly when its stored value doesn't match what it would derive to.
 - **Header:** only `author`, `processScript` and `exportScript` (each written without the NUL
   that ends it in every vanilla file; `!verbatim "..."` writes one exactly as stored), and
   `groups` when it isn't empty. All keys are optional. Everything else is derived on compile:

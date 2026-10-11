@@ -9,7 +9,7 @@
 
 namespace niffer {
 
-const char* LibraryVersion() { return "0.4.0"; }
+const char* LibraryVersion() { return "0.5.0"; }
 
 static std::unexpected<NifError> Err(NifErrorKind kind, size_t off,
                                      int32_t block, std::string msg) {

@@ -296,5 +296,75 @@ rejects("reserved field name", """\
     fields: [ { name: block, type: u8 } ]
 """, "reserved")
 
+accepts("computed fields", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: desc, type: u64 }
+      - { name: total, type: u32, compute: { size: [items, blob] } }
+      - { name: unit, type: u16, compute: { field: desc, mask: 15, times: 4 } }
+      - { name: n, type: u8 }
+      - { name: items, type: "u16[count: n]" }
+      - { name: blob, type: bytes, size: 4 }
+""")
+rejects("compute on a float", """    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: f32, compute: { size: [x] } } ]
+""", "only to integer fields")
+rejects("compute with both forms", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: d, type: u32 }
+      - { name: x, type: u32, compute: { size: [d], field: d } }
+""", "exactly one of 'size' or 'field'")
+rejects("compute size of an unknown field", """    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: u32, compute: { size: [nope] } } ]
+""", "no field 'nope'")
+rejects("compute size of itself", """    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: u32, compute: { size: [x] } } ]
+""", "can't sum itself")
+rejects("compute size with a mask", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: x, type: u32, compute: { size: [b], mask: 3 } }
+      - { name: b, type: bytes, size: 2 }
+""", "takes no mask")
+accepts("compute from a later field of the struct", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: x, type: u32, compute: { field: d, mask: 15, times: 4 } }
+      - { name: d, type: u64 }
+""")
+rejects("compute from an unknown field", """    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: u32, compute: { field: nope } } ]
+""", "no field 'nope'")
+rejects("compute from a non-integer", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: x, type: u32, compute: { field: f } }
+      - { name: f, type: f32 }
+""", "must be an integer scalar")
+rejects("compute with a bad shift", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: d, type: u64 }
+      - { name: x, type: u32, compute: { field: d, shift: 64 } }
+""", "shift < 64")
+rejects("a computed field as a count", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: d, type: u64 }
+      - { name: n, type: u8, compute: { field: d, mask: 7 } }
+      - { name: xs, type: "u8[count: n]" }
+""", "is computed, so it can't also be a count")
+rejects("unknown compute key", """    block: A
+    inherits: NiObject
+    fields:
+      - { name: d, type: u64 }
+      - { name: x, type: u32, compute: { field: d, plus: 1 } }
+""", "unknown key 'plus'")
+
 print("schemagen tests:", "OK" if failures == 0 else f"{failures} failure(s)")
 sys.exit(1 if failures else 0)

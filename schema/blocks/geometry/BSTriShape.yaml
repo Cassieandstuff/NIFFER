@@ -12,7 +12,7 @@ fields:
   - { name: vertexDesc, type: u64, doc: "The BSVertexDesc bitfield: the per-vertex layout." }
   - { name: numTriangles, type: u16 }
   - { name: numVertices, type: u16 }
-  - { name: dataSize, type: u32, doc: "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Not recomputed on edit." }
+  - { name: dataSize, type: u32, compute: { size: [vertices, triangles] }, doc: "Bytes of vertices + triangles; 0 when the vertices live in the skin partition. Holds in all 61,511 SSE BSTriShapes." }
   - { name: vertices, type: "BSVertex[count: numVertices]", if: { field: dataSize, ne: 0 }, packed: true }
   - { name: triangles, type: "Triangle[count: numTriangles]", if: { field: dataSize, ne: 0 }, packed: true }
   - { name: particleDataSize, type: u32 }

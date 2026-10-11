@@ -1,6 +1,6 @@
 # NIFFER — schema-first design
 
-Status: **steps 1–8 implemented** (2026-10-10). The normative spec is
+Status: **steps 1–9 implemented** (2026-10-10). The normative spec is
 [schema-language.md](schema-language.md). The model follows ESPER's
 (github.com/Cassieandstuff/ESPER, `docs/schema-design.md`), which settled the same questions for
 plugin records; this document records where NIF differs.
@@ -230,8 +230,9 @@ in `Niffer.h`) kept working until step 6 deleted it.
 8. **Done (2026-10-10). Authoring mode.** Text for hand editing
    ([yaml-format.md](yaml-format.md#authoring-mode)): blocks keyed by an id (their name where
    unique, else `Class#n`), refs by id, string refs as strings, and every derivable length field
-   left out. The engine gained `Block::DeriveLengths` / `Block::OmitDerivable`: a length field
-   is one the schema names as a later container's count or size, so the rule is generic. The
+   left out. The engine gained `Block::DeriveLengths` (now `DeriveFields`) and
+   `Block::OmitDerivable`: a length field is one the schema names as a later container's count
+   or size, so the rule is generic. The
    header keeps only author, scripts and groups. The corpus was measured before choosing the
    derivations: block types are in first-use order and maxStringLength is the longest string
    in all 22,760 files, export strings always end in one NUL, there are no unused or duplicate
@@ -239,11 +240,20 @@ in `Niffer.h`) kept working until step 6 deleted it.
    `niffer-yaml roundtrip --authoring`, all 22,760 the same file (21,009 byte-identical), and
    decompiling the result gives the same text.
 
-   Not derived: a field that means a size without sizing anything in the schema, such as
-   BSTriShape's `dataSize` (vertex and triangle bytes; it only gates those two arrays). An
-   edit that grows the vertex array has to update it by hand. Deriving it would take a
-   language construct for computed fields (a size over several fields), which doesn't exist
-   yet.
+   Not derived at first: a field that means a size without sizing anything in the schema,
+   such as BSTriShape's `dataSize` (vertex and triangle bytes; it only gates those two arrays).
+   Step 9 added the language construct for it.
+9. **Done (2026-10-10). Computed fields (language 0.3).** `compute:` states how an integer
+   field follows from others: `size: [fields]` (their summed encoded bytes) or `field:` with
+   `shift` / `mask` / `times` (a bitfield, scaled). A search over the corpus tested every integer
+   field of every struct against simple relations to its siblings (a count, a byte size, a sum
+   of two byte sizes, a scaled nibble). Beyond the counts the schema already links, two hold
+   everywhere: BSTriShape `dataSize` = size of `vertices` + `triangles` (61,511 blocks) and
+   NiSkinPartition `vertexSize` = (`vertexDesc` & 0xF) × 4 (27,794 blocks). Both are now
+   `compute:` claims, which the real-data gate checks on every block (0 violations). The engine
+   recomputes computed fields after every edit, so editing a shape's vertices through the views
+   keeps `dataSize` true. Views have no setter for them, and YAML authoring mode derives them
+   like lengths (`Block::DeriveFields` / `OmitDerivable`).
 
 ## Decisions
 

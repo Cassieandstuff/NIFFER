@@ -44,17 +44,18 @@ inline constexpr TypeDef kTypes[] = {
     { Kind::Array, LenKind::Prefix8, 0, 5, 0, 0, 0, nullptr },  // 32: struct:TAllRows#2[u8]
     { Kind::Array, LenKind::Rest, 0, 3, 0, 0, 0, nullptr },  // 33: u8[]
     { Kind::Struct, LenKind::None, 0, 48, 2, 0, 0, "TBase" },  // 34: block:TBase
-    { Kind::Struct, LenKind::None, 0, 50, 3, 0, 0, "TLeaf" },  // 35: block:TLeaf
-    { Kind::Struct, LenKind::None, 0, 53, 7, 0, 0, "TNew" },  // 36: block:TNew
-    { Kind::Half, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 37: half
-    { Kind::Union, LenKind::None, 0, 0, 3, 0, 0, nullptr },  // 38: union#6
-    { Kind::Array, LenKind::Window, 0, 9, 0, 0, 0, nullptr },  // 39: struct:Probe#8[window]
-    { Kind::Array, LenKind::Window, 4, 1, 0, 0, 0, nullptr },  // 40: u16[window:4]
-    { Kind::Struct, LenKind::None, 0, 60, 3, 0, 0, "TNew2" },  // 41: block:TNew2
-    { Kind::Struct, LenKind::None, 0, 63, 1, 0, 0, "TRest" },  // 42: block:TRest
-    { Kind::Bytes, LenKind::Rest, 0, 0, 0, 0, 0, nullptr },  // 43: bytes
-    { Kind::Struct, LenKind::None, 0, 64, 3, 0, 0, "TShared" },  // 44: block:TShared
-    { Kind::Array, LenKind::Field, 0, 3, 0, 0, 0, nullptr },  // 45: u8[field]
+    { Kind::Struct, LenKind::None, 0, 50, 8, 0, 0, "TComputed" },  // 35: block:TComputed
+    { Kind::Struct, LenKind::None, 0, 58, 3, 0, 0, "TLeaf" },  // 36: block:TLeaf
+    { Kind::Struct, LenKind::None, 0, 61, 7, 0, 0, "TNew" },  // 37: block:TNew
+    { Kind::Half, LenKind::None, 0, 0, 0, 0, 0, nullptr },  // 38: half
+    { Kind::Union, LenKind::None, 0, 0, 3, 0, 0, nullptr },  // 39: union#6
+    { Kind::Array, LenKind::Window, 0, 9, 0, 0, 0, nullptr },  // 40: struct:Probe#8[window]
+    { Kind::Array, LenKind::Window, 4, 1, 0, 0, 0, nullptr },  // 41: u16[window:4]
+    { Kind::Struct, LenKind::None, 0, 68, 3, 0, 0, "TNew2" },  // 42: block:TNew2
+    { Kind::Struct, LenKind::None, 0, 71, 1, 0, 0, "TRest" },  // 43: block:TRest
+    { Kind::Bytes, LenKind::Rest, 0, 0, 0, 0, 0, nullptr },  // 44: bytes
+    { Kind::Struct, LenKind::None, 0, 72, 3, 0, 0, "TShared" },  // 45: block:TShared
+    { Kind::Array, LenKind::Field, 0, 3, 0, 0, 0, nullptr },  // 46: u8[field]
 };
 
 inline constexpr FieldDef kFields[] = {
@@ -108,23 +109,31 @@ inline constexpr FieldDef kFields[] = {
     { "tail", 33, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 47
     { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 48
     { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 49
-    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 50
-    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 51
-    { "value", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 52
-    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 53
-    { "h", 37, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 54
-    { "pick", 38, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, 0, 3ull, false },  // 55
-    { "windowSize", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 56
-    { "window", 39, 0, 3, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 57
-    { "fixedWindow", 40, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 58
-    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 59
-    { "pad", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 60
+    { "desc", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 50
+    { "total", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Size, 0, 2 },  // 51
+    { "unit", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Bits, 0, 0, 0, 0, 15ull, 0, 4 },  // 52
+    { "high", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Bits, 0, 0, 0, 0, 255ull, 8, 1 },  // 53
+    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 54
+    { "items", 4, 0, 4, CondOp::Ne, 0, 1, 0ll, 0, kNoField, 0ull, false },  // 55
+    { "blobSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 56
+    { "blob", 31, 0, 6, CondOp::Ne, 0, 1, 0ll, 0, kNoField, 0ull, false },  // 57
+    { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 58
+    { "flags", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 59
+    { "value", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 60
     { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 61
-    { "p", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 62
-    { "data", 43, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 63
-    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 64
-    { "a", 45, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 65
-    { "b", 4, 0, 0, CondOp::Min, 0, 0, 2ll, 0, kNoField, 0ull, false },  // 66
+    { "h", 38, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 62
+    { "pick", 39, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, 0, 3ull, false },  // 63
+    { "windowSize", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 64
+    { "window", 40, 0, 3, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, true },  // 65
+    { "fixedWindow", 41, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 66
+    { "tail", 10, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 67
+    { "pad", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 68
+    { "kind", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 69
+    { "p", 11, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 70
+    { "data", 44, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 71
+    { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 72
+    { "a", 46, 0, 0, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 73
+    { "b", 4, 0, 0, CondOp::Min, 0, 0, 2ll, 0, kNoField, 0ull, false },  // 74
 };
 
 inline constexpr CaseDef kCases[] = {
@@ -133,19 +142,21 @@ inline constexpr CaseDef kCases[] = {
     { "none", kNoField, 3, 0, true },  // 2
 };
 inline constexpr int64_t kWhens[] = { 1ll, 2ll, 3ll };
-inline constexpr uint16_t kLinks[] = { 2, 3 };
+inline constexpr uint16_t kLinks[] = { 2, 4 };
+inline constexpr uint16_t kSums[] = { 5, 7 };
 
 inline constexpr BlockDef kBlocks[] = {
     { "NiObject", -1, 12, 0, true },  // 0
     { "TAll", 2, 13, 2, false },  // 1
     { "TBase", 0, 34, 0, true },  // 2
-    { "TLeaf", 2, 35, 2, false },  // 3
-    { "TNew", 0, 36, 0, false },  // 4
-    { "TNew2", 0, 41, 0, false },  // 5
-    { "TRest", 0, 42, 0, false },  // 6
-    { "TShared", 0, 44, 0, false },  // 7
+    { "TComputed", 0, 35, 0, false },  // 3
+    { "TLeaf", 2, 36, 2, false },  // 4
+    { "TNew", 0, 37, 0, false },  // 5
+    { "TNew2", 0, 42, 0, false },  // 6
+    { "TRest", 0, 43, 0, false },  // 7
+    { "TShared", 0, 45, 0, false },  // 8
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kBlocks, "0.0.1", "0.2" };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.0.1", "0.3" };
 
 }  // namespace niffer_test::tables

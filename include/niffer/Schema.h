@@ -40,9 +40,10 @@ namespace niffer {
 //             range), array (→ element TypeDef) or union (→ CaseDef range).
 //             Ref/Ptr types carry their allowed targets (→ links range of
 //             BlockDef indices).
-//   FieldDef  one struct field, with its length source, condition and union
-//             selector, each as (structs up, field index) from the field's own
-//             struct.
+//   FieldDef  one struct field, with its length source, condition, union
+//             selector and computation, each as (structs up, field index)
+//             from the field's own struct. A `size` computation sums fields of
+//             the same struct (→ sums range of field indices).
 //   CaseDef   one union case: the selector values that pick it (→ whens
 //             range) and its TypeDef (none for an empty case).
 //   BlockDef  a block class: its parent and its flattened layout (a struct
@@ -76,6 +77,11 @@ enum class LenKind : uint8_t {
 
 enum class CondOp : uint8_t { None, Eq, Ne, Min, Max, Mask };
 
+// A computed field's rule (spec §6.2). Size: the encoded byte size of the
+// fields `sums` names (absent ones count 0). Bits: ((source >> shift) & mask)
+// * times, the source an earlier integer field.
+enum class Compute : uint8_t { None, Size, Bits };
+
 inline constexpr uint16_t kNoField = 0xFFFF;
 
 struct TypeDef {
@@ -102,6 +108,14 @@ struct FieldDef {
     uint16_t    selField  = kNoField;
     uint64_t    selMask   = 0;         //   …ANDed with this mask when non-zero
     bool        packed    = false;     // Array: may be stored packed (spec §4.4)
+    Compute     compute   = Compute::None;
+    uint16_t    sumFirst  = 0;         // Size: the summed fields (sums range; same struct)
+    uint16_t    sumCount  = 0;
+    uint8_t     srcUp     = 0;         // Bits: the source field…
+    uint16_t    srcField  = kNoField;
+    uint64_t    srcMask   = 0;         //   …shifted right, ANDed with this (0 = all bits)…
+    uint8_t     srcShift  = 0;
+    uint32_t    srcTimes  = 1;         //   …and multiplied by this
 };
 
 struct CaseDef {
@@ -126,6 +140,7 @@ struct SchemaSet {
     std::span<const CaseDef>  cases;
     std::span<const int64_t>  whens;
     std::span<const uint16_t> links;
+    std::span<const uint16_t> sums;      // Compute::Size field lists
     std::span<const BlockDef> blocks;    // sorted by name
     const char*               schemaVersion   = nullptr;
     const char*               languageVersion = nullptr;
@@ -238,16 +253,23 @@ public:
     static std::optional<Block> Build(const schema::SchemaSet& set, std::string_view typeName,
                                       const Value& root, LoadMode mode = LoadMode::Packed,
                                       std::string* error = nullptr);
-    // Length fields: a field that gives the element count or byte size of a
-    // later array or bytes field (`count: <field>`, `size: <field>`).
-    // DeriveLengths sets every ABSENT length field whose condition holds to the
-    // length of the present containers it sizes, which must agree (false, with
-    // `error`, when they don't). OmitDerivable clears (present = false) every
-    // length field whose value DeriveLengths would give back. A text form uses
-    // the pair to leave counts out. `root` must hold no packed arrays.
-    static bool DeriveLengths(const schema::SchemaSet& set, std::string_view typeName, Value& root,
-                              std::string* error = nullptr);
+    // Derivable fields: a length field (one that gives the element count or
+    // byte size of a later array or bytes field: `count: <field>`,
+    // `size: <field>`) and a computed field (`compute:`, spec §6.2).
+    // DeriveFields sets every ABSENT derivable field whose condition holds:
+    // a length field to the length of the present containers it sizes (which
+    // must agree: false, with `error`, when they don't), then a computed field
+    // to its computation. OmitDerivable clears (present = false) every
+    // derivable field whose value DeriveFields would give back. A text form
+    // uses the pair to leave them out. `root` must hold no packed arrays.
+    static bool DeriveFields(const schema::SchemaSet& set, std::string_view typeName, Value& root,
+                             std::string* error = nullptr);
     static void OmitDerivable(const schema::SchemaSet& set, std::string_view typeName, Value& root);
+    // The first computed field (as a path, "partitions/0/vertexSize") whose
+    // stored value isn't its computation; "" when every one holds. The
+    // real-data gate checks `compute:` claims with it.
+    static std::string ComputedMismatch(const schema::SchemaSet& set, std::string_view typeName,
+                                        const Value& root);
 
     std::string_view          TypeName() const { return typeName_; }
     bool                      Modeled() const { return def_ != nullptr; }
@@ -297,8 +319,9 @@ public:
     // The schema type at `p` (whether or not the value is present).
     const schema::TypeDef* TypeAt(const RelPath& p) const;
     // Replaces the value at `p`. A no-op when unchanged, so untouched blocks stay
-    // verbatim. Replacing an array/bytes field also updates its length field. A
-    // path into a packed array unpacks that array first.
+    // verbatim. Replacing an array/bytes field also updates its length field,
+    // and every computed field is recomputed. A path into a packed array
+    // unpacks that array first.
     // Returns false when the block isn't modeled or `p` doesn't exist.
     bool                   StoreValue(const RelPath& p, Value v);
 

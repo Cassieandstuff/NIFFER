@@ -69,8 +69,8 @@ were deleted in migration step 6). Design and migration history:
   edit `include/niffer/generated/`, `hpp/generated/`, `tests/generated/` or `schema.json` by
   hand. Regenerate with the `niffer-schemagen` target (Python 3 + PyYAML) and commit them in the
   same change as the YAML. CTest's `*-fresh` checks fail on stale output.
-- **Claims about data:** `to:`, `ref` vs `ptr`, and any field meaning describe the data. Add them
-  only when the gate confirms them on the vanilla corpus. `roundtrip --refs` lists the
+- **Claims about data:** `to:`, `ref` vs `ptr`, `compute:`, and any field meaning describe the
+  data. Add them only when the gate confirms them on the vanilla corpus. `roundtrip --refs` lists the
   observed target classes of every ref field that has no `to:` yet.
 - **New layouts are measured first:** before modeling a payload, measure it over the corpus
   (distinct selector values, sizes per selector, value shapes per word), then describe exactly
@@ -91,7 +91,7 @@ were deleted in migration step 6). Design and migration history:
     re-encode proves every element, and it checks that the default packed load saves
     identically. Verbatim and forced re-encode are byte-exact; 786,940 blocks, all modeled;
     98.67% of block bytes decoded field by field; 1,098,425 refs checked against `to:`; an acyclic
-    `ref` graph; 728,961 string refs in range. `--refs` also lists the remaining opaque `bytes`
+    `ref` graph; 728,961 string refs in range; every `compute:` claim holds. `--refs` also lists the remaining opaque `bytes`
     fields, largest first.
   - `niffer-tool collision-validate [--sweep] <dir>`: `ExtractCollision` over the corpus. 17,139
     leaf shapes decoded, 93 skipped; 0 of 3,174,859 compressed-mesh vertices outside their

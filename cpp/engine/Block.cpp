@@ -828,7 +828,148 @@ bool AllEqual(const std::vector<uint64_t>& v) {
 
 }  // namespace
 
-bool Block::DeriveLengths(const SchemaSet& set, std::string_view typeName, Value& root, std::string* error) {
+// ── Computed fields ───────────────────────────────────────────────────────────
+namespace {
+
+// Visits every computed field of a value tree with its enclosing structs, and
+// derives, omits, updates or checks it. A struct's children are visited first:
+// a size can depend on what they hold.
+class ComputePass {
+public:
+    enum class Mode { Derive, Omit, Update, Check };
+
+    ComputePass(const SchemaSet& s, Mode m) : set_(s), mode_(m) {}
+
+    void Walk(const TypeDef& t, Value& v) {
+        if (!v.present || v.packed) return;
+        switch (t.kind) {
+        case Kind::Struct: {
+            frames_.push_back({ &t, &v });
+            const uint16_t n = std::min<uint16_t>(t.refCount, static_cast<uint16_t>(v.items.size()));
+            for (uint16_t i = 0; i < n; ++i) {
+                const FieldDef& fd = set_.fields[t.ref + i];
+                path_.push_back(fd.name);
+                Walk(set_.types[fd.type], v.items[i]);
+                path_.pop_back();
+            }
+            for (uint16_t i = 0; i < n; ++i)
+                if (set_.fields[t.ref + i].compute != schema::Compute::None) Visit(t, v, i);
+            frames_.pop_back();
+            return;
+        }
+        case Kind::Array:
+            for (size_t i = 0; i < v.items.size(); ++i) {
+                path_.push_back(std::to_string(i));
+                Walk(set_.types[t.ref], v.items[i]);
+                path_.pop_back();
+            }
+            return;
+        case Kind::Union:
+            if (!v.items.empty() && v.bits < t.refCount) {
+                const CaseDef& cd = set_.cases[t.ref + v.bits];
+                if (cd.type == schema::kNoField) return;
+                path_.push_back(cd.name);
+                Walk(set_.types[cd.type], v.items[0]);
+                path_.pop_back();
+            }
+            return;
+        default:
+            return;
+        }
+    }
+
+    // Omit: clears the fields found to match (after the walk, so a size
+    // never sees a field already omitted).
+    void ApplyOmissions() {
+        for (Value* v : omit_) v->present = false;
+    }
+
+    std::string mismatch;   // Check: the first field that doesn't hold
+
+private:
+    struct MFrame {
+        const TypeDef* type;
+        Value*         value;
+    };
+
+    void Visit(const TypeDef& t, Value& v, uint16_t i) {
+        const FieldDef& fd = set_.fields[t.ref + i];
+        Value& fv = v.items[i];
+        if (!CondHolds(fd)) return;
+        uint64_t computed = 0;
+        const bool ok = Evaluate(fd, computed);
+        const uint64_t mask = schema_detail::MaskFor(set_.types[fd.type].kind);
+        const bool fits = ok && (computed & ~mask) == 0;
+        switch (mode_) {
+        case Mode::Derive:
+            if (!fv.present && ok) {
+                fv = Value{};
+                fv.bits = computed & mask;
+            }
+            return;
+        case Mode::Update:
+            if (fv.present && ok) fv.bits = computed & mask;
+            return;
+        case Mode::Omit:
+            if (fv.present && fits && fv.bits == computed) omit_.push_back(&fv);
+            return;
+        case Mode::Check:
+            if (fv.present && (!fits || fv.bits != computed) && mismatch.empty()) {
+                for (const std::string& seg : path_) mismatch += seg + "/";
+                mismatch += fd.name;
+                mismatch += " is " + std::to_string(fv.bits) + ", computes to " +
+                            (ok ? std::to_string(computed) : std::string("nothing"));
+            }
+            return;
+        }
+    }
+
+    bool CondHolds(const FieldDef& fd) const {
+        Scope scope(set_);
+        for (const MFrame& f : frames_) scope.Push(f.type, f.value);
+        return scope.CondHolds(fd);
+    }
+
+    // The value the field must hold; false when it can't be computed (a
+    // missing source).
+    bool Evaluate(const FieldDef& fd, uint64_t& out) const {
+        const MFrame& own = frames_.back();
+        if (fd.compute == schema::Compute::Size) {
+            out = 0;
+            for (uint16_t k = 0; k < fd.sumCount; ++k) {
+                const uint16_t idx = set_.sums[fd.sumFirst + k];
+                if (idx >= own.value->items.size()) return false;
+                const Value& sv = own.value->items[idx];
+                if (!sv.present) continue;
+                const FieldDef& sf = set_.fields[own.type->ref + idx];
+                std::vector<uint8_t> bytes;
+                Encoder enc(set_, bytes);
+                for (const MFrame& f : frames_) enc.PushFrame(f.type, f.value);
+                enc.Encode(set_.types[sf.type], sv, &sf);
+                out += bytes.size();
+            }
+            return true;
+        }
+        if (fd.srcUp >= frames_.size()) return false;
+        const MFrame& src = frames_[frames_.size() - 1 - fd.srcUp];
+        if (fd.srcField >= src.value->items.size()) return false;
+        const Value& sv = src.value->items[fd.srcField];
+        if (!sv.present) return false;
+        const uint64_t mask = fd.srcMask ? fd.srcMask : ~0ull;
+        out = ((sv.bits >> fd.srcShift) & mask) * fd.srcTimes;
+        return true;
+    }
+
+    const SchemaSet&         set_;
+    Mode                     mode_;
+    std::vector<MFrame>      frames_;
+    std::vector<std::string> path_;
+    std::vector<Value*>      omit_;
+};
+
+}  // namespace
+
+bool Block::DeriveFields(const SchemaSet& set, std::string_view typeName, Value& root, std::string* error) {
     const schema::BlockDef* def = set.Find(typeName);
     if (!def) {
         if (error) *error = "no descriptor for " + std::string(typeName);
@@ -836,7 +977,8 @@ bool Block::DeriveLengths(const SchemaSet& set, std::string_view typeName, Value
     }
     const TypeDef& t = set.types[def->type];
     // Counts and byte sizes first; then byte windows, whose encoded size can
-    // depend on counts inside them.
+    // depend on counts inside them; then computed fields, which can depend on
+    // all of it.
     for (const bool windows : { false, true }) {
         LengthPass pass(set, windows);
         pass.Walk(t, root);
@@ -855,17 +997,31 @@ bool Block::DeriveLengths(const SchemaSet& set, std::string_view typeName, Value
             tg.value->bits = tg.lengths.front();
         }
     }
+    ComputePass(set, ComputePass::Mode::Derive).Walk(t, root);
     return true;
 }
 
 void Block::OmitDerivable(const SchemaSet& set, std::string_view typeName, Value& root) {
     const schema::BlockDef* def = set.Find(typeName);
     if (!def) return;
-    LengthPass pass(set, true);
-    pass.Walk(set.types[def->type], root);
-    for (LengthPass::Target& tg : pass.targets)
+    const TypeDef& t = set.types[def->type];
+    // Decide everything on the whole tree first, then clear.
+    ComputePass computed(set, ComputePass::Mode::Omit);
+    computed.Walk(t, root);
+    LengthPass lengths(set, true);
+    lengths.Walk(t, root);
+    computed.ApplyOmissions();
+    for (LengthPass::Target& tg : lengths.targets)
         if (tg.value->present && tg.condHolds && AllEqual(tg.lengths) && tg.lengths.front() == tg.value->bits)
             tg.value->present = false;
+}
+
+std::string Block::ComputedMismatch(const SchemaSet& set, std::string_view typeName, const Value& root) {
+    const schema::BlockDef* def = set.Find(typeName);
+    if (!def) return {};
+    ComputePass pass(set, ComputePass::Mode::Check);
+    pass.Walk(set.types[def->type], const_cast<Value&>(root));   // Check mode doesn't write
+    return pass.mismatch;
 }
 
 bool Block::IsA(uint16_t blockIndex) const {
@@ -1073,7 +1229,7 @@ bool Block::StoreValue(const RelPath& p, Value nv) {
     v->present = true;
     dirty_ = true;
 
-    // A replaced array / byte run keeps its length field in step (§6).
+    // A replaced array / byte run keeps its length field in step (§6.1).
     if (fd && fd->lenField != schema::kNoField && fd->lenUp < structs.size()) {
         StructStep& owner = structs[structs.size() - 1 - fd->lenUp];
         if (fd->lenField < owner.value->items.size()) {
@@ -1096,6 +1252,8 @@ bool Block::StoreValue(const RelPath& p, Value nv) {
             lenValue.present = true;
         }
     }
+    // Computed fields follow what they're computed from (§6.2).
+    ComputePass(*set_, ComputePass::Mode::Update).Walk(set_->types[def_->type], value_);
     return true;
 }
 

@@ -105,7 +105,8 @@ were deleted in migration step 6). Design and migration history:
     motionType and layer relations bhkRigidBody's docs claim hold (maxLinearVelocity is 1000002
     in 1,086 of 1,086 keyframed bodies with no mass and in no other).
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
-- With `-DNIFFER_BUILD_YAML=ON` (the default at top level), over the same corpus:
+- With `-DNIFFER_BUILD_YAML=ON` (the default at top level), over the same corpus (also
+  `NIFFER_TOOL_THREADS` workers):
   - `niffer-yaml roundtrip <dir>` (faithful): decompile → compile → save. 22,760 of 22,760
     NIFs byte-identical with the same blocks modeled, none refused; 14.0 GB of YAML for 2.3 GB
     of NIF, about 2 minutes.

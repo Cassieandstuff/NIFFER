@@ -25,6 +25,7 @@
 // corroborated against shipped game bytes — never from nifly source or the
 // GPL nif.xml schema. See README.md "Provenance".
 
+#include <array>
 #include <cstdint>
 #include <expected>
 #include <map>
@@ -160,6 +161,73 @@ struct CollisionGeometry {
 };
 inline constexpr float kHavokToSkyrim = 69.99124908447265625f;  // bhk unit -> Skyrim unit
 // ExtractCollision(NifFile&) is declared at the end of Schema.h.
+
+// ── Havok bodies, one per rigid body ──────────────────────────────────────────
+// What a physics backend needs to rebuild each body rather than one merged soup:
+// the body's placement, its layer and motion, its mass properties, and its leaf
+// shapes with their primitives kept (not sampled into points). Read with the same
+// conventions as ExtractCollision (docs/collision-provenance.md).
+//
+// Units: shapes, centre of mass and inertia are in the body's own space, in Havok
+// units; the body's placement maps that space to the NIF's root space in Skyrim
+// units, so its scale already carries kHavokToSkyrim.
+//
+// The rigid body's fields are named from the loader's map (bhkRigidBody's schema
+// doc); every other field is there through view::bhkRigidBody::From(nif.blocks[body.body]).
+
+// The body's motion class as the game's loader settles it (bhkRigidBody's
+// motionType doc): Havok's 5 is Fixed, 4 Keyframed, 1-3 and 6 Dynamic; a body of
+// no mass is Fixed unless its layer is 2 or 28, and Keyframed if its layer is 14
+// or 29. Anything else is Unknown.
+enum class BodyMotion : uint8_t { Unknown, Fixed, Keyframed, Dynamic };
+
+struct BodyShape {
+    enum class Kind : uint8_t { Box, Sphere, Capsule, ConvexVertices, Mesh, Skipped };
+    Kind                 kind = Kind::Skipped;
+    std::string          className;  // the leaf's block class
+    std::vector<int32_t> path;       // block indices from the body's shape down to this leaf
+    // Leaf space -> body space (Havok units): p' = rotation * p + translation,
+    // rotation row-major. Composed from the bhk(Convex)TransformShapes on the path.
+    std::array<float, 9> rotation{ 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+    std::array<float, 3> translation{};
+    uint32_t             material = 0;  // primitive leaves: their material ID (hash-like)
+    // The shell around the core: a box or convex-vertices solid is its core grown by
+    // this; for spheres and capsules it is their radius.
+    float                radius = 0;
+    std::array<float, 3> halfExtents{};       // Box: the core's half extents
+    std::array<float, 3> point1{}, point2{};  // Capsule: the segment's ends
+    std::vector<float>    vertices;           // ConvexVertices: the core points; Mesh: the vertices (3 floats each)
+    std::vector<uint32_t> triangles;          // Mesh: 3 indices per triangle
+    std::vector<uint32_t> triangleMaterials;  // Mesh: one material ID per triangle
+    std::string           skipReason;         // Skipped: why (cylinder, plane, NiTriStrips, bad data)
+};
+
+struct Body {
+    int32_t     collisionObject = -1, body = -1, targetNode = -1;   // block indices
+    std::string collisionObjectClass, bodyClass, targetName;
+    uint16_t    collisionObjectFlags = 0;
+    // Body space (Havok units) -> root space (Skyrim units): p' = scale * (rotation * p) + translation.
+    std::array<float, 9> rotation{ 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+    std::array<float, 3> translation{};
+    float                scale = kHavokToSkyrim;
+    uint32_t   collisionFilter = 0;   // the raw word; its low 7 bits are the layer
+    uint8_t    layer           = 0;   // a COLL record's index (BNAM)
+    uint8_t    motionType      = 0;   // the stored value
+    BodyMotion motion          = BodyMotion::Unknown;
+    uint8_t    qualityType     = 0;   // Havok's collidable quality as stored
+    float                mass = 0;    // kg; 0 for fixed bodies
+    std::array<float, 9> inertia{};   // row-major, body space
+    std::array<float, 3> centerOfMass{};
+    float linearDamping = 0, angularDamping = 0;
+    float friction = 0, restitution = 0;
+    float gravityFactor           = 1;
+    float maxLinearVelocity       = 0;   // as the loader keeps it (clamped to 100), Havok units/s
+    float maxAngularVelocity      = 0;   // rad/s
+    float allowedPenetrationDepth = 0;   // Havok units
+    std::vector<BodyShape> shapes;    // the leaves, in walk order
+    int                    shapesSkipped = 0;
+};
+// ExtractBodies(NifFile&) is declared at the end of Schema.h.
 
 // FaceGen TRI (FRTRI003) — facial morph / performance-capture shape keys ────
 // A second first-party format under Niffer (not a NIF). Byte-exact round-trip:

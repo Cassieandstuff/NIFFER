@@ -19117,12 +19117,12 @@
      "declaredBy": "bhkShapeWrapper"
     },
     {
-     "name": "unknown4",
+     "name": "collisionFilter",
      "type": {
       "kind": "u32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36."
+     "doc": "The header's collision filter info. Byte 0 is the collision layer (the loader reads it as filter & 0x7F): in every block it is the index (BNAM) of one of Skyrim.esm's 55 COLL records, and the mesh folders match the record names (L_STATIC in architecture and dungeons, L_CLUTTER in clutter, L_WEAPON in weapons, L_BIPED in actors, L_TREES in landscape). Byte 1 takes 26 values (0-24 and 0x80-0x86), not established; bytes 2-3 are 0. Always equal to unknown36."
     },
     {
      "name": "unknown8",
@@ -19130,7 +19130,7 @@
       "kind": "u32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40."
+     "doc": "A header pointer as saved (varies per block like a 32-bit address, low nibble 0). Always equal to unknown40."
     },
     {
      "name": "unknown12",
@@ -19150,7 +19150,7 @@
       "count": 3
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Unstructured (uninitialized-looking)."
+     "doc": "Padding (uninitialized-looking)."
     },
     {
      "name": "unknown16",
@@ -19162,7 +19162,7 @@
       "count": 3
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Always 0, 0, 0x80000000."
+     "doc": "An empty array as saved: always 0, 0, 0x80000000."
     },
     {
      "name": "unknown28",
@@ -19177,21 +19177,24 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "Padding before hkpRigidBodyCinfo."
     },
     {
      "name": "unknown36",
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "hkpRigidBodyCinfo's collision filter info. Always equal to collisionFilter."
     },
     {
      "name": "unknown40",
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "hkpRigidBodyCinfo's shape pointer as saved. Always equal to unknown8."
     },
     {
      "name": "unknown44",
@@ -19199,15 +19202,31 @@
       "kind": "u32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Always 0."
+     "doc": "hkpRigidBodyCinfo's local-frame pointer: always 0."
     },
     {
-     "name": "unknown48",
+     "name": "collisionResponse",
      "type": {
-      "kind": "u32"
+      "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks."
+     "doc": "Always 1 (simple contact)."
+    },
+    {
+     "name": "unknown49",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Padding."
+    },
+    {
+     "name": "contactPointCallbackDelay",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0xFFFF in 14,868 blocks."
     },
     {
      "name": "translation",
@@ -19280,7 +19299,7 @@
      "doc": "Unit quaternion x, y, z, w (|q| = 1 in every block)."
     },
     {
-     "name": "unknown84",
+     "name": "linearVelocity",
      "type": {
       "kind": "struct",
       "name": "Vec4",
@@ -19315,7 +19334,7 @@
      "doc": "Always zero."
     },
     {
-     "name": "unknown100",
+     "name": "angularVelocity",
      "type": {
       "kind": "struct",
       "name": "Vec4",
@@ -19431,21 +19450,23 @@
      "doc": "0 exactly when inertia is all zero (14,868 of 14,880)."
     },
     {
-     "name": "unknown184",
+     "name": "linearDamping",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.0996 (0.1 as stored) in 14,631 bodies; also 0.0498, 0.598, 0."
     },
     {
-     "name": "unknown188",
+     "name": "angularDamping",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.0498 (0.05 as stored) in 14,723 bodies; also 2, 0, 0.5, 1, 0.25."
     },
     {
-     "name": "unknown192",
+     "name": "timeFactor",
      "type": {
       "kind": "f32"
      },
@@ -19453,7 +19474,7 @@
      "doc": "Always 1.0."
     },
     {
-     "name": "unknown196",
+     "name": "gravityFactor",
      "type": {
       "kind": "f32"
      },
@@ -19461,14 +19482,15 @@
      "doc": "Always 1.0."
     },
     {
-     "name": "unknown200",
+     "name": "friction",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.5 in 12,995 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100."
     },
     {
-     "name": "unknown204",
+     "name": "rollingFrictionMultiplier",
      "type": {
       "kind": "f32"
      },
@@ -19476,43 +19498,47 @@
      "doc": "Always 0."
     },
     {
-     "name": "unknown208",
+     "name": "restitution",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.4 in 12,947 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9."
     },
     {
-     "name": "unknown212",
+     "name": "maxLinearVelocity",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "104.4 in 13,794 bodies; 1000002 in exactly the 1,087 keyframed bodies with no mass. The loader clamps it to 100."
     },
     {
-     "name": "unknown216",
+     "name": "maxAngularVelocity",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "31.57 in 13,617 bodies, 1000002 in 1,229 (fixed or keyframed), 1068 in 35."
     },
     {
-     "name": "unknown220",
+     "name": "allowedPenetrationDepth",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,367."
     },
     {
-     "name": "unknown224",
+     "name": "motionType",
      "type": {
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "2-5."
+     "doc": "Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,073 of 1,087 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,460 of 9,510). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29."
     },
     {
-     "name": "unknown225",
+     "name": "enableDeactivation",
      "type": {
       "kind": "u8"
      },
@@ -19520,31 +19546,23 @@
      "doc": "Always 1."
     },
     {
-     "name": "unknown226",
+     "name": "solverDeactivation",
      "type": {
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "1 or 2."
+     "doc": "1 (off) or 2 (low)."
     },
     {
-     "name": "unknown227",
+     "name": "qualityType",
      "type": {
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0, 1, 2 or 4."
+     "doc": "Havok's collidable quality: 0 fixed, 1 keyframed, 2 debris, 4 moving in the corpus."
     },
     {
-     "name": "unknown228",
-     "type": {
-      "kind": "u8"
-     },
-     "declaredBy": "bhkRigidBody",
-     "doc": "Always 0."
-    },
-    {
-     "name": "unknown229",
+     "name": "autoRemoveLevel",
      "type": {
       "kind": "u8"
      },
@@ -19552,7 +19570,15 @@
      "doc": "Always 0."
     },
     {
-     "name": "unknown230",
+     "name": "responseModifierFlags",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "numShapeKeysInContactPointProperties",
      "type": {
       "kind": "u8"
      },
@@ -19560,7 +19586,7 @@
      "doc": "Always 3."
     },
     {
-     "name": "unknown231",
+     "name": "forceCollideOntoPpu",
      "type": {
       "kind": "u8"
      },
@@ -19577,7 +19603,7 @@
       "count": 3
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Unstructured (uninitialized-looking)."
+     "doc": "Padding to hkpRigidBodyCinfo's 16-byte size (uninitialized-looking)."
     },
     {
      "name": "constraints",
@@ -19601,13 +19627,13 @@
       "kind": "u16"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0 except in one block (1)."
+     "doc": "The body's flags as the loader reads them (bit 6 is read as the body following its node); 0 except in one block (1)."
     }
    ],
    "verified": [
     "clutter/barrel01.nif#5"
    ],
-   "doc": "250 bytes plus 4 per constraint in all 14,880 SSE bhkRigidBody/bhkRigidBodyT blocks (sizes 250, 254, 262, 266). Evidence per field is in docs/collision-provenance.md."
+   "doc": "250 bytes plus 4 per constraint in all 14,880 SSE bhkRigidBody/bhkRigidBodyT blocks (sizes 250, 254, 262, 266). After the shape link, bytes 4-243 are the 32-bit form of the game's bhkRigidBodyCinfo (0xF0 bytes: a 0x20-byte header, then Havok's hkpRigidBodyCinfo at +0x20), which the loader reads in one piece (CB-SDK bhkRigidBody::LoadBinary); the names below come from that map, and each is checked against the corpus. Evidence per field is in docs/collision-provenance.md."
   },
   {
    "name": "bhkRigidBodyT",
@@ -19636,12 +19662,12 @@
      "declaredBy": "bhkShapeWrapper"
     },
     {
-     "name": "unknown4",
+     "name": "collisionFilter",
      "type": {
       "kind": "u32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36."
+     "doc": "The header's collision filter info. Byte 0 is the collision layer (the loader reads it as filter & 0x7F): in every block it is the index (BNAM) of one of Skyrim.esm's 55 COLL records, and the mesh folders match the record names (L_STATIC in architecture and dungeons, L_CLUTTER in clutter, L_WEAPON in weapons, L_BIPED in actors, L_TREES in landscape). Byte 1 takes 26 values (0-24 and 0x80-0x86), not established; bytes 2-3 are 0. Always equal to unknown36."
     },
     {
      "name": "unknown8",
@@ -19649,7 +19675,7 @@
       "kind": "u32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40."
+     "doc": "A header pointer as saved (varies per block like a 32-bit address, low nibble 0). Always equal to unknown40."
     },
     {
      "name": "unknown12",
@@ -19669,7 +19695,7 @@
       "count": 3
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Unstructured (uninitialized-looking)."
+     "doc": "Padding (uninitialized-looking)."
     },
     {
      "name": "unknown16",
@@ -19681,7 +19707,7 @@
       "count": 3
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Always 0, 0, 0x80000000."
+     "doc": "An empty array as saved: always 0, 0, 0x80000000."
     },
     {
      "name": "unknown28",
@@ -19696,21 +19722,24 @@
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "Padding before hkpRigidBodyCinfo."
     },
     {
      "name": "unknown36",
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "hkpRigidBodyCinfo's collision filter info. Always equal to collisionFilter."
     },
     {
      "name": "unknown40",
      "type": {
       "kind": "u32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "hkpRigidBodyCinfo's shape pointer as saved. Always equal to unknown8."
     },
     {
      "name": "unknown44",
@@ -19718,15 +19747,31 @@
       "kind": "u32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Always 0."
+     "doc": "hkpRigidBodyCinfo's local-frame pointer: always 0."
     },
     {
-     "name": "unknown48",
+     "name": "collisionResponse",
      "type": {
-      "kind": "u32"
+      "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks."
+     "doc": "Always 1 (simple contact)."
+    },
+    {
+     "name": "unknown49",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Padding."
+    },
+    {
+     "name": "contactPointCallbackDelay",
+     "type": {
+      "kind": "u16"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "0xFFFF in 14,868 blocks."
     },
     {
      "name": "translation",
@@ -19799,7 +19844,7 @@
      "doc": "Unit quaternion x, y, z, w (|q| = 1 in every block)."
     },
     {
-     "name": "unknown84",
+     "name": "linearVelocity",
      "type": {
       "kind": "struct",
       "name": "Vec4",
@@ -19834,7 +19879,7 @@
      "doc": "Always zero."
     },
     {
-     "name": "unknown100",
+     "name": "angularVelocity",
      "type": {
       "kind": "struct",
       "name": "Vec4",
@@ -19950,21 +19995,23 @@
      "doc": "0 exactly when inertia is all zero (14,868 of 14,880)."
     },
     {
-     "name": "unknown184",
+     "name": "linearDamping",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.0996 (0.1 as stored) in 14,631 bodies; also 0.0498, 0.598, 0."
     },
     {
-     "name": "unknown188",
+     "name": "angularDamping",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.0498 (0.05 as stored) in 14,723 bodies; also 2, 0, 0.5, 1, 0.25."
     },
     {
-     "name": "unknown192",
+     "name": "timeFactor",
      "type": {
       "kind": "f32"
      },
@@ -19972,7 +20019,7 @@
      "doc": "Always 1.0."
     },
     {
-     "name": "unknown196",
+     "name": "gravityFactor",
      "type": {
       "kind": "f32"
      },
@@ -19980,14 +20027,15 @@
      "doc": "Always 1.0."
     },
     {
-     "name": "unknown200",
+     "name": "friction",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.5 in 12,995 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100."
     },
     {
-     "name": "unknown204",
+     "name": "rollingFrictionMultiplier",
      "type": {
       "kind": "f32"
      },
@@ -19995,43 +20043,47 @@
      "doc": "Always 0."
     },
     {
-     "name": "unknown208",
+     "name": "restitution",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.4 in 12,947 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9."
     },
     {
-     "name": "unknown212",
+     "name": "maxLinearVelocity",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "104.4 in 13,794 bodies; 1000002 in exactly the 1,087 keyframed bodies with no mass. The loader clamps it to 100."
     },
     {
-     "name": "unknown216",
+     "name": "maxAngularVelocity",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "31.57 in 13,617 bodies, 1000002 in 1,229 (fixed or keyframed), 1068 in 35."
     },
     {
-     "name": "unknown220",
+     "name": "allowedPenetrationDepth",
      "type": {
       "kind": "f32"
      },
-     "declaredBy": "bhkRigidBody"
+     "declaredBy": "bhkRigidBody",
+     "doc": "0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,367."
     },
     {
-     "name": "unknown224",
+     "name": "motionType",
      "type": {
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "2-5."
+     "doc": "Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,073 of 1,087 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,460 of 9,510). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29."
     },
     {
-     "name": "unknown225",
+     "name": "enableDeactivation",
      "type": {
       "kind": "u8"
      },
@@ -20039,31 +20091,23 @@
      "doc": "Always 1."
     },
     {
-     "name": "unknown226",
+     "name": "solverDeactivation",
      "type": {
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "1 or 2."
+     "doc": "1 (off) or 2 (low)."
     },
     {
-     "name": "unknown227",
+     "name": "qualityType",
      "type": {
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0, 1, 2 or 4."
+     "doc": "Havok's collidable quality: 0 fixed, 1 keyframed, 2 debris, 4 moving in the corpus."
     },
     {
-     "name": "unknown228",
-     "type": {
-      "kind": "u8"
-     },
-     "declaredBy": "bhkRigidBody",
-     "doc": "Always 0."
-    },
-    {
-     "name": "unknown229",
+     "name": "autoRemoveLevel",
      "type": {
       "kind": "u8"
      },
@@ -20071,7 +20115,15 @@
      "doc": "Always 0."
     },
     {
-     "name": "unknown230",
+     "name": "responseModifierFlags",
+     "type": {
+      "kind": "u8"
+     },
+     "declaredBy": "bhkRigidBody",
+     "doc": "Always 0."
+    },
+    {
+     "name": "numShapeKeysInContactPointProperties",
      "type": {
       "kind": "u8"
      },
@@ -20079,7 +20131,7 @@
      "doc": "Always 3."
     },
     {
-     "name": "unknown231",
+     "name": "forceCollideOntoPpu",
      "type": {
       "kind": "u8"
      },
@@ -20096,7 +20148,7 @@
       "count": 3
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Unstructured (uninitialized-looking)."
+     "doc": "Padding to hkpRigidBodyCinfo's 16-byte size (uninitialized-looking)."
     },
     {
      "name": "constraints",
@@ -20120,7 +20172,7 @@
       "kind": "u16"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0 except in one block (1)."
+     "doc": "The body's flags as the loader reads them (bit 6 is read as the body following its node); 0 except in one block (1)."
     }
    ],
    "doc": "The same layout as bhkRigidBody (all 3,546 SSE blocks decode with it). Its translation and rotation place the shape in its node's space; see docs/collision-provenance.md."

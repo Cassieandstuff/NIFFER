@@ -62,6 +62,31 @@ struct WorldTransforms {
 };
 WorldTransforms ComputeWorldTransforms(NifFile& nif, const Options& opt);
 
+// Shared by ExtractCollision and ExtractBodies: the conventions above, as
+// functions (Options picks the measured alternative).
+std::array<float, 4> Read4(const view::Vec4& v);
+V3    Read3(const view::Vec3& v);
+Xform NodeLocal(const view::NiAVObject& o, const Options& opt);      // NiAVObject transform
+Xform HavokLocal(const view::HavokTransform& h, const Options& opt); // bhk(Convex)TransformShape
+M3    QuatMatrix(float qx, float qy, float qz, float qw);            // unit quaternion (x, y, z, w)
+
+// A bhkCompressedMeshShape's triangles in its own space (Havok units): chunks
+// (strips, then a list) and then the big triangles; one material per triangle
+// (the data's material-table entry). Returns nullptr on success, else why the
+// shape was refused.
+struct DecodedCompressedMesh {
+    std::vector<V3>       vertices;
+    std::vector<uint32_t> triangles;          // 3 per triangle, into vertices
+    std::vector<uint32_t> triangleMaterials;  // one per triangle
+    int  verticesChecked = 0;
+    int  verticesOutside = 0;
+    bool boundsChecked   = false;             // every vertex was decoded and tested
+};
+const char* DecodeCompressedMesh(NifFile& nif, Block& shapeBlock, DecodedCompressedMesh& out);
+
 CollisionGeometry Extract(NifFile& nif, const Options& opt, Diagnostics* diag = nullptr);
+
+// ExtractBodies under the given conventions (cpp/collision/Bodies.cpp).
+std::vector<Body> Bodies(NifFile& nif, const Options& opt);
 
 }  // namespace niffer::collision

@@ -540,5 +540,8 @@ DecodedMesh DecodeMesh(const view::NiSkinPartition& partition);
 DecodedMesh DecodeShapeMesh(NifFile& nif, Block& shape);
 // Collision geometry; see CollisionGeometry in Niffer.h.
 CollisionGeometry ExtractCollision(NifFile& nif);
+// One entry per rigid body reached from a collision object (phantoms excluded),
+// in block order; see Body in Niffer.h.
+std::vector<Body> ExtractBodies(NifFile& nif);
 
 }  // namespace niffer

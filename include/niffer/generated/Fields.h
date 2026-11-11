@@ -1583,7 +1583,7 @@ namespace bhkRagdollConstraint {
 
 // bhkRigidBody : bhkShapeWrapper
 namespace bhkRigidBody {
-    inline constexpr ::niffer::FieldRef<uint32_t> unknown4{ 147, { { 1 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint32_t> collisionFilter{ 147, { { 1 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint32_t> unknown8{ 147, { { 2 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint8_t> unknown12{ 147, { { 3 }, 1 } };
     inline constexpr ::niffer::FieldRef<std::vector<uint8_t>> unknown13{ 147, { { 4 }, 1 } };
@@ -1593,65 +1593,67 @@ namespace bhkRigidBody {
     inline constexpr ::niffer::FieldRef<uint32_t> unknown36{ 147, { { 8 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint32_t> unknown40{ 147, { { 9 }, 1 } };
     inline constexpr ::niffer::FieldRef<uint32_t> unknown44{ 147, { { 10 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint32_t> unknown48{ 147, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> collisionResponse{ 147, { { 11 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> unknown49{ 147, { { 12 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> contactPointCallbackDelay{ 147, { { 13 }, 1 } };
     namespace translation {
-        inline constexpr ::niffer::StructRef self{ 147, { { 12 }, 1 } };
-        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 12, 0 }, 2 } };
-        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 12, 1 }, 2 } };
-        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 12, 2 }, 2 } };
-        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 12, 3 }, 2 } };
-    }
-    namespace rotation {
-        inline constexpr ::niffer::StructRef self{ 147, { { 13 }, 1 } };
-        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 13, 0 }, 2 } };
-        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 13, 1 }, 2 } };
-        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 13, 2 }, 2 } };
-        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 13, 3 }, 2 } };
-    }
-    namespace unknown84 {
         inline constexpr ::niffer::StructRef self{ 147, { { 14 }, 1 } };
         inline constexpr ::niffer::FieldRef<float> x{ 147, { { 14, 0 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> y{ 147, { { 14, 1 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> z{ 147, { { 14, 2 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> w{ 147, { { 14, 3 }, 2 } };
     }
-    namespace unknown100 {
+    namespace rotation {
         inline constexpr ::niffer::StructRef self{ 147, { { 15 }, 1 } };
         inline constexpr ::niffer::FieldRef<float> x{ 147, { { 15, 0 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> y{ 147, { { 15, 1 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> z{ 147, { { 15, 2 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> w{ 147, { { 15, 3 }, 2 } };
     }
-    inline constexpr ::niffer::FieldRef<::niffer::Value> inertia{ 147, { { 16 }, 1 } };
-    namespace centerOfMass {
+    namespace linearVelocity {
+        inline constexpr ::niffer::StructRef self{ 147, { { 16 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 16, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 16, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 16, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 16, 3 }, 2 } };
+    }
+    namespace angularVelocity {
         inline constexpr ::niffer::StructRef self{ 147, { { 17 }, 1 } };
         inline constexpr ::niffer::FieldRef<float> x{ 147, { { 17, 0 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> y{ 147, { { 17, 1 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> z{ 147, { { 17, 2 }, 2 } };
         inline constexpr ::niffer::FieldRef<float> w{ 147, { { 17, 3 }, 2 } };
     }
-    inline constexpr ::niffer::FieldRef<float> mass{ 147, { { 18 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown184{ 147, { { 19 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown188{ 147, { { 20 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown192{ 147, { { 21 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown196{ 147, { { 22 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown200{ 147, { { 23 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown204{ 147, { { 24 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown208{ 147, { { 25 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown212{ 147, { { 26 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown216{ 147, { { 27 }, 1 } };
-    inline constexpr ::niffer::FieldRef<float> unknown220{ 147, { { 28 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown224{ 147, { { 29 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown225{ 147, { { 30 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown226{ 147, { { 31 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown227{ 147, { { 32 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown228{ 147, { { 33 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown229{ 147, { { 34 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown230{ 147, { { 35 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint8_t> unknown231{ 147, { { 36 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown232{ 147, { { 37 }, 1 } };
-    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiObject>>> constraints{ 147, { { 38 }, 1 } };
-    inline constexpr ::niffer::FieldRef<uint16_t> unknownTail{ 147, { { 39 }, 1 } };
+    inline constexpr ::niffer::FieldRef<::niffer::Value> inertia{ 147, { { 18 }, 1 } };
+    namespace centerOfMass {
+        inline constexpr ::niffer::StructRef self{ 147, { { 19 }, 1 } };
+        inline constexpr ::niffer::FieldRef<float> x{ 147, { { 19, 0 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> y{ 147, { { 19, 1 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> z{ 147, { { 19, 2 }, 2 } };
+        inline constexpr ::niffer::FieldRef<float> w{ 147, { { 19, 3 }, 2 } };
+    }
+    inline constexpr ::niffer::FieldRef<float> mass{ 147, { { 20 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> linearDamping{ 147, { { 21 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> angularDamping{ 147, { { 22 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> timeFactor{ 147, { { 23 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> gravityFactor{ 147, { { 24 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> friction{ 147, { { 25 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> rollingFrictionMultiplier{ 147, { { 26 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> restitution{ 147, { { 27 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> maxLinearVelocity{ 147, { { 28 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> maxAngularVelocity{ 147, { { 29 }, 1 } };
+    inline constexpr ::niffer::FieldRef<float> allowedPenetrationDepth{ 147, { { 30 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> motionType{ 147, { { 31 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> enableDeactivation{ 147, { { 32 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> solverDeactivation{ 147, { { 33 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> qualityType{ 147, { { 34 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> autoRemoveLevel{ 147, { { 35 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> responseModifierFlags{ 147, { { 36 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> numShapeKeysInContactPointProperties{ 147, { { 37 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint8_t> forceCollideOntoPpu{ 147, { { 38 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<uint32_t>> unknown232{ 147, { { 39 }, 1 } };
+    inline constexpr ::niffer::FieldRef<std::vector<::niffer::NiRef<::niffer::view::NiObject>>> constraints{ 147, { { 40 }, 1 } };
+    inline constexpr ::niffer::FieldRef<uint16_t> unknownTail{ 147, { { 41 }, 1 } };
 }
 
 // bhkShapeWrapper : NiObject

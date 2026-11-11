@@ -4929,11 +4929,11 @@ public:
         if (b.Modeled() && b.IsA(kBlock)) return bhkRigidBody(b);
         return std::nullopt;
     }
-    // unknown4 — Byte 0 is 0-51, byte 1 takes 26 values (0-24 and 0x80-0x86), bytes 2-3 are 0. Always equal to unknown36.
-    static constexpr uint16_t kUnknown4 = 1;
-    uint32_t Unknown4() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
-    bool SetUnknown4(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
-    // unknown8 — Varies per block like a 32-bit address (low nibble 0). Always equal to unknown40.
+    // collisionFilter — The header's collision filter info. Byte 0 is the collision layer (the loader reads it as filter & 0x7F): in every block it is the index (BNAM) of one of Skyrim.esm's 55 COLL records, and the mesh folders match the record names (L_STATIC in architecture and dungeons, L_CLUTTER in clutter, L_WEAPON in weapons, L_BIPED in actors, L_TREES in landscape). Byte 1 takes 26 values (0-24 and 0x80-0x86), not established; bytes 2-3 are 0. Always equal to unknown36.
+    static constexpr uint16_t kCollisionFilter = 1;
+    uint32_t CollisionFilter() const { return b_->GetAt<uint32_t>(p_.Child(1)).value_or(uint32_t{}); }
+    bool SetCollisionFilter(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(1), v); }
+    // unknown8 — A header pointer as saved (varies per block like a 32-bit address, low nibble 0). Always equal to unknown40.
     static constexpr uint16_t kUnknown8 = 2;
     uint32_t Unknown8() const { return b_->GetAt<uint32_t>(p_.Child(2)).value_or(uint32_t{}); }
     bool SetUnknown8(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(2), v); }
@@ -4941,11 +4941,11 @@ public:
     static constexpr uint16_t kUnknown12 = 3;
     uint8_t Unknown12() const { return b_->GetAt<uint8_t>(p_.Child(3)).value_or(uint8_t{}); }
     bool SetUnknown12(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(3), v); }
-    // unknown13 — Unstructured (uninitialized-looking).
+    // unknown13 — Padding (uninitialized-looking).
     static constexpr uint16_t kUnknown13 = 4;
     std::vector<uint8_t> Unknown13() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(4)).value_or(std::vector<uint8_t>{}); }
     bool SetUnknown13(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(4), v); }
-    // unknown16 — Always 0, 0, 0x80000000.
+    // unknown16 — An empty array as saved: always 0, 0, 0x80000000.
     static constexpr uint16_t kUnknown16 = 5;
     std::vector<uint32_t> Unknown16() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(5)).value_or(std::vector<uint32_t>{}); }
     bool SetUnknown16(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(5), v); }
@@ -4953,138 +4953,146 @@ public:
     static constexpr uint16_t kUnknown28 = 6;
     uint32_t Unknown28() const { return b_->GetAt<uint32_t>(p_.Child(6)).value_or(uint32_t{}); }
     bool SetUnknown28(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(6), v); }
-    // unknown32
+    // unknown32 — Padding before hkpRigidBodyCinfo.
     static constexpr uint16_t kUnknown32 = 7;
     uint32_t Unknown32() const { return b_->GetAt<uint32_t>(p_.Child(7)).value_or(uint32_t{}); }
     bool SetUnknown32(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(7), v); }
-    // unknown36
+    // unknown36 — hkpRigidBodyCinfo's collision filter info. Always equal to collisionFilter.
     static constexpr uint16_t kUnknown36 = 8;
     uint32_t Unknown36() const { return b_->GetAt<uint32_t>(p_.Child(8)).value_or(uint32_t{}); }
     bool SetUnknown36(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(8), v); }
-    // unknown40
+    // unknown40 — hkpRigidBodyCinfo's shape pointer as saved. Always equal to unknown8.
     static constexpr uint16_t kUnknown40 = 9;
     uint32_t Unknown40() const { return b_->GetAt<uint32_t>(p_.Child(9)).value_or(uint32_t{}); }
     bool SetUnknown40(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(9), v); }
-    // unknown44 — Always 0.
+    // unknown44 — hkpRigidBodyCinfo's local-frame pointer: always 0.
     static constexpr uint16_t kUnknown44 = 10;
     uint32_t Unknown44() const { return b_->GetAt<uint32_t>(p_.Child(10)).value_or(uint32_t{}); }
     bool SetUnknown44(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(10), v); }
-    // unknown48 — Byte 0 is always 1; bytes 2-3 are 0xFFFF in 14,868 blocks.
-    static constexpr uint16_t kUnknown48 = 11;
-    uint32_t Unknown48() const { return b_->GetAt<uint32_t>(p_.Child(11)).value_or(uint32_t{}); }
-    bool SetUnknown48(const uint32_t& v) const { return b_->SetAt<uint32_t>(p_.Child(11), v); }
+    // collisionResponse — Always 1 (simple contact).
+    static constexpr uint16_t kCollisionResponse = 11;
+    uint8_t CollisionResponse() const { return b_->GetAt<uint8_t>(p_.Child(11)).value_or(uint8_t{}); }
+    bool SetCollisionResponse(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(11), v); }
+    // unknown49 — Padding.
+    static constexpr uint16_t kUnknown49 = 12;
+    uint8_t Unknown49() const { return b_->GetAt<uint8_t>(p_.Child(12)).value_or(uint8_t{}); }
+    bool SetUnknown49(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(12), v); }
+    // contactPointCallbackDelay — 0xFFFF in 14,868 blocks.
+    static constexpr uint16_t kContactPointCallbackDelay = 13;
+    uint16_t ContactPointCallbackDelay() const { return b_->GetAt<uint16_t>(p_.Child(13)).value_or(uint16_t{}); }
+    bool SetContactPointCallbackDelay(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(13), v); }
     // translation — w = 0 in 14,871 of 14,880.
-    static constexpr uint16_t kTranslation = 12;
-    ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(12)); }
+    static constexpr uint16_t kTranslation = 14;
+    ::niffer::view::Vec4 Translation() const { return ::niffer::view::Vec4(*b_, p_.Child(14)); }
     // rotation — Unit quaternion x, y, z, w (|q| = 1 in every block).
-    static constexpr uint16_t kRotation = 13;
-    ::niffer::view::Vec4 Rotation() const { return ::niffer::view::Vec4(*b_, p_.Child(13)); }
-    // unknown84 — Always zero.
-    static constexpr uint16_t kUnknown84 = 14;
-    ::niffer::view::Vec4 Unknown84() const { return ::niffer::view::Vec4(*b_, p_.Child(14)); }
-    // unknown100 — Always zero.
-    static constexpr uint16_t kUnknown100 = 15;
-    ::niffer::view::Vec4 Unknown100() const { return ::niffer::view::Vec4(*b_, p_.Child(15)); }
+    static constexpr uint16_t kRotation = 15;
+    ::niffer::view::Vec4 Rotation() const { return ::niffer::view::Vec4(*b_, p_.Child(15)); }
+    // linearVelocity — Always zero.
+    static constexpr uint16_t kLinearVelocity = 16;
+    ::niffer::view::Vec4 LinearVelocity() const { return ::niffer::view::Vec4(*b_, p_.Child(16)); }
+    // angularVelocity — Always zero.
+    static constexpr uint16_t kAngularVelocity = 17;
+    ::niffer::view::Vec4 AngularVelocity() const { return ::niffer::view::Vec4(*b_, p_.Child(17)); }
     // inertia — A symmetric 3x3 matrix (w = 0). For bodies with a bhkSphereShape it is diag(0.4 m r^2) in most of them.
-    static constexpr uint16_t kInertia = 16;
+    static constexpr uint16_t kInertia = 18;
     std::vector<::niffer::view::Vec4> Inertia() const {
         std::vector<::niffer::view::Vec4> out;
-        const size_t n = b_->Count(p_.Child(16));
+        const size_t n = b_->Count(p_.Child(18));
         out.reserve(n);
-        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(16).Child(static_cast<uint16_t>(e)));
+        for (size_t e = 0; e < n; ++e) out.emplace_back(*b_, p_.Child(18).Child(static_cast<uint16_t>(e)));
         return out;
     }
     // centerOfMass
-    static constexpr uint16_t kCenterOfMass = 17;
-    ::niffer::view::Vec4 CenterOfMass() const { return ::niffer::view::Vec4(*b_, p_.Child(17)); }
+    static constexpr uint16_t kCenterOfMass = 19;
+    ::niffer::view::Vec4 CenterOfMass() const { return ::niffer::view::Vec4(*b_, p_.Child(19)); }
     // mass — 0 exactly when inertia is all zero (14,868 of 14,880).
-    static constexpr uint16_t kMass = 18;
-    float Mass() const { return b_->GetAt<float>(p_.Child(18)).value_or(float{}); }
-    bool SetMass(const float& v) const { return b_->SetAt<float>(p_.Child(18), v); }
-    // unknown184
-    static constexpr uint16_t kUnknown184 = 19;
-    float Unknown184() const { return b_->GetAt<float>(p_.Child(19)).value_or(float{}); }
-    bool SetUnknown184(const float& v) const { return b_->SetAt<float>(p_.Child(19), v); }
-    // unknown188
-    static constexpr uint16_t kUnknown188 = 20;
-    float Unknown188() const { return b_->GetAt<float>(p_.Child(20)).value_or(float{}); }
-    bool SetUnknown188(const float& v) const { return b_->SetAt<float>(p_.Child(20), v); }
-    // unknown192 — Always 1.0.
-    static constexpr uint16_t kUnknown192 = 21;
-    float Unknown192() const { return b_->GetAt<float>(p_.Child(21)).value_or(float{}); }
-    bool SetUnknown192(const float& v) const { return b_->SetAt<float>(p_.Child(21), v); }
-    // unknown196 — Always 1.0.
-    static constexpr uint16_t kUnknown196 = 22;
-    float Unknown196() const { return b_->GetAt<float>(p_.Child(22)).value_or(float{}); }
-    bool SetUnknown196(const float& v) const { return b_->SetAt<float>(p_.Child(22), v); }
-    // unknown200
-    static constexpr uint16_t kUnknown200 = 23;
-    float Unknown200() const { return b_->GetAt<float>(p_.Child(23)).value_or(float{}); }
-    bool SetUnknown200(const float& v) const { return b_->SetAt<float>(p_.Child(23), v); }
-    // unknown204 — Always 0.
-    static constexpr uint16_t kUnknown204 = 24;
-    float Unknown204() const { return b_->GetAt<float>(p_.Child(24)).value_or(float{}); }
-    bool SetUnknown204(const float& v) const { return b_->SetAt<float>(p_.Child(24), v); }
-    // unknown208
-    static constexpr uint16_t kUnknown208 = 25;
-    float Unknown208() const { return b_->GetAt<float>(p_.Child(25)).value_or(float{}); }
-    bool SetUnknown208(const float& v) const { return b_->SetAt<float>(p_.Child(25), v); }
-    // unknown212
-    static constexpr uint16_t kUnknown212 = 26;
-    float Unknown212() const { return b_->GetAt<float>(p_.Child(26)).value_or(float{}); }
-    bool SetUnknown212(const float& v) const { return b_->SetAt<float>(p_.Child(26), v); }
-    // unknown216
-    static constexpr uint16_t kUnknown216 = 27;
-    float Unknown216() const { return b_->GetAt<float>(p_.Child(27)).value_or(float{}); }
-    bool SetUnknown216(const float& v) const { return b_->SetAt<float>(p_.Child(27), v); }
-    // unknown220
-    static constexpr uint16_t kUnknown220 = 28;
-    float Unknown220() const { return b_->GetAt<float>(p_.Child(28)).value_or(float{}); }
-    bool SetUnknown220(const float& v) const { return b_->SetAt<float>(p_.Child(28), v); }
-    // unknown224 — 2-5.
-    static constexpr uint16_t kUnknown224 = 29;
-    uint8_t Unknown224() const { return b_->GetAt<uint8_t>(p_.Child(29)).value_or(uint8_t{}); }
-    bool SetUnknown224(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(29), v); }
-    // unknown225 — Always 1.
-    static constexpr uint16_t kUnknown225 = 30;
-    uint8_t Unknown225() const { return b_->GetAt<uint8_t>(p_.Child(30)).value_or(uint8_t{}); }
-    bool SetUnknown225(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(30), v); }
-    // unknown226 — 1 or 2.
-    static constexpr uint16_t kUnknown226 = 31;
-    uint8_t Unknown226() const { return b_->GetAt<uint8_t>(p_.Child(31)).value_or(uint8_t{}); }
-    bool SetUnknown226(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(31), v); }
-    // unknown227 — 0, 1, 2 or 4.
-    static constexpr uint16_t kUnknown227 = 32;
-    uint8_t Unknown227() const { return b_->GetAt<uint8_t>(p_.Child(32)).value_or(uint8_t{}); }
-    bool SetUnknown227(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(32), v); }
-    // unknown228 — Always 0.
-    static constexpr uint16_t kUnknown228 = 33;
-    uint8_t Unknown228() const { return b_->GetAt<uint8_t>(p_.Child(33)).value_or(uint8_t{}); }
-    bool SetUnknown228(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(33), v); }
-    // unknown229 — Always 0.
-    static constexpr uint16_t kUnknown229 = 34;
-    uint8_t Unknown229() const { return b_->GetAt<uint8_t>(p_.Child(34)).value_or(uint8_t{}); }
-    bool SetUnknown229(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(34), v); }
-    // unknown230 — Always 3.
-    static constexpr uint16_t kUnknown230 = 35;
-    uint8_t Unknown230() const { return b_->GetAt<uint8_t>(p_.Child(35)).value_or(uint8_t{}); }
-    bool SetUnknown230(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(35), v); }
-    // unknown231 — Always 0.
-    static constexpr uint16_t kUnknown231 = 36;
-    uint8_t Unknown231() const { return b_->GetAt<uint8_t>(p_.Child(36)).value_or(uint8_t{}); }
-    bool SetUnknown231(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(36), v); }
-    // unknown232 — Unstructured (uninitialized-looking).
-    static constexpr uint16_t kUnknown232 = 37;
-    std::vector<uint32_t> Unknown232() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(37)).value_or(std::vector<uint32_t>{}); }
-    bool SetUnknown232(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(37), v); }
+    static constexpr uint16_t kMass = 20;
+    float Mass() const { return b_->GetAt<float>(p_.Child(20)).value_or(float{}); }
+    bool SetMass(const float& v) const { return b_->SetAt<float>(p_.Child(20), v); }
+    // linearDamping — 0.0996 (0.1 as stored) in 14,631 bodies; also 0.0498, 0.598, 0.
+    static constexpr uint16_t kLinearDamping = 21;
+    float LinearDamping() const { return b_->GetAt<float>(p_.Child(21)).value_or(float{}); }
+    bool SetLinearDamping(const float& v) const { return b_->SetAt<float>(p_.Child(21), v); }
+    // angularDamping — 0.0498 (0.05 as stored) in 14,723 bodies; also 2, 0, 0.5, 1, 0.25.
+    static constexpr uint16_t kAngularDamping = 22;
+    float AngularDamping() const { return b_->GetAt<float>(p_.Child(22)).value_or(float{}); }
+    bool SetAngularDamping(const float& v) const { return b_->SetAt<float>(p_.Child(22), v); }
+    // timeFactor — Always 1.0.
+    static constexpr uint16_t kTimeFactor = 23;
+    float TimeFactor() const { return b_->GetAt<float>(p_.Child(23)).value_or(float{}); }
+    bool SetTimeFactor(const float& v) const { return b_->SetAt<float>(p_.Child(23), v); }
+    // gravityFactor — Always 1.0.
+    static constexpr uint16_t kGravityFactor = 24;
+    float GravityFactor() const { return b_->GetAt<float>(p_.Child(24)).value_or(float{}); }
+    bool SetGravityFactor(const float& v) const { return b_->SetAt<float>(p_.Child(24), v); }
+    // friction — 0.5 in 12,995 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100.
+    static constexpr uint16_t kFriction = 25;
+    float Friction() const { return b_->GetAt<float>(p_.Child(25)).value_or(float{}); }
+    bool SetFriction(const float& v) const { return b_->SetAt<float>(p_.Child(25), v); }
+    // rollingFrictionMultiplier — Always 0.
+    static constexpr uint16_t kRollingFrictionMultiplier = 26;
+    float RollingFrictionMultiplier() const { return b_->GetAt<float>(p_.Child(26)).value_or(float{}); }
+    bool SetRollingFrictionMultiplier(const float& v) const { return b_->SetAt<float>(p_.Child(26), v); }
+    // restitution — 0.4 in 12,947 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9.
+    static constexpr uint16_t kRestitution = 27;
+    float Restitution() const { return b_->GetAt<float>(p_.Child(27)).value_or(float{}); }
+    bool SetRestitution(const float& v) const { return b_->SetAt<float>(p_.Child(27), v); }
+    // maxLinearVelocity — 104.4 in 13,794 bodies; 1000002 in exactly the 1,087 keyframed bodies with no mass. The loader clamps it to 100.
+    static constexpr uint16_t kMaxLinearVelocity = 28;
+    float MaxLinearVelocity() const { return b_->GetAt<float>(p_.Child(28)).value_or(float{}); }
+    bool SetMaxLinearVelocity(const float& v) const { return b_->SetAt<float>(p_.Child(28), v); }
+    // maxAngularVelocity — 31.57 in 13,617 bodies, 1000002 in 1,229 (fixed or keyframed), 1068 in 35.
+    static constexpr uint16_t kMaxAngularVelocity = 29;
+    float MaxAngularVelocity() const { return b_->GetAt<float>(p_.Child(29)).value_or(float{}); }
+    bool SetMaxAngularVelocity(const float& v) const { return b_->SetAt<float>(p_.Child(29), v); }
+    // allowedPenetrationDepth — 0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,367.
+    static constexpr uint16_t kAllowedPenetrationDepth = 30;
+    float AllowedPenetrationDepth() const { return b_->GetAt<float>(p_.Child(30)).value_or(float{}); }
+    bool SetAllowedPenetrationDepth(const float& v) const { return b_->SetAt<float>(p_.Child(30), v); }
+    // motionType — Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,073 of 1,087 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,460 of 9,510). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29.
+    static constexpr uint16_t kMotionType = 31;
+    uint8_t MotionType() const { return b_->GetAt<uint8_t>(p_.Child(31)).value_or(uint8_t{}); }
+    bool SetMotionType(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(31), v); }
+    // enableDeactivation — Always 1.
+    static constexpr uint16_t kEnableDeactivation = 32;
+    uint8_t EnableDeactivation() const { return b_->GetAt<uint8_t>(p_.Child(32)).value_or(uint8_t{}); }
+    bool SetEnableDeactivation(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(32), v); }
+    // solverDeactivation — 1 (off) or 2 (low).
+    static constexpr uint16_t kSolverDeactivation = 33;
+    uint8_t SolverDeactivation() const { return b_->GetAt<uint8_t>(p_.Child(33)).value_or(uint8_t{}); }
+    bool SetSolverDeactivation(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(33), v); }
+    // qualityType — Havok's collidable quality: 0 fixed, 1 keyframed, 2 debris, 4 moving in the corpus.
+    static constexpr uint16_t kQualityType = 34;
+    uint8_t QualityType() const { return b_->GetAt<uint8_t>(p_.Child(34)).value_or(uint8_t{}); }
+    bool SetQualityType(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(34), v); }
+    // autoRemoveLevel — Always 0.
+    static constexpr uint16_t kAutoRemoveLevel = 35;
+    uint8_t AutoRemoveLevel() const { return b_->GetAt<uint8_t>(p_.Child(35)).value_or(uint8_t{}); }
+    bool SetAutoRemoveLevel(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(35), v); }
+    // responseModifierFlags — Always 0.
+    static constexpr uint16_t kResponseModifierFlags = 36;
+    uint8_t ResponseModifierFlags() const { return b_->GetAt<uint8_t>(p_.Child(36)).value_or(uint8_t{}); }
+    bool SetResponseModifierFlags(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(36), v); }
+    // numShapeKeysInContactPointProperties — Always 3.
+    static constexpr uint16_t kNumShapeKeysInContactPointProperties = 37;
+    uint8_t NumShapeKeysInContactPointProperties() const { return b_->GetAt<uint8_t>(p_.Child(37)).value_or(uint8_t{}); }
+    bool SetNumShapeKeysInContactPointProperties(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(37), v); }
+    // forceCollideOntoPpu — Always 0.
+    static constexpr uint16_t kForceCollideOntoPpu = 38;
+    uint8_t ForceCollideOntoPpu() const { return b_->GetAt<uint8_t>(p_.Child(38)).value_or(uint8_t{}); }
+    bool SetForceCollideOntoPpu(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(38), v); }
+    // unknown232 — Padding to hkpRigidBodyCinfo's 16-byte size (uninitialized-looking).
+    static constexpr uint16_t kUnknown232 = 39;
+    std::vector<uint32_t> Unknown232() const { return b_->GetAt<std::vector<uint32_t>>(p_.Child(39)).value_or(std::vector<uint32_t>{}); }
+    bool SetUnknown232(const std::vector<uint32_t>& v) const { return b_->SetAt<std::vector<uint32_t>>(p_.Child(39), v); }
     // constraints — Every constraint block in the corpus is referenced from exactly one rigid body's list.
-    static constexpr uint16_t kConstraints = 38;
-    std::vector<::niffer::NiRef<::niffer::view::NiObject>> Constraints() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(38)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
-    bool SetConstraints(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(38), v); }
-    // unknownTail — 0 except in one block (1).
-    static constexpr uint16_t kUnknownTail = 39;
-    uint16_t UnknownTail() const { return b_->GetAt<uint16_t>(p_.Child(39)).value_or(uint16_t{}); }
-    bool SetUnknownTail(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(39), v); }
+    static constexpr uint16_t kConstraints = 40;
+    std::vector<::niffer::NiRef<::niffer::view::NiObject>> Constraints() const { return b_->GetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(40)).value_or(std::vector<::niffer::NiRef<::niffer::view::NiObject>>{}); }
+    bool SetConstraints(const std::vector<::niffer::NiRef<::niffer::view::NiObject>>& v) const { return b_->SetAt<std::vector<::niffer::NiRef<::niffer::view::NiObject>>>(p_.Child(40), v); }
+    // unknownTail — The body's flags as the loader reads them (bit 6 is read as the body following its node); 0 except in one block (1).
+    static constexpr uint16_t kUnknownTail = 41;
+    uint16_t UnknownTail() const { return b_->GetAt<uint16_t>(p_.Child(41)).value_or(uint16_t{}); }
+    bool SetUnknownTail(const uint16_t& v) const { return b_->SetAt<uint16_t>(p_.Child(41), v); }
 protected:
     explicit bhkRigidBody(::niffer::Block& b) : bhkShapeWrapper(b) {}
 };

@@ -9,10 +9,15 @@ that these layouts came from the game's bytes and nothing else.
 
 **Used:** the shipped Skyrim SE meshes only (the extracted vanilla corpus, 22,761 `.nif` files,
 11,482 of them with bhk blocks), NIFFER's own first-party code (header framing, `DecodeMesh`,
-the schema engine) and its existing descriptors.
+the schema engine) and its existing descriptors. For the rigid body's layer (below) also the
+COLL records of the shipped `Skyrim.esm`, read with the record layout of the owner's ESPER
+(`schema/records/COLL.yaml`: BNAM index, MNAM name). For the rigid body's field names (below)
+also CB-SDK's recovered loader, the exe's own code path, cited by commit: the third naming source
+the owner allowed on 2026-11-10 (see "Rigid body: the loader's map").
 
 **Not used:** nif.xml / niftools nifxml, nifly, NifSkope, PyFFI, niflib or any other NIF
-library's source or schema; the Havok SDK (headers included: none was available); the previous
+library's source or schema; the Havok SDK, for every layout (the rigid body's member names, and
+only those, follow the `hkpRigidBodyCinfo` member order in CB-SDK, as its section says); the previous
 `CollisionExtract.cpp` (never opened by the session that wrote this) or anything else in the
 SCT repositories; no web pages about NIF, bhk or Havok packfile layouts. No layout below was
 taken from memory of such sources: each is a hypothesis that was then tested against every
@@ -124,7 +129,84 @@ bhkRigidBodyT has the identical layout and now inherits bhkRigidBody.
 - `centerOfMass`: the capsule midpoint for 1,465 of 1,468 capsule bodies, the origin for every
   box and sphere body, inside the vertex AABB for 1,552 of 1,569 convex bodies.
 - Ten f32s at 184–220, eight u8s at 224–231 and three u32s at 232–243: value distributions only
-  (in the field docs); meanings not established.
+  (in the field docs); meanings not established, except the two below.
+
+**Rigid body: `collisionFilter` and `motionType`** (added for `ExtractBodies`). A throwaway
+script read all 14,882 rigid bodies reached from a collision object (header framing as in
+`cpp/Header.cpp`, offsets from this schema), with the file path, the target node's controller,
+the block types in the file and the shape tree. `niffer-tool bodies-validate` re-measures the
+NIF side with the library itself.
+
+- **`collisionFilter` (offset 4), byte 0 = layer.** 23 distinct values occur (0–51). Every one
+  is the BNAM index of a COLL record in `Skyrim.esm`, which has 55 (indices 0–54), and the
+  folders where each value occurs match that record's name: 1 = L_STATIC (8,767 bodies, mostly
+  `dungeons/` and `architecture/`), 4 = L_CLUTTER (`clutter/` first), 5 = L_WEAPON (`weapons/`),
+  8 = L_BIPED (1,089 of 1,116 in `actors/`), 9 = L_TREES (`landscape/`, `_resourcepack/`),
+  10 = L_PROPS and 14 = L_TRAP (`traps/` first), 13 = L_TERRAIN (`landscape/`), 15 =
+  L_NONCOLLIDABLE (`plants/`), 19 = L_DEBRIS_SMALL (`effects/` first), 50 = L_CRITTER, 51 =
+  L_SPELLTRIGGER (`magic/`). Bytes 2–3 are always 0. Byte 1 is not established: its low five bits
+  look like a bone number in skeletons (1–24, on biped and clutter bodies, mostly ones with
+  constraints) but repeat within a file, and its high bit is set on 469 bodies, mostly clutter
+  and small debris.
+- **`motionType` (offset 224).** Against the body's mass: values 2 and 3 never have mass 0
+  (3,010 of 3,010); value 5 has mass 0 in 9,460 of 9,510. Value 4 is the animated case: of its
+  1,087 bodies with mass 0, 1,073 are in files that hold a controller or interpolator block, and
+  `maxLinearVelocity` is 1000002 in exactly those 1,087 bodies and in no other; of its 1,275 bodies with
+  mass, 1,193 hang off a bhkBlendCollisionObject and 1,146 have constraints (ragdoll bones).
+  The loader's map below confirms the reading (Havok's 2 and 3 are sphere and box inertia).
+- The f32 pairs at 200 and 208 are (0.5, 0.4) in 12,926 bodies and (0.3, 0.8) in 1,816; neither
+  the shape material nor the layer decides them (the material's most common pair covers 5,669 of
+  6,678 single-material bodies, the layer's 14,138 of 14,882). The data alone doesn't say which
+  is which; the loader's map does.
+
+**Rigid body: the loader's map.** Source: CB-SDK (`Cassieandstuff/CB-SDK`) at commit `729bb4754`:
+`Bethesda/BSHavok/bhkRigidBody.cpp:90` (`bhkRigidBody::LoadBinary`), its base chain
+`bhkEntity::LoadBinary` → `bhkWorldObject::LoadBinary` (reads the shape link) →
+`bhkSerializable::LoadBinary` → `bhkSerializable::Unk_2D` (`bhkSerializable.cpp:101`, one read of
+the whole construction info), then the constraint links and a u16 of body flags;
+`bhkRigidBodyCinfo` in `Bethesda/BSHavok/bhkRigidBody.h:119` (a header with the collision filter
+info, then Havok's `hkpRigidBodyCinfo`, whose member order is
+`Source/Physics/Dynamics/Entity/hkpRigidBodyCinfo.h:63-200` in the same commit).
+
+The stream holds the 32-bit form of that struct (pointers 4 bytes, `hkVector4` aligned to 16): a
+0x20-byte header, then `hkpRigidBodyCinfo` at +0x20, 0xD0 bytes, for 0xF0 in all, which is
+exactly offsets 4–243 between the shape link and the constraint count. How the 64-bit exe turns
+that form into its own 0x110-byte struct is not recovered; the map below is the 32-bit layout,
+and every row is checked against the corpus.
+
+| payload | cinfo | member | corpus |
+|---|---|---|---|
+| 4 | header +0x00 | collision filter info → `collisionFilter` | the layer (above); the loader reads `& 0x7F` |
+| 8, 12, 16, 28 | header | pointer, u8, empty `hkArray`, u8 + u16 (provisional names) | as the field docs say |
+| 32 | — | padding to 16 | |
+| 36 | +0x00 | `m_collisionFilterInfo` | always equal to offset 4 |
+| 40 | +0x04 | `m_shape` (pointer) | always equal to offset 8 |
+| 44 | +0x08 | `m_localFrame` (pointer) | always 0 |
+| 48, 50 | +0x0C, +0x0E | `m_collisionResponse` (i8), `m_contactPointCallbackDelay` (u16) | 1 (simple contact); 0xFFFF in 14,868 |
+| 52, 68 | +0x10, +0x20 | `m_position`, `m_rotation` | `translation`, `rotation` (named before) |
+| 84, 100 | +0x30, +0x40 | `m_linearVelocity`, `m_angularVelocity` | always zero |
+| 116, 164, 180 | +0x50, +0x80, +0x90 | `m_inertiaTensor`, `m_centerOfMass`, `m_mass` | named before |
+| 184, 188 | +0x94, +0x98 | `m_linearDamping`, `m_angularDamping` | 0.1 and 0.05 in nearly all |
+| 192, 196 | +0x9C, +0xA0 | `m_timeFactor`, `m_gravityFactor` | always 1.0 (the loader sets the time factor to 1 for old streams) |
+| 200, 204, 208 | +0xA4, +0xA8, +0xAC | `m_friction`, `m_rollingFrictionMultiplier`, `m_restitution` | 0.5 / 0.3; always 0; 0.4 / 0.8 |
+| 212, 216 | +0xB0, +0xB4 | `m_maxLinearVelocity`, `m_maxAngularVelocity` | 104.4 (the loader clamps to 100) and 31.57; 1000002 in keyframed bodies |
+| 220 | +0xB8 | `m_allowedPenetrationDepth` | 0.002–0.15 |
+| 224 | +0xBC | `m_motionType` | 2–5, as above (Havok: 4 keyframed, 5 fixed) |
+| 225, 226, 227 | +0xBD, +0xBE, +0xBF | `m_enableDeactivation`, `m_solverDeactivation`, `m_qualityType` | always 1; 1 or 2 (off, low); 0, 1, 2, 4 (fixed, keyframed, debris, moving) |
+| 228–231 | +0xC0–+0xC3 | `m_autoRemoveLevel`, `m_responseModifierFlags`, `m_numShapeKeysInContactPointProperties`, `m_forceCollideOntoPpu` | 0, 0, 3, 0 always |
+| 232–243 | +0xC4 | padding to the struct's 0xD0 | uninitialized-looking |
+| 244 | — | constraint links | `constraints` |
+| after | — | body flags, u16 (provisional) | `unknownTail` |
+
+Named from it: `collisionResponse`, `contactPointCallbackDelay`, `linearVelocity`,
+`angularVelocity`, `linearDamping`, `angularDamping`, `timeFactor`, `gravityFactor`, `friction`,
+`rollingFrictionMultiplier`, `restitution`, `maxLinearVelocity`, `maxAngularVelocity`,
+`allowedPenetrationDepth`, `enableDeactivation`, `solverDeactivation`, `qualityType`,
+`autoRemoveLevel`, `responseModifierFlags`, `numShapeKeysInContactPointProperties`,
+`forceCollideOntoPpu`. Kept as `unknownN`, with the member in their docs: the header fields whose
+CB-SDK names are provisional, the copies of the filter and pointers, padding, and the body flags.
+The loader's other rule, which `ExtractBodies` applies: a body of no mass is made fixed unless its
+layer is 2 or 28, and keyframed if its layer is 14 or 29.
 
 ### bhkSimpleShapePhantom (190 blocks, 100 bytes) — fully typed
 
@@ -231,10 +313,30 @@ creatures whose first body is one bone among many, and small round items with a 
 rotated, translated bhkRigidBodyT; a compressed mesh under a MOPP under a plain bhkRigidBody with
 a translation that must not apply; a skipped cylinder).
 
+## ExtractBodies
+
+`cpp/collision/Bodies.cpp` walks the same bodies and shapes as `ExtractCollision`, with the same
+`collision::Options` conventions, but keeps one record per rigid body and each leaf as what it is:
+a box's half extents and radius, a sphere's or capsule's radius and points, a convex shape's core
+vertices, and a compressed mesh's triangles with one material per triangle (its chunk's, or its
+big triangle's, entry in the data's material table). The compressed-mesh decode is shared with
+`ExtractCollision` (`collision::DecodeCompressedMesh`). The body's placement is the same
+node ∘ Havok scale ∘ (bhkRigidBodyT only) translation and quaternion; leaves carry the transform
+of the bhk(Convex)TransformShapes above them. Layer, motion, quality, damping, friction,
+restitution, gravity factor, velocity caps and penetration depth come from the fields the loader's
+map names, and the motion and the linear cap as the loader leaves them; mass, inertia and centre of
+mass from the fields named before.
+
+`niffer-tool bodies-validate <dir>` checks, file by file, that the leaves `ExtractBodies` decodes
+and skips are exactly the ones `ExtractCollision` decodes and skips, and prints the motion and
+layer relations above. `tests/test_collision.cpp` checks the placement, layer, motion, leaves and
+paths on the hand-built file, and a capsule under a rotated bhkConvexTransformShape.
+
 ## Not established
 
 - The MOPP byte code (29.9 MB, the only bhk `bytes` left).
-- The meaning of the rigid-body scalars at 184–243, the constraint scalars, the u16 per index in
+- Byte 1 of the rigid body's `collisionFilter`; the rigid body's header fields whose CB-SDK
+  names are provisional; how the 64-bit exe converts the 32-bit stream form; the constraint scalars, the u16 per index in
   compressed-mesh chunks, the big-triangle trailing u16, the material-table second word, and
   the many constant words. They are typed and documented, not named.
 - The cylinder's radius word; bhkPlaneShape beyond word shapes.

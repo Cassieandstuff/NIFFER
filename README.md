@@ -16,7 +16,8 @@ Skyrim Content Tools' Scene Editor.
   byte-identically; every one of its 786,940 blocks is modeled.
 - **Decode helpers** turn disk-precision payloads into usable values: `DecodeShapeMesh`
   (vertices from the shape, its skin partition, or a FaceGen head's dynamic data),
-  `DecodeMorphDeltas` / `ApplyMorphs` for TRI, `ExtractCollision` for bhk collision.
+  `DecodeMorphDeltas` / `ApplyMorphs` for TRI, `ExtractCollision` for bhk collision as one
+  soup, `ExtractBodies` for it per rigid body (placement, layer, motion, mass, leaf shapes).
 
 No dependencies beyond the standard library. The optional `niffer::yaml` target (NIF ↔ YAML
 text) uses rapidyaml, vendored.
@@ -81,6 +82,7 @@ niffer-tool dump          <file.nif> [blockIdx]
 niffer-tool decode        <file.nif>
 niffer-tool collision     <file.nif>
 niffer-tool collision-validate [--sweep] <dir>  # ExtractCollision against bounds and render geometry
+niffer-tool bodies-validate <dir>               # ExtractBodies against ExtractCollision, motion and layer evidence
 ```
 
 A change to any block layout must keep `roundtrip` and `tri-roundtrip` green over the full

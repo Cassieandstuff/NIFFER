@@ -46,8 +46,8 @@ also uses it under other terms (dual licensing).
   round-trips. The schema gate's semantic checks (`to:` claims, the acyclic `ref` graph, string
   ref ranges) catch mislabels the byte round-trip can't; see docs/bugs.md for what they found.
 - **Raw at disk precision, decode at the edge.** Payloads the language can't yet describe stay
-  `bytes`. Decode helpers (`DecodeMesh`, `DecodeMorphDeltas`, `ApplyMorphs`, `ExtractCollision`)
-  are never on the round-trip path.
+  `bytes`. Decode helpers (`DecodeMesh`, `DecodeMorphDeltas`, `ApplyMorphs`, `ExtractCollision`,
+  `ExtractBodies`) are never on the round-trip path.
 
 ## Schema-driven
 
@@ -86,7 +86,8 @@ were deleted in migration step 6). Design and migration history:
   the schema engine over `tests/schema`), `niffer-yaml-test` (decompile/compile on a hand-built
   file), `niffer-schemagen-test` (generator validation), and the two freshness checks.
 - With `-DNIFFER_BUILD_TOOLS=ON`, over the local extracted SE corpus at
-  `D:/Modding/Development/Common/Vanilla Source Files/1170`:
+  `D:/Modding/Development/Common/Vanilla Source Files/1170` (niffer-tool's corpus commands
+  use `NIFFER_TOOL_THREADS` workers, by default half the cores):
   - `niffer-tool roundtrip <dir>`: the real-data gate. It loads materialized, so forced
     re-encode proves every element, and it checks that the default packed load saves
     identically. Verbatim and forced re-encode are byte-exact; 786,940 blocks, all modeled;

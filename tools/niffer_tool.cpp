@@ -17,6 +17,8 @@
 //                          root-space collision AABB against the render
 //                          (BSTriShape) AABB. --sweep re-measures each
 //                          convention in collision::Options against the default.
+//   bodies-validate <dir>  ExtractBodies against the corpus: leaf counts equal to
+//                          ExtractCollision's, and the motion and layer evidence.
 //
 // Build: -DNIFFER_BUILD_TOOLS=ON  →  niffer-tool.exe
 #include "Collision.h"
@@ -26,14 +28,16 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
-#include <execution>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -63,6 +67,31 @@ static std::vector<fs::path> CollectByExt(const fs::path& root, const char* want
     return out;
 }
 static std::vector<fs::path> CollectNifs(const fs::path& root) { return CollectByExt(root, ".nif"); }
+
+// Worker threads for the corpus commands: NIFFER_TOOL_THREADS (1-256), else half
+// the machine, so a gate never takes every core.
+static unsigned ToolThreads() {
+    if (const char* e = std::getenv("NIFFER_TOOL_THREADS")) {
+        char* end = nullptr;
+        const long v = std::strtol(e, &end, 10);
+        if (end != e && *end == '\0' && v >= 1 && v <= 256) return static_cast<unsigned>(v);
+    }
+    return std::max(1u, std::thread::hardware_concurrency() / 2);
+}
+
+// out[i] = fn(in[i]) on ToolThreads() workers, each taking the next index.
+template <class In, class Out, class Fn>
+static void ParallelMap(const std::vector<In>& in, std::vector<Out>& out, Fn fn) {
+    std::atomic<size_t> next{ 0 };
+    auto work = [&] {
+        for (size_t i = next.fetch_add(1); i < in.size(); i = next.fetch_add(1)) out[i] = fn(in[i]);
+    };
+    const size_t n = std::min<size_t>(ToolThreads(), std::max<size_t>(1, in.size()));
+    std::vector<std::thread> pool;
+    for (size_t t = 1; t < n; ++t) pool.emplace_back(work);
+    work();
+    for (auto& t : pool) t.join();
+}
 
 // Parse only the header (no version whitelist) so histogram sees every file.
 static bool HeaderOnly(const std::vector<uint8_t>& bytes, Header& h) {
@@ -292,8 +321,7 @@ static int CmdRoundtrip(const fs::path& root, bool wantRefs) {
                 files.size(), root.string().c_str(), s.schemaVersion, s.languageVersion);
 
     std::vector<SchemaFileResult> results(files.size());
-    std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
-                   [&](const fs::path& p) { return RoundtripOne(p, wantRefs); });
+    ParallelMap(files, results, [&](const fs::path& p) { return RoundtripOne(p, wantRefs); });
 
     uint64_t checked = 0, unsupported = 0, malformed = 0, verbatimBad = 0, forcedBad = 0, packedBad = 0;
     uint64_t blocks = 0, modeled = 0, badStrings = 0, cycles = 0;
@@ -483,8 +511,7 @@ static int CmdTriRoundtrip(const fs::path& root) {
                 root.string().c_str());
     std::vector<int> ok(files.size());   // 1 identical, 0 diff, -1 unsupported, -2 error
     std::vector<size_t> off(files.size());
-    std::transform(std::execution::par, files.begin(), files.end(), ok.begin(),
-                   [&](const fs::path& p) -> int {
+    ParallelMap(files, ok, [&](const fs::path& p) -> int {
         auto bytes = ReadFile(p);
         auto t = TriFile::Load(bytes);
         if (!t) return t.error().kind == NifErrorKind::UnsupportedVersion ? -1 : -2;
@@ -655,8 +682,7 @@ static int CmdCollisionValidate(const fs::path& root, bool sweep) {
     std::printf("collision-validate: %zu .nif files under %s (%zu variant%s)\n", files.size(),
                 root.string().c_str(), variants.size(), variants.size() == 1 ? "" : "s");
     std::vector<ValidateResult> results(files.size());
-    std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
-                   [&](const fs::path& p) { return ValidateOne(p, variants); });
+    ParallelMap(files, results, [&](const fs::path& p) { return ValidateOne(p, variants); });
 
     uint64_t withCollision = 0, compared = 0, decoded = 0, skipped = 0, phantoms = 0;
     uint64_t cmsChecked = 0, cmsOutside = 0, moppChecked = 0, moppOutside = 0;
@@ -740,6 +766,117 @@ static int CmdCollisionValidate(const fs::path& root, bool sweep) {
     return 0;
 }
 
+// ── bodies-validate ───────────────────────────────────────────────────────────
+// ExtractBodies over the corpus (ToolThreads() workers):
+//   - per file, the leaves it decodes and skips match ExtractCollision's counts,
+//     and ExtractCollision's corpus totals (the numbers in CLAUDE.md);
+//   - the relations bhkRigidBody's motionType doc rests on (motion value against
+//     mass, maxLinearVelocity against keyframed bodies with no mass);
+//   - the layer histogram (byte 0 of collisionFilter), to compare with the COLL
+//     records of the game's Skyrim.esm.
+namespace {
+struct BodiesResult {
+    bool   loaded = false;
+    size_t bodies = 0;
+    bool   mismatch = false;
+    int    decoded = 0, skipped = 0;                   // ExtractBodies leaves
+    int    collisionDecoded = 0, collisionSkipped = 0; // ExtractCollision
+    int    cmsChecked = 0, cmsOutside = 0;
+    std::map<std::string, size_t> leafKinds, skipReasons;
+    std::map<int, std::array<size_t, 2>> motionByMass;  // motionType -> {mass 0, mass > 0}
+    std::map<int, size_t> layers;
+    size_t keyframedNoMass = 0, keyframedNoMassCapped = 0, otherCapped = 0;
+};
+}  // namespace
+
+static BodiesResult BodiesOne(const fs::path& p) {
+    BodiesResult r;
+    auto bytes = ReadFile(p);
+    auto nif = NifFile::Load(bytes);
+    if (!nif) return r;
+    r.loaded = true;
+    const std::vector<Body> bs = ExtractBodies(*nif);
+    collision::Diagnostics d;
+    const CollisionGeometry g = collision::Extract(*nif, collision::Options{}, &d);
+    r.collisionDecoded = g.shapesDecoded;
+    r.collisionSkipped = g.shapesSkipped;
+    r.cmsChecked       = d.cmsVerticesChecked;
+    r.cmsOutside       = d.cmsVerticesOutside;
+    for (const Body& b : bs) {
+        ++r.bodies;
+        ++r.layers[b.layer];
+        ++r.motionByMass[b.motionType][b.mass == 0.f ? 0 : 1];
+        const auto rb = view::bhkRigidBody::From(nif->blocks[static_cast<size_t>(b.body)]);
+        const bool capped = rb && rb->MaxLinearVelocity() == 1000002.f;
+        if (b.motionType == 4 && b.mass == 0.f) {
+            ++r.keyframedNoMass;
+            r.keyframedNoMassCapped += capped;
+        } else {
+            r.otherCapped += capped;
+        }
+        for (const BodyShape& s : b.shapes) {
+            if (s.kind == BodyShape::Kind::Skipped) {
+                ++r.skipped;
+                ++r.skipReasons[s.className + ": " + s.skipReason];
+            } else {
+                ++r.decoded;
+                ++r.leafKinds[s.className];
+            }
+        }
+    }
+    r.mismatch = r.decoded != r.collisionDecoded || r.skipped != r.collisionSkipped;
+    return r;
+}
+
+static int CmdBodiesValidate(const fs::path& root) {
+    const auto files = CollectNifs(root);
+    std::printf("bodies-validate: %zu .nif files under %s (%u threads)\n", files.size(), root.string().c_str(),
+                ToolThreads());
+    std::vector<BodiesResult> results(files.size());
+    ParallelMap(files, results, [](const fs::path& p) { return BodiesOne(p); });
+
+    BodiesResult t;
+    size_t loaded = 0, withBodies = 0, mismatchFiles = 0;
+    unsigned long long collisionDecoded = 0, collisionSkipped = 0, cmsChecked = 0, cmsOutside = 0;
+    for (size_t i = 0; i < results.size(); ++i) {
+        const BodiesResult& r = results[i];
+        if (!r.loaded) continue;
+        ++loaded;
+        withBodies += r.bodies != 0;
+        t.bodies += r.bodies;
+        collisionDecoded += static_cast<unsigned long long>(r.collisionDecoded);
+        collisionSkipped += static_cast<unsigned long long>(r.collisionSkipped);
+        cmsChecked += static_cast<unsigned long long>(r.cmsChecked);
+        cmsOutside += static_cast<unsigned long long>(r.cmsOutside);
+        for (const auto& [k, n] : r.leafKinds) t.leafKinds[k] += n;
+        for (const auto& [k, n] : r.skipReasons) t.skipReasons[k] += n;
+        for (const auto& [k, n] : r.motionByMass) { t.motionByMass[k][0] += n[0]; t.motionByMass[k][1] += n[1]; }
+        for (const auto& [k, n] : r.layers) t.layers[k] += n;
+        t.keyframedNoMass += r.keyframedNoMass;
+        t.keyframedNoMassCapped += r.keyframedNoMassCapped;
+        t.otherCapped += r.otherCapped;
+        if (r.mismatch && ++mismatchFiles <= 10)
+            std::printf("  MISMATCH %s: bodies %d/%d decoded/skipped, collision %d/%d\n", files[i].string().c_str(),
+                        r.decoded, r.skipped, r.collisionDecoded, r.collisionSkipped);
+    }
+    std::printf("\n── bodies-validate summary ──\n");
+    std::printf("  files             %zu loaded, %zu with bodies; %zu bodies\n", loaded, withBodies, t.bodies);
+    std::printf("  ExtractCollision  %llu leaf shapes decoded, %llu skipped; %llu of %llu compressed-mesh vertices outside their bounds\n",
+                collisionDecoded, collisionSkipped, cmsOutside, cmsChecked);
+    std::printf("  vs collision      %zu files whose leaf counts differ from ExtractCollision\n", mismatchFiles);
+    std::printf("  motionType        value: mass 0 / mass > 0\n");
+    for (const auto& [v, n] : t.motionByMass) std::printf("    %3d: %zu / %zu\n", v, n[0], n[1]);
+    std::printf("  maxLinearVelocity 1000002 in %zu of %zu keyframed bodies with mass 0, and in %zu other bodies\n",
+                t.keyframedNoMassCapped, t.keyframedNoMass, t.otherCapped);
+    std::printf("  layers            (byte 0 of collisionFilter: bodies)\n   ");
+    for (const auto& [l, n] : t.layers) std::printf(" %d:%zu", l, n);
+    std::printf("\n  leaves decoded\n");
+    for (const auto& [k, n] : t.leafKinds) std::printf("    %-28s %zu\n", k.c_str(), n);
+    std::printf("  leaves skipped\n");
+    for (const auto& [k, n] : t.skipReasons) std::printf("    %-48s %zu\n", k.c_str(), n);
+    return mismatchFiles == 0 ? 0 : 1;
+}
+
 static int CmdCollision(const fs::path& file) {
     auto nif = niffer::NifFile::LoadFile(file.string());
     if (!nif) { std::printf("load failed\n"); return 1; }
@@ -769,7 +906,8 @@ int main(int argc, char** argv) {
                     "  niffer-tool dump <file.nif> [blockIdx]\n"
                     "  niffer-tool decode <file.nif>\n"
                     "  niffer-tool collision <file.nif>\n"
-                    "  niffer-tool collision-validate [--sweep] <dir>\n");
+                    "  niffer-tool collision-validate [--sweep] <dir>\n"
+                    "  niffer-tool bodies-validate <dir>\n");
         return 2;
     }
     if (std::string(argv[1]) == "decode") return CmdDecode(argv[2]);
@@ -785,6 +923,7 @@ int main(int argc, char** argv) {
     std::string cmd = argv[1];
     fs::path arg = argv[2];
     if (cmd == "collision") return CmdCollision(arg);
+    if (cmd == "bodies-validate") return CmdBodiesValidate(arg);
     if (cmd == "histogram") return CmdHistogram(arg);
     if (cmd == "tri-roundtrip") return CmdTriRoundtrip(arg);
     if (cmd == "dump") return CmdDump(arg, argc >= 4 ? std::atoi(argv[3]) : -1);

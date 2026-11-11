@@ -39,14 +39,12 @@ Xform Compose(const Xform& parent, const Xform& child) {
     return o;
 }
 
-namespace {
-
 using view::Vec4;
 
-std::array<float, 4> Read4(const Vec4& v) { return { v.X(), v.Y(), v.Z(), v.W() }; }
+std::array<float, 4> Read4(const view::Vec4& v) { return { v.X(), v.Y(), v.Z(), v.W() }; }
 V3 Read3(const view::Vec3& v) { return { v.X(), v.Y(), v.Z() }; }
 
-bool Finite(const V3& p) { return std::isfinite(p[0]) && std::isfinite(p[1]) && std::isfinite(p[2]); }
+static bool Finite(const V3& p) { return std::isfinite(p[0]) && std::isfinite(p[1]) && std::isfinite(p[2]); }
 
 // NiAVObject's transform (AvTransform: translation, Matrix33, scale).
 Xform NodeLocal(const view::NiAVObject& o, const Options& opt) {
@@ -88,6 +86,8 @@ M3 QuatMatrix(float qx, float qy, float qz, float qw) {
     o.m[2][0] = 2 * (qx * qz - qy * qw);     o.m[2][1] = 2 * (qy * qz + qx * qw);     o.m[2][2] = 1 - 2 * (qx * qx + qy * qy);
     return o;
 }
+
+namespace {
 
 // 26 unit directions (faces, edges and corners of a cube), for sphere-like hulls.
 const std::vector<V3>& SphereDirs() {
@@ -146,108 +146,19 @@ void Extractor::Hull(const std::vector<V3>& pts, const Xform& toRoot, const char
 
 void Extractor::CompressedMesh(Block& shapeBlock, const Xform& toRoot) {
     const char* cls = "bhkCompressedMeshShape";
-    auto cms = view::bhkCompressedMeshShape::From(shapeBlock);
-    Block* db = nif_.GetBlock(cms->Data().index);
-    std::optional<view::bhkCompressedMeshShapeData> data;
-    if (db) data = view::bhkCompressedMeshShapeData::From(*db);
-    if (!data) { Skip(cls, "no data block"); return; }
-
-    const float q = data->Quantization();
-    const auto lo = Read4(data->BoundsMin());
-    const auto hi = Read4(data->BoundsMax());
-    // A vertex may sit at most this far outside the stored bounds (measured
-    // worst case over the corpus: 6.1e-5, under one quantization step).
-    const float tol = 2.f * std::max(q, 1e-4f);
-    auto inBounds = [&](const V3& p) {
-        for (int k = 0; k < 3; ++k)
-            if (!(p[static_cast<size_t>(k)] >= lo[static_cast<size_t>(k)] - tol &&
-                  p[static_cast<size_t>(k)] <= hi[static_cast<size_t>(k)] + tol)) return false;
-        return true;
-    };
-
-    // Identity check for the transform table (every entry is the identity in the
-    // corpus; anything else isn't understood, so such chunks are refused).
-    std::vector<bool> identity;
-    for (const auto& t : data->Transforms()) {
-        const auto tr = Read4(t.Translation());
-        const auto rq = Read4(t.Rotation());
-        identity.push_back(tr[0] == 0.f && tr[1] == 0.f && tr[2] == 0.f &&
-                           rq[0] == 0.f && rq[1] == 0.f && rq[2] == 0.f && std::fabs(rq[3] - 1.f) < 1e-5f);
-    }
-
-    std::vector<V3>       verts;
-    std::vector<uint32_t> tris;
-    int checked = 0, outside = 0;
-
-    for (const auto& chunk : data->Chunks()) {
-        const auto off = Read4(chunk.Offset());
-        const uint16_t ti = chunk.TransformIndex();
-        if (ti != 0xFFFF && (ti >= identity.size() || !identity[ti])) {
-            Skip(cls, "chunk with a non-identity transform");
-            return;
-        }
-        const std::vector<uint16_t> qv = chunk.Vertices();
-        const std::vector<uint16_t> idx = chunk.Indices();
-        const std::vector<uint16_t> strips = chunk.StripLengths();
-        if (qv.size() % 3 != 0) { Skip(cls, "vertex count not a multiple of 3"); return; }
-        const size_t nv = qv.size() / 3;
-        const auto first = static_cast<uint32_t>(verts.size());
-        for (size_t v = 0; v < nv; ++v) {
-            V3 p{ off[0] + static_cast<float>(qv[3 * v + 0]) * q,
-                  off[1] + static_cast<float>(qv[3 * v + 1]) * q,
-                  off[2] + static_cast<float>(qv[3 * v + 2]) * q };
-            ++checked;
-            if (!inBounds(p)) ++outside;
-            verts.push_back(p);
-        }
-        for (uint16_t i : idx)
-            if (i >= nv) { Skip(cls, "chunk index out of range"); return; }
-        // Strips first (alternating winding), then a plain triangle list.
-        size_t pos = 0;
-        for (uint16_t len : strips) {
-            if (pos + len > idx.size()) { Skip(cls, "strip lengths exceed the index count"); return; }
-            for (size_t k = 0; k + 2 < len; ++k) {
-                uint32_t a = idx[pos + k], b = idx[pos + k + 1], c = idx[pos + k + 2];
-                if (k & 1) std::swap(a, b);
-                if (a == b || b == c || a == c) continue;
-                tris.insert(tris.end(), { first + a, first + b, first + c });
-            }
-            pos += len;
-        }
-        if ((idx.size() - pos) % 3 != 0) { Skip(cls, "triangle list not a multiple of 3"); return; }
-        for (; pos + 2 < idx.size(); pos += 3)
-            tris.insert(tris.end(), { first + idx[pos], first + idx[pos + 1], first + idx[pos + 2] });
-    }
-
-    // Big (unquantized) vertices and their triangles.
-    const auto firstBig = static_cast<uint32_t>(verts.size());
-    const auto big = data->BigVertices();
-    for (const auto& v : big) {
-        const auto p4 = Read4(v);
-        V3 p{ p4[0], p4[1], p4[2] };
-        ++checked;
-        if (!inBounds(p)) ++outside;
-        verts.push_back(p);
-    }
-    for (const auto& t : data->BigTriangles()) {
-        const auto tri = t.Triangle();
-        const uint16_t a = tri.A(), b = tri.B(), c = tri.C();
-        if (a >= big.size() || b >= big.size() || c >= big.size()) { Skip(cls, "big triangle index out of range"); return; }
-        tris.insert(tris.end(), { firstBig + a, firstBig + b, firstBig + c });
-    }
-
-    if (diag_) { diag_->cmsVerticesChecked += checked; diag_->cmsVerticesOutside += outside; }
-    if (outside) { Skip(cls, "vertices outside the stored bounds"); return; }
-    if (tris.empty()) { Skip(cls, "no triangles"); return; }
+    DecodedCompressedMesh m;
+    const char* why = DecodeCompressedMesh(nif_, shapeBlock, m);
+    if (diag_ && m.boundsChecked) { diag_->cmsVerticesChecked += m.verticesChecked; diag_->cmsVerticesOutside += m.verticesOutside; }
+    if (why) { Skip(cls, why); return; }
 
     const auto baseIndex = static_cast<uint32_t>(out_.triVerts.size() / 3);
-    out_.triVerts.reserve(out_.triVerts.size() + verts.size() * 3);
-    for (const V3& p : verts) {
+    out_.triVerts.reserve(out_.triVerts.size() + m.vertices.size() * 3);
+    for (const V3& p : m.vertices) {
         const V3 r = Apply(toRoot, p);
         out_.triVerts.insert(out_.triVerts.end(), r.begin(), r.end());
     }
-    out_.triIndices.reserve(out_.triIndices.size() + tris.size());
-    for (uint32_t i : tris) out_.triIndices.push_back(baseIndex + i);
+    out_.triIndices.reserve(out_.triIndices.size() + m.triangles.size());
+    for (uint32_t i : m.triangles) out_.triIndices.push_back(baseIndex + i);
     Decoded(cls);
 }
 
@@ -418,6 +329,111 @@ CollisionGeometry Extractor::Run() {
 }
 
 }  // namespace
+
+const char* DecodeCompressedMesh(NifFile& nif, Block& shapeBlock, DecodedCompressedMesh& out) {
+    out = {};
+    auto cms = view::bhkCompressedMeshShape::From(shapeBlock);
+    Block* db = cms ? nif.GetBlock(cms->Data().index) : nullptr;
+    std::optional<view::bhkCompressedMeshShapeData> data;
+    if (db) data = view::bhkCompressedMeshShapeData::From(*db);
+    if (!cms) return "not a compressed mesh";
+    if (!data) return "no data block";
+
+    const float q = data->Quantization();
+    const auto lo = Read4(data->BoundsMin());
+    const auto hi = Read4(data->BoundsMax());
+    // A vertex may sit at most this far outside the stored bounds (measured
+    // worst case over the corpus: 6.1e-5, under one quantization step).
+    const float tol = 2.f * std::max(q, 1e-4f);
+    auto inBounds = [&](const V3& p) {
+        for (int k = 0; k < 3; ++k)
+            if (!(p[static_cast<size_t>(k)] >= lo[static_cast<size_t>(k)] - tol &&
+                  p[static_cast<size_t>(k)] <= hi[static_cast<size_t>(k)] + tol)) return false;
+        return true;
+    };
+
+    // Identity check for the transform table (every entry is the identity in the
+    // corpus; anything else isn't understood, so such chunks are refused).
+    std::vector<bool> identity;
+    for (const auto& t : data->Transforms()) {
+        const auto tr = Read4(t.Translation());
+        const auto rq = Read4(t.Rotation());
+        identity.push_back(tr[0] == 0.f && tr[1] == 0.f && tr[2] == 0.f &&
+                           rq[0] == 0.f && rq[1] == 0.f && rq[2] == 0.f && std::fabs(rq[3] - 1.f) < 1e-5f);
+    }
+
+    std::vector<V3>&       verts = out.vertices;
+    std::vector<uint32_t>& tris = out.triangles;
+    std::vector<uint32_t>& mats = out.triangleMaterials;
+    const auto table = data->Materials();
+    auto materialAt = [&](uint32_t i) { return i < table.size() ? table[i].Material() : 0u; };
+    int& checked = out.verticesChecked;
+    int& outside = out.verticesOutside;
+
+    for (const auto& chunk : data->Chunks()) {
+        const auto off = Read4(chunk.Offset());
+        const uint16_t ti = chunk.TransformIndex();
+        const uint32_t chunkMaterial = materialAt(chunk.Material());
+        if (ti != 0xFFFF && (ti >= identity.size() || !identity[ti])) return "chunk with a non-identity transform";
+        const std::vector<uint16_t> qv = chunk.Vertices();
+        const std::vector<uint16_t> idx = chunk.Indices();
+        const std::vector<uint16_t> strips = chunk.StripLengths();
+        if (qv.size() % 3 != 0) return "vertex count not a multiple of 3";
+        const size_t nv = qv.size() / 3;
+        const auto first = static_cast<uint32_t>(verts.size());
+        for (size_t v = 0; v < nv; ++v) {
+            V3 p{ off[0] + static_cast<float>(qv[3 * v + 0]) * q,
+                  off[1] + static_cast<float>(qv[3 * v + 1]) * q,
+                  off[2] + static_cast<float>(qv[3 * v + 2]) * q };
+            ++checked;
+            if (!inBounds(p)) ++outside;
+            verts.push_back(p);
+        }
+        for (uint16_t i : idx)
+            if (i >= nv) return "chunk index out of range";
+        // Strips first (alternating winding), then a plain triangle list.
+        size_t pos = 0;
+        for (uint16_t len : strips) {
+            if (pos + len > idx.size()) return "strip lengths exceed the index count";
+            for (size_t k = 0; k + 2 < len; ++k) {
+                uint32_t a = idx[pos + k], b = idx[pos + k + 1], c = idx[pos + k + 2];
+                if (k & 1) std::swap(a, b);
+                if (a == b || b == c || a == c) continue;
+                tris.insert(tris.end(), { first + a, first + b, first + c });
+                mats.push_back(chunkMaterial);
+            }
+            pos += len;
+        }
+        if ((idx.size() - pos) % 3 != 0) return "triangle list not a multiple of 3";
+        for (; pos + 2 < idx.size(); pos += 3) {
+            tris.insert(tris.end(), { first + idx[pos], first + idx[pos + 1], first + idx[pos + 2] });
+            mats.push_back(chunkMaterial);
+        }
+    }
+
+    // Big (unquantized) vertices and their triangles.
+    const auto firstBig = static_cast<uint32_t>(verts.size());
+    const auto big = data->BigVertices();
+    for (const auto& v : big) {
+        const auto p4 = Read4(v);
+        V3 p{ p4[0], p4[1], p4[2] };
+        ++checked;
+        if (!inBounds(p)) ++outside;
+        verts.push_back(p);
+    }
+    for (const auto& t : data->BigTriangles()) {
+        const auto tri = t.Triangle();
+        const uint16_t a = tri.A(), b = tri.B(), c = tri.C();
+        if (a >= big.size() || b >= big.size() || c >= big.size()) return "big triangle index out of range";
+        tris.insert(tris.end(), { firstBig + a, firstBig + b, firstBig + c });
+        mats.push_back(materialAt(t.Material()));
+    }
+
+    out.boundsChecked = true;
+    if (outside) return "vertices outside the stored bounds";
+    if (tris.empty()) return "no triangles";
+    return nullptr;
+}
 
 WorldTransforms ComputeWorldTransforms(NifFile& nif, const Options& opt) {
     WorldTransforms wt;

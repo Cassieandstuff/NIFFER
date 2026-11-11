@@ -132,14 +132,16 @@ bhkRigidBodyT has the identical layout and now inherits bhkRigidBody.
   (in the field docs); meanings not established, except the two below.
 
 **Rigid body: `collisionFilter` and `motionType`** (added for `ExtractBodies`). A throwaway
-script read all 14,882 rigid bodies reached from a collision object (header framing as in
+script read the rigid bodies reached from a collision object (header framing as in
 `cpp/Header.cpp`, offsets from this schema), with the file path, the target node's controller,
 the block types in the file and the shape tree. `niffer-tool bodies-validate` re-measures the
-NIF side with the library itself.
+NIF side with the library itself. Counts are over the 14,880 bodies of the 22,760 files NIFFER loads (the corpus's
+one other file, `creationclub/_shared/dungeons/ayleidruins/interior/triggers/artrigpressureplate01.nif`, is stream
+version 83 and is not loaded).
 
 - **`collisionFilter` (offset 4), byte 0 = layer.** 23 distinct values occur (0–51). Every one
   is the BNAM index of a COLL record in `Skyrim.esm`, which has 55 (indices 0–54), and the
-  folders where each value occurs match that record's name: 1 = L_STATIC (8,767 bodies, mostly
+  folders where each value occurs match that record's name: 1 = L_STATIC (8,766 bodies, mostly
   `dungeons/` and `architecture/`), 4 = L_CLUTTER (`clutter/` first), 5 = L_WEAPON (`weapons/`),
   8 = L_BIPED (1,089 of 1,116 in `actors/`), 9 = L_TREES (`landscape/`, `_resourcepack/`),
   10 = L_PROPS and 14 = L_TRAP (`traps/` first), 13 = L_TERRAIN (`landscape/`), 15 =
@@ -149,14 +151,14 @@ NIF side with the library itself.
   constraints) but repeat within a file, and its high bit is set on 469 bodies, mostly clutter
   and small debris.
 - **`motionType` (offset 224).** Against the body's mass: values 2 and 3 never have mass 0
-  (3,010 of 3,010); value 5 has mass 0 in 9,460 of 9,510. Value 4 is the animated case: of its
-  1,087 bodies with mass 0, 1,073 are in files that hold a controller or interpolator block, and
-  `maxLinearVelocity` is 1000002 in exactly those 1,087 bodies and in no other; of its 1,275 bodies with
+  (3,010 of 3,010); value 5 has mass 0 in 9,459 of 9,509. Value 4 is the animated case: of its
+  1,086 bodies with mass 0, 1,072 are in files that hold a controller or interpolator block, and
+  `maxLinearVelocity` is 1000002 in exactly those 1,086 bodies and in no other; of its 1,275 bodies with
   mass, 1,193 hang off a bhkBlendCollisionObject and 1,146 have constraints (ragdoll bones).
   The loader's map below confirms the reading (Havok's 2 and 3 are sphere and box inertia).
-- The f32 pairs at 200 and 208 are (0.5, 0.4) in 12,926 bodies and (0.3, 0.8) in 1,816; neither
-  the shape material nor the layer decides them (the material's most common pair covers 5,669 of
-  6,678 single-material bodies, the layer's 14,138 of 14,882). The data alone doesn't say which
+- The f32 pairs at 200 and 208 are (0.5, 0.4) in 12,924 bodies and (0.3, 0.8) in 1,816; neither
+  the shape material nor the layer decides them (the material's most common pair covers 5,667 of
+  6,676 single-material bodies, the layer's 14,136 of 14,880). The data alone doesn't say which
   is which; the loader's map does.
 
 **Rigid body: the loader's map.** Source: CB-SDK (`Cassieandstuff/CB-SDK`) at commit `729bb4754`:

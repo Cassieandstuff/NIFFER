@@ -19455,7 +19455,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.0996 (0.1 as stored) in 14,631 bodies; also 0.0498, 0.598, 0."
+     "doc": "0.0996 (0.1 as stored) in 14,629 bodies; also 0.0498, 0.598, 0."
     },
     {
      "name": "angularDamping",
@@ -19463,7 +19463,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.0498 (0.05 as stored) in 14,723 bodies; also 2, 0, 0.5, 1, 0.25."
+     "doc": "0.0498 (0.05 as stored) in 14,721 bodies; also 2, 0, 0.5, 1, 0.25."
     },
     {
      "name": "timeFactor",
@@ -19487,7 +19487,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.5 in 12,995 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100."
+     "doc": "0.5 in 12,993 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100."
     },
     {
      "name": "rollingFrictionMultiplier",
@@ -19503,7 +19503,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.4 in 12,947 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9."
+     "doc": "0.4 in 12,945 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9."
     },
     {
      "name": "maxLinearVelocity",
@@ -19511,7 +19511,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "104.4 in 13,794 bodies; 1000002 in exactly the 1,087 keyframed bodies with no mass. The loader clamps it to 100."
+     "doc": "104.4 in 13,794 bodies; 1000002 in exactly the 1,086 keyframed bodies with no mass. The loader clamps it to 100."
     },
     {
      "name": "maxAngularVelocity",
@@ -19519,7 +19519,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "31.57 in 13,617 bodies, 1000002 in 1,229 (fixed or keyframed), 1068 in 35."
+     "doc": "31.57 in 13,616 bodies, 1000002 in 1,228 (fixed or keyframed), 1068 in 35."
     },
     {
      "name": "allowedPenetrationDepth",
@@ -19527,7 +19527,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,367."
+     "doc": "0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,365."
     },
     {
      "name": "motionType",
@@ -19535,7 +19535,7 @@
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,073 of 1,087 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,460 of 9,510). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29."
+     "doc": "Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,072 of 1,086 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,459 of 9,509). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29."
     },
     {
      "name": "enableDeactivation",
@@ -20000,7 +20000,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.0996 (0.1 as stored) in 14,631 bodies; also 0.0498, 0.598, 0."
+     "doc": "0.0996 (0.1 as stored) in 14,629 bodies; also 0.0498, 0.598, 0."
     },
     {
      "name": "angularDamping",
@@ -20008,7 +20008,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.0498 (0.05 as stored) in 14,723 bodies; also 2, 0, 0.5, 1, 0.25."
+     "doc": "0.0498 (0.05 as stored) in 14,721 bodies; also 2, 0, 0.5, 1, 0.25."
     },
     {
      "name": "timeFactor",
@@ -20032,7 +20032,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.5 in 12,995 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100."
+     "doc": "0.5 in 12,993 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100."
     },
     {
      "name": "rollingFrictionMultiplier",
@@ -20048,7 +20048,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.4 in 12,947 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9."
+     "doc": "0.4 in 12,945 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9."
     },
     {
      "name": "maxLinearVelocity",
@@ -20056,7 +20056,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "104.4 in 13,794 bodies; 1000002 in exactly the 1,087 keyframed bodies with no mass. The loader clamps it to 100."
+     "doc": "104.4 in 13,794 bodies; 1000002 in exactly the 1,086 keyframed bodies with no mass. The loader clamps it to 100."
     },
     {
      "name": "maxAngularVelocity",
@@ -20064,7 +20064,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "31.57 in 13,617 bodies, 1000002 in 1,229 (fixed or keyframed), 1068 in 35."
+     "doc": "31.57 in 13,616 bodies, 1000002 in 1,228 (fixed or keyframed), 1068 in 35."
     },
     {
      "name": "allowedPenetrationDepth",
@@ -20072,7 +20072,7 @@
       "kind": "f32"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,367."
+     "doc": "0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,365."
     },
     {
      "name": "motionType",
@@ -20080,7 +20080,7 @@
       "kind": "u8"
      },
      "declaredBy": "bhkRigidBody",
-     "doc": "Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,073 of 1,087 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,460 of 9,510). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29."
+     "doc": "Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,072 of 1,086 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,459 of 9,509). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29."
     },
     {
      "name": "enableDeactivation",

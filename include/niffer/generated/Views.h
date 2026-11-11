@@ -5009,11 +5009,11 @@ public:
     static constexpr uint16_t kMass = 20;
     float Mass() const { return b_->GetAt<float>(p_.Child(20)).value_or(float{}); }
     bool SetMass(const float& v) const { return b_->SetAt<float>(p_.Child(20), v); }
-    // linearDamping — 0.0996 (0.1 as stored) in 14,631 bodies; also 0.0498, 0.598, 0.
+    // linearDamping — 0.0996 (0.1 as stored) in 14,629 bodies; also 0.0498, 0.598, 0.
     static constexpr uint16_t kLinearDamping = 21;
     float LinearDamping() const { return b_->GetAt<float>(p_.Child(21)).value_or(float{}); }
     bool SetLinearDamping(const float& v) const { return b_->SetAt<float>(p_.Child(21), v); }
-    // angularDamping — 0.0498 (0.05 as stored) in 14,723 bodies; also 2, 0, 0.5, 1, 0.25.
+    // angularDamping — 0.0498 (0.05 as stored) in 14,721 bodies; also 2, 0, 0.5, 1, 0.25.
     static constexpr uint16_t kAngularDamping = 22;
     float AngularDamping() const { return b_->GetAt<float>(p_.Child(22)).value_or(float{}); }
     bool SetAngularDamping(const float& v) const { return b_->SetAt<float>(p_.Child(22), v); }
@@ -5025,7 +5025,7 @@ public:
     static constexpr uint16_t kGravityFactor = 24;
     float GravityFactor() const { return b_->GetAt<float>(p_.Child(24)).value_or(float{}); }
     bool SetGravityFactor(const float& v) const { return b_->SetAt<float>(p_.Child(24), v); }
-    // friction — 0.5 in 12,995 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100.
+    // friction — 0.5 in 12,993 bodies, 0.3 in 1,819; 16 distinct values from 0 to 100.
     static constexpr uint16_t kFriction = 25;
     float Friction() const { return b_->GetAt<float>(p_.Child(25)).value_or(float{}); }
     bool SetFriction(const float& v) const { return b_->SetAt<float>(p_.Child(25), v); }
@@ -5033,23 +5033,23 @@ public:
     static constexpr uint16_t kRollingFrictionMultiplier = 26;
     float RollingFrictionMultiplier() const { return b_->GetAt<float>(p_.Child(26)).value_or(float{}); }
     bool SetRollingFrictionMultiplier(const float& v) const { return b_->SetAt<float>(p_.Child(26), v); }
-    // restitution — 0.4 in 12,947 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9.
+    // restitution — 0.4 in 12,945 bodies, 0.8 in 1,847; 7 distinct values from 0.2 to 0.9.
     static constexpr uint16_t kRestitution = 27;
     float Restitution() const { return b_->GetAt<float>(p_.Child(27)).value_or(float{}); }
     bool SetRestitution(const float& v) const { return b_->SetAt<float>(p_.Child(27), v); }
-    // maxLinearVelocity — 104.4 in 13,794 bodies; 1000002 in exactly the 1,087 keyframed bodies with no mass. The loader clamps it to 100.
+    // maxLinearVelocity — 104.4 in 13,794 bodies; 1000002 in exactly the 1,086 keyframed bodies with no mass. The loader clamps it to 100.
     static constexpr uint16_t kMaxLinearVelocity = 28;
     float MaxLinearVelocity() const { return b_->GetAt<float>(p_.Child(28)).value_or(float{}); }
     bool SetMaxLinearVelocity(const float& v) const { return b_->SetAt<float>(p_.Child(28), v); }
-    // maxAngularVelocity — 31.57 in 13,617 bodies, 1000002 in 1,229 (fixed or keyframed), 1068 in 35.
+    // maxAngularVelocity — 31.57 in 13,616 bodies, 1000002 in 1,228 (fixed or keyframed), 1068 in 35.
     static constexpr uint16_t kMaxAngularVelocity = 29;
     float MaxAngularVelocity() const { return b_->GetAt<float>(p_.Child(29)).value_or(float{}); }
     bool SetMaxAngularVelocity(const float& v) const { return b_->SetAt<float>(p_.Child(29), v); }
-    // allowedPenetrationDepth — 0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,367.
+    // allowedPenetrationDepth — 0.002 to 0.15; 0.1 in 6,723 bodies, 0.15 in 3,365.
     static constexpr uint16_t kAllowedPenetrationDepth = 30;
     float AllowedPenetrationDepth() const { return b_->GetAt<float>(p_.Child(30)).value_or(float{}); }
     bool SetAllowedPenetrationDepth(const float& v) const { return b_->SetAt<float>(p_.Child(30), v); }
-    // motionType — Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,073 of 1,087 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,460 of 9,510). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29.
+    // motionType — Havok's motion type, 2-5 in the corpus: 2 sphere inertia and 3 box inertia (mass never 0: 3,010 of 3,010), 4 keyframed (with mass 0, 1,072 of 1,086 are in files with a controller or interpolator; with mass, 1,193 of 1,275 hang off a bhkBlendCollisionObject), 5 fixed (mass 0 in 9,459 of 9,509). The loader makes a body of no mass fixed unless its layer is 2 or 28, and keyframed if its layer is 14 or 29.
     static constexpr uint16_t kMotionType = 31;
     uint8_t MotionType() const { return b_->GetAt<uint8_t>(p_.Child(31)).value_or(uint8_t{}); }
     bool SetMotionType(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(31), v); }

@@ -99,6 +99,10 @@ were deleted in migration step 6). Design and migration history:
     stored bounds; the collision AABB is within 10% of the render AABB's diagonal in 87.4% of
     the 11,096 files with both. `--sweep` re-measures each extraction convention
     (docs/collision-provenance.md).
+  - `niffer-tool bodies-validate <dir>`: `ExtractBodies` over the corpus. 14,880 bodies in 11,408
+    files; in 0 files do its decoded and skipped leaves differ from `ExtractCollision`'s; the
+    motionType and layer relations bhkRigidBody's docs claim hold (maxLinearVelocity is 1000002
+    in 1,086 of 1,086 keyframed bodies with no mass and in no other).
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
 - With `-DNIFFER_BUILD_YAML=ON` (the default at top level), over the same corpus:
   - `niffer-yaml roundtrip <dir>` (faithful): decompile → compile → save. 22,760 of 22,760

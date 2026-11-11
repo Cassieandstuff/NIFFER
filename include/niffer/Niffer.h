@@ -172,6 +172,9 @@ inline constexpr float kHavokToSkyrim = 69.99124908447265625f;  // bhk unit -> S
 // units; the body's placement maps that space to the NIF's root space in Skyrim
 // units, so its scale already carries kHavokToSkyrim.
 //
+// Constraints (bhkRigidBody.constraints: ragdoll, hinge, ball-and-socket, ...) are
+// not extracted yet; read them through the views.
+//
 // The rigid body's fields are named from the loader's map (bhkRigidBody's schema
 // doc); every other field is there through view::bhkRigidBody::From(nif.blocks[body.body]).
 

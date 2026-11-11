@@ -74,8 +74,9 @@ were deleted in migration step 6). Design and migration history:
   observed target classes of every ref field that has no `to:` yet.
 - **New layouts are measured first:** before modeling a payload, measure it over the corpus
   (distinct selector values, sizes per selector, value shapes per word), then describe exactly
-  what the data shows. Name a field from first-party code (SCT, NIFFER's helpers) or from its
-  layout; anything else is `unknownN`.
+  what the data shows. Name a field from first-party code (SCT, NIFFER's helpers), from its
+  layout, or from CB-SDK's recovered loaders (the exe's own code path), cited by commit in
+  docs/*-provenance.md (allowed by the owner, 2026-11-10); anything else is `unknownN`.
 - **Packed arrays:** mark large arrays `packed: true`. Read them through `Visit`, `GetAt`,
   `Count`, `Has` or the views, never through `Value::items`.
 - A descriptor change must keep `roundtrip` **GREEN**.

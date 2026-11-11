@@ -50,6 +50,7 @@ struct Diagnostics {
     int  phantomsIgnored    = 0;
     int  cmsVerticesChecked = 0;                   // chunk + big vertices tested against the data bounds
     int  cmsVerticesOutside = 0;
+    int  cmsMaterialsOutOfRange = 0;              // chunk / big-triangle material indices past the table
     int  moppChecked        = 0;                   // MOPP over compressed mesh: data bounds inside the MOPP grid
     int  moppOutside        = 0;
 };
@@ -81,6 +82,7 @@ struct DecodedCompressedMesh {
     int  verticesChecked = 0;
     int  verticesOutside = 0;
     bool boundsChecked   = false;             // every vertex was decoded and tested
+    int  materialsOutOfRange = 0;              // material indices past the table (read as material 0)
 };
 const char* DecodeCompressedMesh(NifFile& nif, Block& shapeBlock, DecodedCompressedMesh& out);
 

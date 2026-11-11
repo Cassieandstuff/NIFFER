@@ -148,7 +148,11 @@ void Extractor::CompressedMesh(Block& shapeBlock, const Xform& toRoot) {
     const char* cls = "bhkCompressedMeshShape";
     DecodedCompressedMesh m;
     const char* why = DecodeCompressedMesh(nif_, shapeBlock, m);
-    if (diag_ && m.boundsChecked) { diag_->cmsVerticesChecked += m.verticesChecked; diag_->cmsVerticesOutside += m.verticesOutside; }
+    if (diag_ && m.boundsChecked) {
+        diag_->cmsVerticesChecked += m.verticesChecked;
+        diag_->cmsVerticesOutside += m.verticesOutside;
+        diag_->cmsMaterialsOutOfRange += m.materialsOutOfRange;
+    }
     if (why) { Skip(cls, why); return; }
 
     const auto baseIndex = static_cast<uint32_t>(out_.triVerts.size() / 3);
@@ -366,7 +370,12 @@ const char* DecodeCompressedMesh(NifFile& nif, Block& shapeBlock, DecodedCompres
     std::vector<uint32_t>& tris = out.triangles;
     std::vector<uint32_t>& mats = out.triangleMaterials;
     const auto table = data->Materials();
-    auto materialAt = [&](uint32_t i) { return i < table.size() ? table[i].Material() : 0u; };
+    // An index past the table reads as material 0 and is counted (the corpus has none).
+    auto materialAt = [&](uint32_t i) {
+        if (i < table.size()) return table[i].Material();
+        ++out.materialsOutOfRange;
+        return 0u;
+    };
     int& checked = out.verticesChecked;
     int& outside = out.verticesOutside;
 

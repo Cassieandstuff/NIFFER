@@ -781,7 +781,7 @@ struct BodiesResult {
     bool   mismatch = false;
     int    decoded = 0, skipped = 0;                   // ExtractBodies leaves
     int    collisionDecoded = 0, collisionSkipped = 0; // ExtractCollision
-    int    cmsChecked = 0, cmsOutside = 0;
+    int    cmsChecked = 0, cmsOutside = 0, cmsMaterialsOutOfRange = 0;
     std::map<std::string, size_t> leafKinds, skipReasons;
     std::map<int, std::array<size_t, 2>> motionByMass;  // motionType -> {mass 0, mass > 0}
     std::map<int, size_t> layers;
@@ -802,6 +802,7 @@ static BodiesResult BodiesOne(const fs::path& p) {
     r.collisionSkipped = g.shapesSkipped;
     r.cmsChecked       = d.cmsVerticesChecked;
     r.cmsOutside       = d.cmsVerticesOutside;
+    r.cmsMaterialsOutOfRange = d.cmsMaterialsOutOfRange;
     for (const Body& b : bs) {
         ++r.bodies;
         ++r.layers[b.layer];
@@ -837,7 +838,7 @@ static int CmdBodiesValidate(const fs::path& root) {
 
     BodiesResult t;
     size_t loaded = 0, withBodies = 0, mismatchFiles = 0;
-    unsigned long long collisionDecoded = 0, collisionSkipped = 0, cmsChecked = 0, cmsOutside = 0;
+    unsigned long long collisionDecoded = 0, collisionSkipped = 0, cmsChecked = 0, cmsOutside = 0, cmsMaterials = 0;
     for (size_t i = 0; i < results.size(); ++i) {
         const BodiesResult& r = results[i];
         if (!r.loaded) continue;
@@ -848,6 +849,7 @@ static int CmdBodiesValidate(const fs::path& root) {
         collisionSkipped += static_cast<unsigned long long>(r.collisionSkipped);
         cmsChecked += static_cast<unsigned long long>(r.cmsChecked);
         cmsOutside += static_cast<unsigned long long>(r.cmsOutside);
+        cmsMaterials += static_cast<unsigned long long>(r.cmsMaterialsOutOfRange);
         for (const auto& [k, n] : r.leafKinds) t.leafKinds[k] += n;
         for (const auto& [k, n] : r.skipReasons) t.skipReasons[k] += n;
         for (const auto& [k, n] : r.motionByMass) { t.motionByMass[k][0] += n[0]; t.motionByMass[k][1] += n[1]; }
@@ -863,6 +865,7 @@ static int CmdBodiesValidate(const fs::path& root) {
     std::printf("  files             %zu loaded, %zu with bodies; %zu bodies\n", loaded, withBodies, t.bodies);
     std::printf("  ExtractCollision  %llu leaf shapes decoded, %llu skipped; %llu of %llu compressed-mesh vertices outside their bounds\n",
                 collisionDecoded, collisionSkipped, cmsOutside, cmsChecked);
+    std::printf("  mesh materials    %llu triangle material indices past their table (read as material 0)\n", cmsMaterials);
     std::printf("  vs collision      %zu files whose leaf counts differ from ExtractCollision\n", mismatchFiles);
     std::printf("  motionType        value: mass 0 / mass > 0\n");
     for (const auto& [v, n] : t.motionByMass) std::printf("    %3d: %zu / %zu\n", v, n[0], n[1]);

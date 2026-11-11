@@ -1835,6 +1835,6 @@ inline constexpr BlockDef kBlocks[] = {
     { "bhkTransformShape", 150, 357, 1, false },  // 154
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.3.0", "0.3" };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.4.0", "0.3" };
 
 }  // namespace niffer::schema::tables

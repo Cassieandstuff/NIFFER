@@ -22,9 +22,9 @@ these keys it has (exactly one):
 | `manifest` | schema metadata; exactly one per schema: `schemaVersion: "x.y.z"` |
 | `block` | a NIF block class (§5) |
 | `struct` | a named, reusable byte layout (§4) |
+| `enum` | names for an integer field's values, or for a flags word's bits (§4.5) |
 
-`enum` is reserved for a later version (§10). Unknown keys are errors. A key that is reserved
-for a later version is rejected by name.
+Unknown keys are errors. A key that is reserved for a later version is rejected by name.
 
 By convention each block and struct lives in its own file, named after it:
 `schema/blocks/<area>/<Block>.yaml`, `schema/structs/<Struct>.yaml`.
@@ -185,6 +185,27 @@ vertices, triangles and keys.
 - NIFFER's engine packs an array only when all its elements decode to the same size. Otherwise
   it keeps the array materialized.
 
+### 4.5 Enums and flags
+
+An `enum` descriptor names the values of an integer field, or the bits of a flags word. It renders nothing differently on
+disk: the field stays an integer, and every value round-trips whether it is named or not.
+
+```yaml
+enum: LightingShaderType          # PascalCase, unique across enums, structs and blocks
+source: "CommonLibSSE-NG 4.15.0 (530bbc7…), RE::BSShaderMaterial::Feature"   # required: where the names come from
+values:
+  - { name: default, value: 0 }
+  - { name: faceGen, value: 4, doc: "…" }
+```
+
+`flags: true` makes it a flags enum: each value names a `bit` (0-63) instead of a `value`. Value names are camelCase and
+unique in their enum; values (or bits) are unique. A field takes `enum: <Name>` for a value enum or `flags: <Name>` for a
+flags enum, never both; the field must be an integer scalar that holds every value (or bit) the enum names.
+
+Outputs: the engine's tables carry each enum (`SchemaSet::enums`, `NamesOf(field)`, `ValuesOf`, `NameOf`; a flag's value is its
+mask); the views carry the names as constants, `niffer::view::<Enum>::k<Value>` (a value, or a flag's mask); `schema.json` lists
+`enums[]` and gives a field its `enum` or `flags`.
+
 ## 5. Blocks
 
 ```yaml
@@ -318,7 +339,7 @@ language version rejects them by name.
 | Construct | Purpose |
 |---|---|
 | `lookup` union selector | a case chosen through a table, keyed by a field |
-| `enum:`, `flags:`, `unit:` and `enum` descriptors | rendering hints |
+| `unit:` | a rendering hint |
 
 ## 11. Versioning
 
@@ -333,3 +354,4 @@ language version rejects them by name.
 | 0.1 | Initial: scalars, `ref`/`ptr`, `stringref`, `sizedstring`, `bytes`, structs, arrays (fixed, rest, count prefix, count field), `if:` conditions, block inheritance, `to:` |
 | 0.2 | adds `half`, `union:` (selector field with optional mask, `when` values, `default`, empty cases), byte-window arrays (`T[]` + `size:`), `packed: true`, references to conditional fields, and named structs that read enclosing fields (resolved per use site) |
 | 0.3 | adds `compute:` (computed fields: a summed byte size, or a shifted, masked and scaled field), recomputed on every edit and checked by the gate |
+| 0.4 | adds `enum` descriptors and the `enum:` / `flags:` field keys (§4.5): names for an integer field's values or a flags word's bits, with their source |

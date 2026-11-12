@@ -32,7 +32,7 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit("schemagen: PyYAML is required (pip install pyyaml)")
 
-LANGUAGE_VERSION = "0.3"
+LANGUAGE_VERSION = "0.4"
 
 # spelling -> (C++ Kind, C++ value type, byte size)
 SCALARS = {
@@ -49,7 +49,7 @@ COND_OPS = {"eq": "Eq", "ne": "Ne", "min": "Min", "max": "Max", "mask": "Mask"}
 # Constructs specified by the design but not in this language version: reject by name.
 NOT_YET = {
     "lookup": "lookup selectors",
-    "enum": "enum hints", "flags": "flag hints", "unit": "unit hints",
+    "unit": "unit hints",
 }
 
 CPP_KEYWORDS = set("""alignas alignof and and_eq asm auto bitand bitor bool break case catch char
@@ -65,7 +65,11 @@ RESERVED_FIELDS = {"self", "block", "cursor", "path", "from"}
 BLOCK_KEYS = {"block", "inherits", "abstract", "fields", "verified", "doc"}
 STRUCT_KEYS = {"struct", "size", "fields", "doc"}
 MANIFEST_KEYS = {"manifest", "schemaVersion"}
-FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "packed", "compute", "doc"}
+FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "packed", "compute", "enum", "flags",
+              "doc"}
+# An `enum` descriptor (spec §4.5): named values of an integer field, or named bits of a flags word.
+ENUM_KEYS = {"enum", "flags", "source", "values", "doc"}
+ENUM_VALUE_KEYS = {"name", "value", "bit", "doc"}
 COMPUTE_KEYS = {"size", "field", "mask", "shift", "times"}
 # Kinds a packed array's elements may not contain: packed storage is never
 # walked for references, strings or opaque bytes.
@@ -196,6 +200,18 @@ class Field:
     compute: tuple | None = None
     doc: str | None = None
     declared_by: str | None = None      # block that declares it (block layouts)
+    names: str | None = None            # enum: / flags: an enum descriptor's name (spec §4.5)
+    names_flags: bool = False           # …a flags enum
+
+
+@dataclass
+class Enum:
+    name: str
+    where: str
+    flags: bool
+    source: str
+    doc: str | None
+    values: list[tuple] = field(default_factory=list)   # (name, value or bit, doc)
 
 
 @dataclass
@@ -243,6 +259,7 @@ class Schema:
         self.free_structs: dict[str, Struct] = {}   # named structs that read only their own fields
         self.structs: list[Struct] = []              # every resolved struct object
         self.blocks: dict[str, Block] = {}
+        self.enums: dict[str, Enum] = {}
         self._resolving: set[str] = set()
 
     # ── Loading ───────────────────────────────────────────────────────────────
@@ -263,9 +280,9 @@ class Schema:
                 for k in doc:
                     if k in NOT_YET:
                         fail(where, f"'{k}' ({NOT_YET[k]}) is not supported in language {LANGUAGE_VERSION}")
-                kinds = [k for k in ("manifest", "block", "struct") if k in doc]
+                kinds = [k for k in ("manifest", "block", "struct", "enum") if k in doc]
                 if len(kinds) != 1:
-                    fail(where, "a descriptor needs exactly one of: manifest, block, struct")
+                    fail(where, "a descriptor needs exactly one of: manifest, block, struct, enum")
                 getattr(self, f"_load_{kinds[0]}")(where, doc)
 
     def _load_manifest(self, where: str, d: dict):
@@ -285,6 +302,74 @@ class Schema:
         if not isinstance(d.get("fields"), list) or not d["fields"]:
             fail(where, "a struct needs a non-empty 'fields' list")
         self.struct_docs[name] = (where, d)
+
+    def _load_enum(self, where: str, d: dict):
+        check_keys(where, d, ENUM_KEYS)
+        name = d["enum"]
+        if not isinstance(name, str) or not re.fullmatch(r"[A-Z][A-Za-z0-9]*", name):
+            fail(where, f"enum name must be PascalCase ([A-Z][A-Za-z0-9]*), got {name!r}")
+        if name in self.enums or name in self.struct_docs or name in self.blocks:
+            fail(where, f"'{name}' is defined twice")
+        where = f"{where} ({name})"
+        flags = d.get("flags", False)
+        if not isinstance(flags, bool):
+            fail(where, "'flags' must be true or false")
+        source = d.get("source")
+        if not isinstance(source, str) or not source.strip():
+            fail(where, "an enum needs 'source': where its names come from (NIFFER's naming rule)")
+        values = d.get("values")
+        if not isinstance(values, list) or not values:
+            fail(where, "an enum needs a non-empty 'values' list")
+        e = Enum(name=name, where=where, flags=flags, source=source.strip(), doc=d.get("doc"))
+        seen_names, seen_values = set(), set()
+        for i, v in enumerate(values):
+            vwhere = f"{where}.values[{i}]"
+            if not isinstance(v, dict):
+                fail(vwhere, "a value must be a mapping")
+            check_keys(vwhere, v, ENUM_VALUE_KEYS)
+            vname = check_field_name(vwhere, v.get("name"), "value name")
+            if vname in seen_names:
+                fail(vwhere, f"value name '{vname}' is used twice")
+            key = "bit" if flags else "value"
+            other = "value" if flags else "bit"
+            if other in v:
+                fail(vwhere, f"a {'flags' if flags else 'value'} enum names each '{key}', not '{other}'")
+            if key not in v:
+                fail(vwhere, f"needs '{key}'")
+            n = check_int(vwhere, v[key], f"'{key}'")
+            if flags and not 0 <= n <= 63:
+                fail(vwhere, f"bit {n} is outside 0-63")
+            if n in seen_values:
+                fail(vwhere, f"{key} {n} is named twice")
+            seen_names.add(vname)
+            seen_values.add(n)
+            e.values.append((vname, n, v.get("doc")))
+        self.enums[name] = e
+
+    def check_names(self, where: str, f: "Field", fd: dict):
+        """`enum:` / `flags:` on an integer field: the descriptor exists, is the right sort, and fits the field."""
+        keys = [k for k in ("enum", "flags") if k in fd]
+        if not keys:
+            return
+        if len(keys) == 2:
+            fail(where, "a field takes 'enum' or 'flags', not both")
+        key = keys[0]
+        name = fd[key]
+        if not isinstance(name, str) or name not in self.enums:
+            fail(where, f"'{key}': no enum named {name!r}")
+        e = self.enums[name]
+        if f.type.kind not in INTEGER_KINDS:
+            fail(where, f"'{key}' applies only to integer fields")
+        if (key == "flags") != e.flags:
+            fail(where, f"'{name}' is a {'flags' if e.flags else 'value'} enum: use '{'flags' if e.flags else 'enum'}:'")
+        width = SCALARS[f.type.spelling][2] * 8 if f.type.spelling in SCALARS else 64
+        for vname, n, _ in e.values:
+            if e.flags and n >= width:
+                fail(where, f"'{name}' names bit {n} ({vname}), past this {width}-bit field")
+            if not e.flags and width < 64 and not 0 <= n < (1 << width):
+                fail(where, f"'{name}' names value {n} ({vname}), which this {width}-bit field can't hold")
+        f.names = name
+        f.names_flags = e.flags
 
     def _load_block(self, where: str, d: dict):
         check_keys(where, d, BLOCK_KEYS)
@@ -449,6 +534,7 @@ class Schema:
                 ftype, len_name = self.parse_type(fwhere, fd["type"], fd, scopes)
 
             f = Field(name=name, type=ftype, where=fwhere, doc=fd.get("doc"), sel=sel)
+            self.check_names(fwhere, f, fd)
             if "packed" in fd:
                 if not isinstance(fd["packed"], bool):
                     fail(fwhere, "'packed' must be true or false")
@@ -776,6 +862,14 @@ class Tables:
         self.links: list[int] = []
         self.link_index: dict[tuple, int] = {}
         self.sums: list[int] = []
+        self.enums = [schema.enums[k] for k in sorted(schema.enums)]
+        self.enum_index = {e.name: i for i, e in enumerate(self.enums)}
+        self.enum_values: list[tuple] = []   # (name, value: a flag's mask)
+        self.enum_first: list[int] = []
+        for e in self.enums:
+            self.enum_first.append(len(self.enum_values))
+            for vname, n, _ in e.values:
+                self.enum_values.append((vname, (1 << n) if e.flags else n))
         self.block_type: dict[str, int] = {}
         for s in schema.structs:
             self.intern(Type(kind="Struct", key=s.key, struct=s))
@@ -836,8 +930,9 @@ class Tables:
                 self.sums.extend(f.compute[2])
             elif f.compute:
                 comp = f.compute
+            names = self.enum_index[f.names] if f.names else None
             self.fields.append((f.name, ft, len_up, len_field, op, cup, cidx, cval, sup, sidx, smask,
-                                f.packed, comp))
+                                f.packed, comp, names))
         return idx
 
 
@@ -870,13 +965,19 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out.append("};")
     out.append("")
     out.append("inline constexpr FieldDef kFields[] = {")
-    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask, packed, comp) in enumerate(tables.fields):
+    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask, packed, comp, names) in enumerate(tables.fields):
         tail = ""
         if comp and comp[0] == "Size":
             tail = f", Compute::Size, {comp[1]}, {comp[2]}"
+            if names is not None:
+                tail += f", 0, kNoField, 0ull, 0, 1, {names}"
         elif comp:
             _, up, idx, mask, shift, times, _ = comp
             tail = f", Compute::Bits, 0, 0, {up}, {idx}, {mask}ull, {shift}, {times}"
+            if names is not None:
+                tail += f", {names}"
+        elif names is not None:
+            tail = f", Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, {names}"
         out.append(f"    {{ {c_str(name)}, {ft}, {lup}, {field_or_none(lf)}, CondOp::{op}, {cup}, "
                    f"{field_or_none(cf)}, {c_int64(cval)}, {sup}, {field_or_none(sf)}, {smask}ull, "
                    f"{'true' if packed else 'false'}{tail} }},  // {i}")
@@ -906,6 +1007,19 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
         spans["sums"] = "kSums"
     else:
         spans["sums"] = "std::span<const uint16_t>{}"
+    if tables.enums:
+        out.append("inline constexpr EnumValueDef kEnumValues[] = {")
+        for i, (vname, v) in enumerate(tables.enum_values):
+            out.append(f"    {{ {c_str(vname)}, {v}ull }},  // {i}")
+        out.append("};")
+        out.append("inline constexpr EnumDef kEnums[] = {")
+        for i, e in enumerate(tables.enums):
+            out.append(f"    {{ {c_str(e.name)}, {'true' if e.flags else 'false'}, {tables.enum_first[i]}, "
+                       f"{len(e.values)}, {c_str(e.source)} }},  // {i}")
+        out.append("};")
+        spans["enums"], spans["enumValues"] = "kEnums", "kEnumValues"
+    else:
+        spans["enums"], spans["enumValues"] = "std::span<const EnumDef>{}", "std::span<const EnumValueDef>{}"
     out.append("")
     out.append("inline constexpr BlockDef kBlocks[] = {")
     for i, b in enumerate(tables.blocks):
@@ -917,7 +1031,7 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out.append("")
     out.append(f"inline constexpr SchemaSet kSchema{{ kTypes, kFields, {spans['cases']}, {spans['whens']}, "
                f"{spans['links']}, {spans['sums']}, kBlocks, {c_str(schema.version)}, "
-               f"{c_str(LANGUAGE_VERSION)} }};")
+               f"{c_str(LANGUAGE_VERSION)}, {spans['enums']}, {spans['enumValues']} }};")
     out.append("")
     out.append(f"}}  // namespace {ns}")
     out.append("")
@@ -1011,6 +1125,15 @@ def emit_views(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out = ["#pragma once", GENERATED_NOTE.format(src=src), "#include <niffer/Schema.h>", "",
            "#include <cstdint>", "#include <optional>", "#include <string>", "#include <vector>", "",
            f"namespace {ns} {{", ""]
+    for e in tables.enums:
+        doc = f"  // {e.source}" if e.source else ""
+        out.append(f"// {'Bits of a flags word' if e.flags else 'Values'}: {e.name}.{doc}")
+        out.append(f"struct {e.name} {{")
+        for vname, n, _ in e.values:
+            v = f"1ull << {n}" if e.flags else f"{n}ull"
+            out.append(f"    static constexpr uint64_t k{pascal(vname)} = {v};")
+        out.append("};")
+        out.append("")
     structs = schema.view_structs()
     for s in structs:
         out.append(f"class {s.name};")
@@ -1194,6 +1317,8 @@ def field_json(f: Field) -> dict:
         _, _, _, mask, shift, times, src = f.compute
         d["compute"] = {"field": src, **({"mask": mask} if mask else {}),
                         **({"shift": shift} if shift else {}), **({"times": times} if times != 1 else {})}
+    if f.names:
+        d["flags" if f.names_flags else "enum"] = f.names
     if f.declared_by:
         d["declaredBy"] = f.declared_by
     if f.doc:
@@ -1207,6 +1332,11 @@ def emit_json(schema: Schema, tables: Tables) -> str:
         "languageVersion": LANGUAGE_VERSION,
         "structs": [{"name": s.name, "fields": [field_json(f) for f in s.fields]}
                     for s in schema.view_structs() if s.named],
+        "enums": [{"name": e.name, "flags": e.flags, "source": e.source,
+                   **({"doc": e.doc.strip()} if e.doc else {}),
+                   "values": [{"name": vn, ("bit" if e.flags else "value"): n, **({"doc": vd.strip()} if vd else {})}
+                              for vn, n, vd in e.values]}
+                  for e in tables.enums],
         "blocks": [],
     }
     for b in tables.blocks:

@@ -10,12 +10,12 @@ doc: >-
   class can't inherit NiObjectNET's layout.
 verified: ["clutter/barrel01.nif#8"]
 fields:
-  - { name: shaderType, type: u32, doc: "Selects the material tail's layout." }
+  - { name: shaderType, type: u32, enum: LightingShaderType, doc: "Selects the material tail's layout." }
   - { name: name, type: stringref }
   - { name: extraData, type: "ref[count: u32]", to: [NiExtraData] }
   - { name: controller, type: ref, to: [NiTimeController] }
-  - { name: shaderFlags1, type: u32 }
-  - { name: shaderFlags2, type: u32 }
+  - { name: shaderFlags1, type: u32, flags: ShaderPropertyFlags1 }
+  - { name: shaderFlags2, type: u32, flags: ShaderPropertyFlags2 }
   - { name: uvOffset, type: Vec2 }
   - { name: uvScale, type: Vec2 }
   - { name: textureSet, type: ref, to: [BSShaderTextureSet] }

@@ -116,6 +116,7 @@ struct FieldDef {
     uint64_t    srcMask   = 0;         //   …shifted right, ANDed with this (0 = all bits)…
     uint8_t     srcShift  = 0;
     uint32_t    srcTimes  = 1;         //   …and multiplied by this
+    uint16_t    names     = kNoField;  // `enum:` / `flags:`: an EnumDef (SchemaSet::enums) naming its values or bits
 };
 
 struct CaseDef {
@@ -124,6 +125,23 @@ struct CaseDef {
     uint16_t    whenFirst = 0;         // selector values (whens range)
     uint16_t    whenCount = 0;
     bool        isDefault = false;     // taken when no other case matches
+};
+
+// A value of an `enum` descriptor (spec §4.5): its name and its value, or for a
+// flags enum the bit's mask.
+struct EnumValueDef {
+    const char* name  = nullptr;
+    uint64_t    value = 0;
+};
+
+// An `enum` descriptor: named values of an integer field, or named bits of a
+// flags word. `source` says where the names come from (NIFFER's naming rule).
+struct EnumDef {
+    const char* name   = nullptr;
+    bool        flags  = false;
+    uint16_t    first  = 0;        // its values (SchemaSet::enumValues range)
+    uint16_t    count  = 0;
+    const char* source = nullptr;
 };
 
 struct BlockDef {
@@ -144,6 +162,21 @@ struct SchemaSet {
     std::span<const BlockDef> blocks;    // sorted by name
     const char*               schemaVersion   = nullptr;
     const char*               languageVersion = nullptr;
+    std::span<const EnumDef>      enums;        // sorted by name
+    std::span<const EnumValueDef> enumValues;
+
+    // The names `f` reads by (its `enum:` or `flags:`); nullptr when it has none.
+    const EnumDef* NamesOf(const FieldDef& f) const {
+        return f.names < enums.size() ? &enums[f.names] : nullptr;
+    }
+    // `e`'s values (for a flags enum, its bits as masks).
+    std::span<const EnumValueDef> ValuesOf(const EnumDef& e) const { return enumValues.subspan(e.first, e.count); }
+    // The name of value `v` (a value enum) or of the single bit `v` (a flags enum); "" when unnamed.
+    std::string_view NameOf(const EnumDef& e, uint64_t v) const {
+        for (const EnumValueDef& d : ValuesOf(e))
+            if (d.value == v) return d.name;
+        return {};
+    }
 
     // nullptr if no block of that name.
     const BlockDef* Find(std::string_view name) const {

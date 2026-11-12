@@ -366,5 +366,62 @@ rejects("unknown compute key", """    block: A
       - { name: x, type: u32, compute: { field: d, plus: 1 } }
 """, "unknown key 'plus'")
 
+# ── enum / flags (language 0.4) ──
+E = """    enum: Mode
+    source: test
+    values: [ { name: low, value: 0 }, { name: high, value: 1 }, { name: big, value: 300 } ]
+    ---
+    enum: Bits
+    flags: true
+    source: test
+    values: [ { name: a, bit: 0 }, { name: b, bit: 9 } ]
+    ---
+"""
+accepts("enum and flags on integer fields", E + """    block: A
+    inherits: NiObject
+    fields: [ { name: m, type: u16, enum: Mode }, { name: f, type: u32, flags: Bits } ]
+""")
+rejects("enum with no source", """    enum: Mode
+    values: [ { name: low, value: 0 } ]
+""", "needs 'source'")
+rejects("flags enum naming a value", """    enum: Bits
+    flags: true
+    source: test
+    values: [ { name: a, value: 1 } ]
+""", "names each 'bit'")
+rejects("a bit past 63", """    enum: Bits
+    flags: true
+    source: test
+    values: [ { name: a, bit: 64 } ]
+""", "outside 0-63")
+rejects("a value named twice", """    enum: Mode
+    source: test
+    values: [ { name: low, value: 0 }, { name: also, value: 0 } ]
+""", "named twice")
+rejects("unknown enum", """    block: A
+    inherits: NiObject
+    fields: [ { name: m, type: u8, enum: Nope } ]
+""", "no enum named")
+rejects("enum on a float", E + """    block: A
+    inherits: NiObject
+    fields: [ { name: m, type: f32, enum: Mode } ]
+""", "only to integer fields")
+rejects("flags: naming a value enum", E + """    block: A
+    inherits: NiObject
+    fields: [ { name: m, type: u32, flags: Mode } ]
+""", "is a value enum")
+rejects("a value the field can't hold", E + """    block: A
+    inherits: NiObject
+    fields: [ { name: m, type: u8, enum: Mode } ]
+""", "can't hold")
+rejects("a bit past the field", E + """    block: A
+    inherits: NiObject
+    fields: [ { name: f, type: u8, flags: Bits } ]
+""", "past this 8-bit field")
+rejects("enum and flags together", E + """    block: A
+    inherits: NiObject
+    fields: [ { name: f, type: u32, enum: Mode, flags: Bits } ]
+""", "not both")
+
 print("schemagen tests:", "OK" if failures == 0 else f"{failures} failure(s)")
 sys.exit(1 if failures else 0)

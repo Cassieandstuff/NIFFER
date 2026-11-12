@@ -1,6 +1,6 @@
 {
- "schemaVersion": "0.4.0",
- "languageVersion": "0.3",
+ "schemaVersion": "0.5.0",
+ "languageVersion": "0.4",
  "structs": [
   {
    "name": "AvTransform",
@@ -2456,6 +2456,390 @@
    ]
   }
  ],
+ "enums": [
+  {
+   "name": "LightingShaderType",
+   "flags": false,
+   "source": "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderMaterial::Feature",
+   "doc": "BSLightingShaderProperty's shaderType: the lighting material's feature, which also chooses the material tail's layout. Named from CommonLibSSE-NG's material feature enum, taken to be the stored value: UNVERIFIED against the exe except where a value's doc says so. The SSE corpus holds 0-6, 11, 14 and 16.",
+   "values": [
+    {
+     "name": "default",
+     "value": 0
+    },
+    {
+     "name": "environmentMap",
+     "value": 1
+    },
+    {
+     "name": "glowMap",
+     "value": 2
+    },
+    {
+     "name": "parallax",
+     "value": 3
+    },
+    {
+     "name": "faceGen",
+     "value": 4,
+     "doc": "BK's Model.cpp reads 4 as facegen, the same."
+    },
+    {
+     "name": "faceGenRGBTint",
+     "value": 5,
+     "doc": "BK's Model.cpp reads 5 as a skin tint, the same."
+    },
+    {
+     "name": "hairTint",
+     "value": 6,
+     "doc": "BK's Model.cpp reads 6 as a hair tint, the same."
+    },
+    {
+     "name": "parallaxOcc",
+     "value": 7,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "multiTexLand",
+     "value": 8,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "lodLand",
+     "value": 9,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "unknown",
+     "value": 10,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "multilayerParallax",
+     "value": 11
+    },
+    {
+     "name": "treeAnim",
+     "value": 12,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "multiIndexTriShapeSnow",
+     "value": 14
+    },
+    {
+     "name": "lodObjectsHD",
+     "value": 15,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "eye",
+     "value": 16
+    },
+    {
+     "name": "cloud",
+     "value": 17,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "lodLandNoise",
+     "value": 18,
+     "doc": "not in the SSE corpus."
+    },
+    {
+     "name": "multiTexLandLODBlend",
+     "value": 19,
+     "doc": "not in the SSE corpus."
+    }
+   ]
+  },
+  {
+   "name": "ShaderPropertyFlags1",
+   "flags": true,
+   "source": "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 0-31 (stored bit n = enum bit 0+n)",
+   "doc": "The shader property's first flags word as a NIF stores it (SLSF1). Named from CommonLibSSE-NG's runtime flag enum, whose low and high 32 bits these two stored words are taken to be: UNVERIFIED against the exe except where a value's doc says a first-party reader agrees (docs/naming.md, 'Shader flags').",
+   "values": [
+    {
+     "name": "specular",
+     "bit": 0
+    },
+    {
+     "name": "skinned",
+     "bit": 1
+    },
+    {
+     "name": "tempRefraction",
+     "bit": 2
+    },
+    {
+     "name": "vertexAlpha",
+     "bit": 3,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "grayscaleToPaletteColor",
+     "bit": 4
+    },
+    {
+     "name": "grayscaleToPaletteAlpha",
+     "bit": 5
+    },
+    {
+     "name": "falloff",
+     "bit": 6
+    },
+    {
+     "name": "envMap",
+     "bit": 7
+    },
+    {
+     "name": "receiveShadows",
+     "bit": 8
+    },
+    {
+     "name": "castShadows",
+     "bit": 9
+    },
+    {
+     "name": "face",
+     "bit": 10
+    },
+    {
+     "name": "parallax",
+     "bit": 11
+    },
+    {
+     "name": "modelSpaceNormals",
+     "bit": 12,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "nonProjectiveShadows",
+     "bit": 13
+    },
+    {
+     "name": "multiTextureLandscape",
+     "bit": 14
+    },
+    {
+     "name": "refraction",
+     "bit": 15
+    },
+    {
+     "name": "refractionFalloff",
+     "bit": 16
+    },
+    {
+     "name": "eyeReflect",
+     "bit": 17
+    },
+    {
+     "name": "hairTint",
+     "bit": 18,
+     "doc": "IN DOUBT: another reading of the format disagrees; to be checked against the exe."
+    },
+    {
+     "name": "screendoorAlphaFade",
+     "bit": 19
+    },
+    {
+     "name": "localMapClear",
+     "bit": 20
+    },
+    {
+     "name": "faceGenRGBTint",
+     "bit": 21
+    },
+    {
+     "name": "ownEmit",
+     "bit": 22
+    },
+    {
+     "name": "projectedUV",
+     "bit": 23
+    },
+    {
+     "name": "multipleTextures",
+     "bit": 24
+    },
+    {
+     "name": "remappableTextures",
+     "bit": 25
+    },
+    {
+     "name": "decal",
+     "bit": 26,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "dynamicDecal",
+     "bit": 27,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "parallaxOcclusion",
+     "bit": 28
+    },
+    {
+     "name": "externalEmittance",
+     "bit": 29
+    },
+    {
+     "name": "softEffect",
+     "bit": 30
+    },
+    {
+     "name": "zBufferTest",
+     "bit": 31,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    }
+   ]
+  },
+  {
+   "name": "ShaderPropertyFlags2",
+   "flags": true,
+   "source": "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 32-63 (stored bit n = enum bit 32+n)",
+   "doc": "The shader property's second flags word as a NIF stores it (SLSF2). Named from CommonLibSSE-NG's runtime flag enum, whose low and high 32 bits these two stored words are taken to be: UNVERIFIED against the exe except where a value's doc says a first-party reader agrees (docs/naming.md, 'Shader flags').",
+   "values": [
+    {
+     "name": "zBufferWrite",
+     "bit": 0,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "lodLandscape",
+     "bit": 1
+    },
+    {
+     "name": "lodObjects",
+     "bit": 2
+    },
+    {
+     "name": "noFade",
+     "bit": 3
+    },
+    {
+     "name": "twoSided",
+     "bit": 4,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "vertexColors",
+     "bit": 5,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "glowMap",
+     "bit": 6,
+     "doc": "BK's Model.cpp reads this bit the same way."
+    },
+    {
+     "name": "assumeShadowmask",
+     "bit": 7
+    },
+    {
+     "name": "characterLighting",
+     "bit": 8,
+     "doc": "IN DOUBT: another reading of the format disagrees; to be checked against the exe."
+    },
+    {
+     "name": "multiIndexSnow",
+     "bit": 9
+    },
+    {
+     "name": "vertexLighting",
+     "bit": 10
+    },
+    {
+     "name": "uniformScale",
+     "bit": 11
+    },
+    {
+     "name": "fitSlope",
+     "bit": 12
+    },
+    {
+     "name": "billboard",
+     "bit": 13
+    },
+    {
+     "name": "noLODLandBlend",
+     "bit": 14
+    },
+    {
+     "name": "envmapLightFade",
+     "bit": 15
+    },
+    {
+     "name": "wireframe",
+     "bit": 16
+    },
+    {
+     "name": "weaponBlood",
+     "bit": 17
+    },
+    {
+     "name": "hideOnLocalMap",
+     "bit": 18
+    },
+    {
+     "name": "premultAlpha",
+     "bit": 19
+    },
+    {
+     "name": "cloudLOD",
+     "bit": 20
+    },
+    {
+     "name": "anisotropicLighting",
+     "bit": 21
+    },
+    {
+     "name": "noTransparencyMultiSample",
+     "bit": 22,
+     "doc": "IN DOUBT: BK's Model.cpp reads stored SLSF2 bit 22 as rim lighting; this source puts rim lighting at bit 26 (58)."
+    },
+    {
+     "name": "menuScreen",
+     "bit": 23,
+     "doc": "IN DOUBT: another reading of the format disagrees; to be checked against the exe."
+    },
+    {
+     "name": "multiLayerParallax",
+     "bit": 24
+    },
+    {
+     "name": "softLighting",
+     "bit": 25
+    },
+    {
+     "name": "rimLighting",
+     "bit": 26
+    },
+    {
+     "name": "backLighting",
+     "bit": 27
+    },
+    {
+     "name": "snow",
+     "bit": 28,
+     "doc": "IN DOUBT: BK's Model.cpp reads stored SLSF2 bit 28 as soft lighting; this source puts soft lighting at bit 25 (57) and snow here."
+    },
+    {
+     "name": "treeAnim",
+     "bit": 29
+    },
+    {
+     "name": "effectLighting",
+     "bit": 30
+    },
+    {
+     "name": "hdLODObjects",
+     "bit": 31
+    }
+   ]
+  }
+ ],
  "blocks": [
   {
    "name": "BSBehaviorGraphExtraData",
@@ -3572,6 +3956,7 @@
      "type": {
       "kind": "u32"
      },
+     "flags": "ShaderPropertyFlags1",
      "declaredBy": "BSEffectShaderProperty"
     },
     {
@@ -3579,6 +3964,7 @@
      "type": {
       "kind": "u32"
      },
+     "flags": "ShaderPropertyFlags2",
      "declaredBy": "BSEffectShaderProperty"
     },
     {
@@ -4562,6 +4948,7 @@
      "type": {
       "kind": "u32"
      },
+     "enum": "LightingShaderType",
      "declaredBy": "BSLightingShaderProperty",
      "doc": "Selects the material tail's layout."
     },
@@ -4601,6 +4988,7 @@
      "type": {
       "kind": "u32"
      },
+     "flags": "ShaderPropertyFlags1",
      "declaredBy": "BSLightingShaderProperty"
     },
     {
@@ -4608,6 +4996,7 @@
      "type": {
       "kind": "u32"
      },
+     "flags": "ShaderPropertyFlags2",
      "declaredBy": "BSLightingShaderProperty"
     },
     {

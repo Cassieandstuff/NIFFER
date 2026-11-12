@@ -10,6 +10,30 @@ using namespace niffer;
 void run_decode_tests() {
     std::printf(" decode\n");
 
+    // Enum and flag names (language 0.4): the shader words read by name through the main schema.
+    {
+        const schema::SchemaSet& s   = schema::Main();
+        const schema::BlockDef*  lit = s.Find("BSLightingShaderProperty");
+        CHECK(lit != nullptr);
+        if (lit) {
+            const schema::TypeDef& layout = s.types[lit->type];
+            const schema::EnumDef* flags2 = nullptr;
+            const schema::EnumDef* type   = nullptr;
+            for (uint16_t i = 0; i < layout.refCount; ++i) {
+                const schema::FieldDef& f = s.fields[layout.ref + i];
+                if (std::strcmp(f.name, "shaderFlags2") == 0) flags2 = s.NamesOf(f);
+                if (std::strcmp(f.name, "shaderType") == 0) type = s.NamesOf(f);
+            }
+            CHECK(flags2 != nullptr && flags2->flags);
+            CHECK(type != nullptr && !type->flags);
+            if (flags2) CHECK(s.NameOf(*flags2, 1ull << 4) == "twoSided");
+            if (type) CHECK(s.NameOf(*type, 4) == "faceGen");
+            if (type) CHECK(s.NameOf(*type, 13).empty());   // unnamed
+        }
+        CHECK(view::ShaderPropertyFlags2::kTwoSided == (1ull << 4));
+        CHECK(view::LightingShaderType::kHairTint == 6ull);
+    }
+
     // BSVertexDesc: the barrel01 static-mesh desc (0x0001B00000650407).
     {
         VertexLayout L = DecodeVertexDesc(0x0001B00000650407ull);

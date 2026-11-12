@@ -611,8 +611,8 @@ inline constexpr FieldDef kFields[] = {
     { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 238
     { "extraData", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 239
     { "controller", 94, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 240
-    { "shaderFlags1", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 241
-    { "shaderFlags2", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 242
+    { "shaderFlags1", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, 1 },  // 241
+    { "shaderFlags2", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, 2 },  // 242
     { "uvOffset", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 243
     { "uvScale", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 244
     { "texture", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 245
@@ -691,12 +691,12 @@ inline constexpr FieldDef kFields[] = {
     { "collisionObject", 95, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 318
     { "children", 96, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 319
     { "effects", 98, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 320
-    { "shaderType", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 321
+    { "shaderType", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, 0 },  // 321
     { "name", 14, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 322
     { "extraData", 92, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 323
     { "controller", 94, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 324
-    { "shaderFlags1", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 325
-    { "shaderFlags2", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 326
+    { "shaderFlags1", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, 1 },  // 325
+    { "shaderFlags2", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, 2 },  // 326
     { "uvOffset", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 327
     { "uvScale", 65, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 328
     { "textureSet", 135, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 329
@@ -1676,6 +1676,96 @@ inline constexpr CaseDef kCases[] = {
 inline constexpr int64_t kWhens[] = { 5ll, 1ll, 2ll, 3ll, 5ll, 1ll, 2ll, 3ll, 5ll, 1ll, 3ll, 0ll, 2ll, 3ll, 4ll, 1ll, 5ll, 6ll, 11ll, 14ll, 16ll, 4ll, 1ll, 3ll, 0ll, 8ll };
 inline constexpr uint16_t kLinks[] = { 58, 59, 70, 107, 108, 121, 118, 48, 66, 128, 132, 111, 113, 76, 112, 8, 18, 39, 45, 49, 18, 78, 55, 58, 59, 70, 72, 107, 108, 121, 123, 8, 18, 38, 106, 23, 25, 22, 41, 74, 106, 101, 58, 55, 58, 59, 70, 8, 73, 85, 97, 57, 64, 65, 117, 63, 67, 102, 99, 104, 55, 58, 43, 83, 109, 120, 147, 147, 148, 151, 134, 129, 131, 133, 136, 137, 138, 141, 142, 143, 144, 152, 154, 124, 127, 135 };
 inline constexpr uint16_t kSums[] = { 15, 16, 15, 16 };
+inline constexpr EnumValueDef kEnumValues[] = {
+    { "default", 0ull },  // 0
+    { "environmentMap", 1ull },  // 1
+    { "glowMap", 2ull },  // 2
+    { "parallax", 3ull },  // 3
+    { "faceGen", 4ull },  // 4
+    { "faceGenRGBTint", 5ull },  // 5
+    { "hairTint", 6ull },  // 6
+    { "parallaxOcc", 7ull },  // 7
+    { "multiTexLand", 8ull },  // 8
+    { "lodLand", 9ull },  // 9
+    { "unknown", 10ull },  // 10
+    { "multilayerParallax", 11ull },  // 11
+    { "treeAnim", 12ull },  // 12
+    { "multiIndexTriShapeSnow", 14ull },  // 13
+    { "lodObjectsHD", 15ull },  // 14
+    { "eye", 16ull },  // 15
+    { "cloud", 17ull },  // 16
+    { "lodLandNoise", 18ull },  // 17
+    { "multiTexLandLODBlend", 19ull },  // 18
+    { "specular", 1ull },  // 19
+    { "skinned", 2ull },  // 20
+    { "tempRefraction", 4ull },  // 21
+    { "vertexAlpha", 8ull },  // 22
+    { "grayscaleToPaletteColor", 16ull },  // 23
+    { "grayscaleToPaletteAlpha", 32ull },  // 24
+    { "falloff", 64ull },  // 25
+    { "envMap", 128ull },  // 26
+    { "receiveShadows", 256ull },  // 27
+    { "castShadows", 512ull },  // 28
+    { "face", 1024ull },  // 29
+    { "parallax", 2048ull },  // 30
+    { "modelSpaceNormals", 4096ull },  // 31
+    { "nonProjectiveShadows", 8192ull },  // 32
+    { "multiTextureLandscape", 16384ull },  // 33
+    { "refraction", 32768ull },  // 34
+    { "refractionFalloff", 65536ull },  // 35
+    { "eyeReflect", 131072ull },  // 36
+    { "hairTint", 262144ull },  // 37
+    { "screendoorAlphaFade", 524288ull },  // 38
+    { "localMapClear", 1048576ull },  // 39
+    { "faceGenRGBTint", 2097152ull },  // 40
+    { "ownEmit", 4194304ull },  // 41
+    { "projectedUV", 8388608ull },  // 42
+    { "multipleTextures", 16777216ull },  // 43
+    { "remappableTextures", 33554432ull },  // 44
+    { "decal", 67108864ull },  // 45
+    { "dynamicDecal", 134217728ull },  // 46
+    { "parallaxOcclusion", 268435456ull },  // 47
+    { "externalEmittance", 536870912ull },  // 48
+    { "softEffect", 1073741824ull },  // 49
+    { "zBufferTest", 2147483648ull },  // 50
+    { "zBufferWrite", 1ull },  // 51
+    { "lodLandscape", 2ull },  // 52
+    { "lodObjects", 4ull },  // 53
+    { "noFade", 8ull },  // 54
+    { "twoSided", 16ull },  // 55
+    { "vertexColors", 32ull },  // 56
+    { "glowMap", 64ull },  // 57
+    { "assumeShadowmask", 128ull },  // 58
+    { "characterLighting", 256ull },  // 59
+    { "multiIndexSnow", 512ull },  // 60
+    { "vertexLighting", 1024ull },  // 61
+    { "uniformScale", 2048ull },  // 62
+    { "fitSlope", 4096ull },  // 63
+    { "billboard", 8192ull },  // 64
+    { "noLODLandBlend", 16384ull },  // 65
+    { "envmapLightFade", 32768ull },  // 66
+    { "wireframe", 65536ull },  // 67
+    { "weaponBlood", 131072ull },  // 68
+    { "hideOnLocalMap", 262144ull },  // 69
+    { "premultAlpha", 524288ull },  // 70
+    { "cloudLOD", 1048576ull },  // 71
+    { "anisotropicLighting", 2097152ull },  // 72
+    { "noTransparencyMultiSample", 4194304ull },  // 73
+    { "menuScreen", 8388608ull },  // 74
+    { "multiLayerParallax", 16777216ull },  // 75
+    { "softLighting", 33554432ull },  // 76
+    { "rimLighting", 67108864ull },  // 77
+    { "backLighting", 134217728ull },  // 78
+    { "snow", 268435456ull },  // 79
+    { "treeAnim", 536870912ull },  // 80
+    { "effectLighting", 1073741824ull },  // 81
+    { "hdLODObjects", 2147483648ull },  // 82
+};
+inline constexpr EnumDef kEnums[] = {
+    { "LightingShaderType", false, 0, 19, "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderMaterial::Feature" },  // 0
+    { "ShaderPropertyFlags1", true, 19, 32, "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 0-31 (stored bit n = enum bit 0+n)" },  // 1
+    { "ShaderPropertyFlags2", true, 51, 32, "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 32-63 (stored bit n = enum bit 32+n)" },  // 2
+};
 
 inline constexpr BlockDef kBlocks[] = {
     { "BSBehaviorGraphExtraData", 66, 90, 1, false },  // 0
@@ -1835,6 +1925,6 @@ inline constexpr BlockDef kBlocks[] = {
     { "bhkTransformShape", 150, 357, 1, false },  // 154
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.4.0", "0.3" };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.5.0", "0.4", kEnums, kEnumValues };
 
 }  // namespace niffer::schema::tables

@@ -76,7 +76,10 @@ were deleted in migration step 6). Design and migration history:
   (distinct selector values, sizes per selector, value shapes per word), then describe exactly
   what the data shows. Name a field from first-party code (SCT, NIFFER's helpers), from its
   layout, or from CB-SDK's recovered loaders (the exe's own code path), cited by commit in
-  docs/*-provenance.md (allowed by the owner, 2026-11-10); anything else is `unknownN`.
+  docs/*-provenance.md (allowed by the owner, 2026-11-10); anything else is `unknownN`. One exception, the owner's
+  (2026-11-11): the shader flag bits and the lighting shader type are named from CommonLibSSE-NG (MIT), cited by commit in
+  the enum descriptors and docs/naming.md, with CB-SDK's per-bit verdict against the exe. An `enum` descriptor's `source:`
+  says where every name in it comes from.
 - **Packed arrays:** mark large arrays `packed: true`. Read them through `Visit`, `GetAt`,
   `Count`, `Has` or the views, never through `Value::items`.
 - A descriptor change must keep `roundtrip` **GREEN**.

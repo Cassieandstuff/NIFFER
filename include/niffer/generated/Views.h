@@ -11,6 +11,101 @@
 
 namespace niffer::view {
 
+// Values: LightingShaderType.  // CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderMaterial::Feature
+struct LightingShaderType {
+    static constexpr uint64_t kDefault = 0ull;
+    static constexpr uint64_t kEnvironmentMap = 1ull;
+    static constexpr uint64_t kGlowMap = 2ull;
+    static constexpr uint64_t kParallax = 3ull;
+    static constexpr uint64_t kFaceGen = 4ull;
+    static constexpr uint64_t kFaceGenRGBTint = 5ull;
+    static constexpr uint64_t kHairTint = 6ull;
+    static constexpr uint64_t kParallaxOcc = 7ull;
+    static constexpr uint64_t kMultiTexLand = 8ull;
+    static constexpr uint64_t kLodLand = 9ull;
+    static constexpr uint64_t kUnknown = 10ull;
+    static constexpr uint64_t kMultilayerParallax = 11ull;
+    static constexpr uint64_t kTreeAnim = 12ull;
+    static constexpr uint64_t kMultiIndexTriShapeSnow = 14ull;
+    static constexpr uint64_t kLodObjectsHD = 15ull;
+    static constexpr uint64_t kEye = 16ull;
+    static constexpr uint64_t kCloud = 17ull;
+    static constexpr uint64_t kLodLandNoise = 18ull;
+    static constexpr uint64_t kMultiTexLandLODBlend = 19ull;
+};
+
+// Bits of a flags word: ShaderPropertyFlags1.  // CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 0-31 (stored bit n = enum bit 0+n)
+struct ShaderPropertyFlags1 {
+    static constexpr uint64_t kSpecular = 1ull << 0;
+    static constexpr uint64_t kSkinned = 1ull << 1;
+    static constexpr uint64_t kTempRefraction = 1ull << 2;
+    static constexpr uint64_t kVertexAlpha = 1ull << 3;
+    static constexpr uint64_t kGrayscaleToPaletteColor = 1ull << 4;
+    static constexpr uint64_t kGrayscaleToPaletteAlpha = 1ull << 5;
+    static constexpr uint64_t kFalloff = 1ull << 6;
+    static constexpr uint64_t kEnvMap = 1ull << 7;
+    static constexpr uint64_t kReceiveShadows = 1ull << 8;
+    static constexpr uint64_t kCastShadows = 1ull << 9;
+    static constexpr uint64_t kFace = 1ull << 10;
+    static constexpr uint64_t kParallax = 1ull << 11;
+    static constexpr uint64_t kModelSpaceNormals = 1ull << 12;
+    static constexpr uint64_t kNonProjectiveShadows = 1ull << 13;
+    static constexpr uint64_t kMultiTextureLandscape = 1ull << 14;
+    static constexpr uint64_t kRefraction = 1ull << 15;
+    static constexpr uint64_t kRefractionFalloff = 1ull << 16;
+    static constexpr uint64_t kEyeReflect = 1ull << 17;
+    static constexpr uint64_t kHairTint = 1ull << 18;
+    static constexpr uint64_t kScreendoorAlphaFade = 1ull << 19;
+    static constexpr uint64_t kLocalMapClear = 1ull << 20;
+    static constexpr uint64_t kFaceGenRGBTint = 1ull << 21;
+    static constexpr uint64_t kOwnEmit = 1ull << 22;
+    static constexpr uint64_t kProjectedUV = 1ull << 23;
+    static constexpr uint64_t kMultipleTextures = 1ull << 24;
+    static constexpr uint64_t kRemappableTextures = 1ull << 25;
+    static constexpr uint64_t kDecal = 1ull << 26;
+    static constexpr uint64_t kDynamicDecal = 1ull << 27;
+    static constexpr uint64_t kParallaxOcclusion = 1ull << 28;
+    static constexpr uint64_t kExternalEmittance = 1ull << 29;
+    static constexpr uint64_t kSoftEffect = 1ull << 30;
+    static constexpr uint64_t kZBufferTest = 1ull << 31;
+};
+
+// Bits of a flags word: ShaderPropertyFlags2.  // CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 32-63 (stored bit n = enum bit 32+n)
+struct ShaderPropertyFlags2 {
+    static constexpr uint64_t kZBufferWrite = 1ull << 0;
+    static constexpr uint64_t kLodLandscape = 1ull << 1;
+    static constexpr uint64_t kLodObjects = 1ull << 2;
+    static constexpr uint64_t kNoFade = 1ull << 3;
+    static constexpr uint64_t kTwoSided = 1ull << 4;
+    static constexpr uint64_t kVertexColors = 1ull << 5;
+    static constexpr uint64_t kGlowMap = 1ull << 6;
+    static constexpr uint64_t kAssumeShadowmask = 1ull << 7;
+    static constexpr uint64_t kCharacterLighting = 1ull << 8;
+    static constexpr uint64_t kMultiIndexSnow = 1ull << 9;
+    static constexpr uint64_t kVertexLighting = 1ull << 10;
+    static constexpr uint64_t kUniformScale = 1ull << 11;
+    static constexpr uint64_t kFitSlope = 1ull << 12;
+    static constexpr uint64_t kBillboard = 1ull << 13;
+    static constexpr uint64_t kNoLODLandBlend = 1ull << 14;
+    static constexpr uint64_t kEnvmapLightFade = 1ull << 15;
+    static constexpr uint64_t kWireframe = 1ull << 16;
+    static constexpr uint64_t kWeaponBlood = 1ull << 17;
+    static constexpr uint64_t kHideOnLocalMap = 1ull << 18;
+    static constexpr uint64_t kPremultAlpha = 1ull << 19;
+    static constexpr uint64_t kCloudLOD = 1ull << 20;
+    static constexpr uint64_t kAnisotropicLighting = 1ull << 21;
+    static constexpr uint64_t kNoTransparencyMultiSample = 1ull << 22;
+    static constexpr uint64_t kMenuScreen = 1ull << 23;
+    static constexpr uint64_t kMultiLayerParallax = 1ull << 24;
+    static constexpr uint64_t kSoftLighting = 1ull << 25;
+    static constexpr uint64_t kRimLighting = 1ull << 26;
+    static constexpr uint64_t kBackLighting = 1ull << 27;
+    static constexpr uint64_t kSnow = 1ull << 28;
+    static constexpr uint64_t kTreeAnim = 1ull << 29;
+    static constexpr uint64_t kEffectLighting = 1ull << 30;
+    static constexpr uint64_t kHdLODObjects = 1ull << 31;
+};
+
 class AvTransform;
 class BSBoneLODExtraDataBoneLODs;
 class BSDismemberSkinInstancePartitions;

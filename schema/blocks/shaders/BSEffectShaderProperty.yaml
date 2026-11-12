@@ -4,8 +4,8 @@ doc: >-
   The effect (unlit) shader. All 8,362 SSE instances parse exactly. The flags and UV fields sit
   where BSLightingShaderProperty's do; both strings are .dds paths or empty.
 fields:
-  - { name: shaderFlags1, type: u32 }
-  - { name: shaderFlags2, type: u32 }
+  - { name: shaderFlags1, type: u32, flags: ShaderPropertyFlags1 }
+  - { name: shaderFlags2, type: u32, flags: ShaderPropertyFlags2 }
   - { name: uvOffset, type: Vec2 }
   - { name: uvScale, type: Vec2 }
   - { name: texture, type: sizedstring, doc: "A .dds path, or empty." }

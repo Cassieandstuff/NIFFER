@@ -157,6 +157,6 @@ inline constexpr BlockDef kBlocks[] = {
     { "TShared", 0, 45, 0, false },  // 8
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.0.1", "0.3" };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.0.1", "0.4", std::span<const EnumDef>{}, std::span<const EnumValueDef>{} };
 
 }  // namespace niffer_test::tables

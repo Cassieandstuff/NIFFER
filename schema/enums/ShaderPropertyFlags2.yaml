@@ -1,0 +1,40 @@
+enum: ShaderPropertyFlags2
+flags: true
+source: "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 32-63 (stored bit n = enum bit 32+n)"
+doc: >-
+  The shader property's second flags word as a NIF stores it (SLSF2). Named from CommonLibSSE-NG's
+  runtime flag enum, whose low and high 32 bits these two stored words are: the base shader loader (0x14147b380) reads
+  both as one little-endian 64-bit word (CB-SDK verdict, corpus 1.6.1170). Each bit's evidence is in docs/naming.md.
+values:
+  - { name: zBufferWrite, bit: 0, doc: "BK's Model.cpp reads this bit the same way." }
+  - { name: lodLandscape, bit: 1 }
+  - { name: lodObjects, bit: 2 }
+  - { name: noFade, bit: 3 }
+  - { name: twoSided, bit: 4, doc: "BK's Model.cpp reads this bit the same way." }
+  - { name: vertexColors, bit: 5, doc: "BK's Model.cpp reads this bit the same way." }
+  - { name: glowMap, bit: 6, doc: "BK's Model.cpp reads this bit the same way." }
+  - { name: assumeShadowmask, bit: 7 }
+  - { name: characterLighting, bit: 8, doc: "Sets the character-light technique bit (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))." }
+  - { name: multiIndexSnow, bit: 9 }
+  - { name: vertexLighting, bit: 10 }
+  - { name: uniformScale, bit: 11 }
+  - { name: fitSlope, bit: 12 }
+  - { name: billboard, bit: 13 }
+  - { name: noLODLandBlend, bit: 14 }
+  - { name: envmapLightFade, bit: 15 }
+  - { name: wireframe, bit: 16 }
+  - { name: weaponBlood, bit: 17 }
+  - { name: hideOnLocalMap, bit: 18 }
+  - { name: premultAlpha, bit: 19 }
+  - { name: cloudLOD, bit: 20 }
+  - { name: anisotropicLighting, bit: 21 }
+  - { name: noTransparencyMultiSample, bit: 22, doc: "Not tested by the lighting code, so the name rests on the source alone; not rim lighting (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))." }
+  - { name: menuScreen, bit: 23, doc: "Set by the game at run time (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))." }
+  - { name: multiLayerParallax, bit: 24 }
+  - { name: softLighting, bit: 25, doc: "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)." }
+  - { name: rimLighting, bit: 26, doc: "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)." }
+  - { name: backLighting, bit: 27, doc: "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)." }
+  - { name: snow, bit: 28, doc: "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)." }
+  - { name: treeAnim, bit: 29 }
+  - { name: effectLighting, bit: 30 }
+  - { name: hdLODObjects, bit: 31 }

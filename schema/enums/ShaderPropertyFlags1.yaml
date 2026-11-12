@@ -3,8 +3,8 @@ flags: true
 source: "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 0-31 (stored bit n = enum bit 0+n)"
 doc: >-
   The shader property's first flags word as a NIF stores it (SLSF1). Named from CommonLibSSE-NG's
-  runtime flag enum, whose low and high 32 bits these two stored words are taken to be: UNVERIFIED against the exe
-  except where a value's doc says a first-party reader agrees (docs/naming.md, 'Shader flags').
+  runtime flag enum, whose low and high 32 bits these two stored words are: the base shader loader (0x14147b380) reads
+  both as one little-endian 64-bit word (CB-SDK verdict, corpus 1.6.1170). Each bit's evidence is in docs/naming.md.
 values:
   - { name: specular, bit: 0 }
   - { name: skinned, bit: 1 }
@@ -24,7 +24,7 @@ values:
   - { name: refraction, bit: 15 }
   - { name: refractionFalloff, bit: 16 }
   - { name: eyeReflect, bit: 17 }
-  - { name: hairTint, bit: 18, doc: "IN DOUBT: another reading of the format disagrees; to be checked against the exe." }
+  - { name: hairTint, bit: 18, doc: "Selects the hair-tint material (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))." }
   - { name: screendoorAlphaFade, bit: 19 }
   - { name: localMapClear, bit: 20 }
   - { name: faceGenRGBTint, bit: 21 }

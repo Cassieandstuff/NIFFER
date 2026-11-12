@@ -2557,7 +2557,7 @@
    "name": "ShaderPropertyFlags1",
    "flags": true,
    "source": "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 0-31 (stored bit n = enum bit 0+n)",
-   "doc": "The shader property's first flags word as a NIF stores it (SLSF1). Named from CommonLibSSE-NG's runtime flag enum, whose low and high 32 bits these two stored words are taken to be: UNVERIFIED against the exe except where a value's doc says a first-party reader agrees (docs/naming.md, 'Shader flags').",
+   "doc": "The shader property's first flags word as a NIF stores it (SLSF1). Named from CommonLibSSE-NG's runtime flag enum, whose low and high 32 bits these two stored words are: the base shader loader (0x14147b380) reads both as one little-endian 64-bit word (CB-SDK verdict, corpus 1.6.1170). Each bit's evidence is in docs/naming.md.",
    "values": [
     {
      "name": "specular",
@@ -2636,7 +2636,7 @@
     {
      "name": "hairTint",
      "bit": 18,
-     "doc": "IN DOUBT: another reading of the format disagrees; to be checked against the exe."
+     "doc": "Selects the hair-tint material (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))."
     },
     {
      "name": "screendoorAlphaFade",
@@ -2699,7 +2699,7 @@
    "name": "ShaderPropertyFlags2",
    "flags": true,
    "source": "CommonLibSSE-NG 4.15.0 (530bbc73e514251ce96be899375d59f6ccd9fe9f), RE::BSShaderProperty::EShaderPropertyFlag, bits 32-63 (stored bit n = enum bit 32+n)",
-   "doc": "The shader property's second flags word as a NIF stores it (SLSF2). Named from CommonLibSSE-NG's runtime flag enum, whose low and high 32 bits these two stored words are taken to be: UNVERIFIED against the exe except where a value's doc says a first-party reader agrees (docs/naming.md, 'Shader flags').",
+   "doc": "The shader property's second flags word as a NIF stores it (SLSF2). Named from CommonLibSSE-NG's runtime flag enum, whose low and high 32 bits these two stored words are: the base shader loader (0x14147b380) reads both as one little-endian 64-bit word (CB-SDK verdict, corpus 1.6.1170). Each bit's evidence is in docs/naming.md.",
    "values": [
     {
      "name": "zBufferWrite",
@@ -2740,7 +2740,7 @@
     {
      "name": "characterLighting",
      "bit": 8,
-     "doc": "IN DOUBT: another reading of the format disagrees; to be checked against the exe."
+     "doc": "Sets the character-light technique bit (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))."
     },
     {
      "name": "multiIndexSnow",
@@ -2797,12 +2797,12 @@
     {
      "name": "noTransparencyMultiSample",
      "bit": 22,
-     "doc": "IN DOUBT: BK's Model.cpp reads stored SLSF2 bit 22 as rim lighting; this source puts rim lighting at bit 26 (58)."
+     "doc": "Not tested by the lighting code, so the name rests on the source alone; not rim lighting (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))."
     },
     {
      "name": "menuScreen",
      "bit": 23,
-     "doc": "IN DOUBT: another reading of the format disagrees; to be checked against the exe."
+     "doc": "Set by the game at run time (CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0))."
     },
     {
      "name": "multiLayerParallax",
@@ -2810,20 +2810,23 @@
     },
     {
      "name": "softLighting",
-     "bit": 25
+     "bit": 25,
+     "doc": "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)."
     },
     {
      "name": "rimLighting",
-     "bit": 26
+     "bit": 26,
+     "doc": "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)."
     },
     {
      "name": "backLighting",
-     "bit": 27
+     "bit": 27,
+     "doc": "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)."
     },
     {
      "name": "snow",
      "bit": 28,
-     "doc": "IN DOUBT: BK's Model.cpp reads stored SLSF2 bit 28 as soft lighting; this source puts soft lighting at bit 25 (57) and snow here."
+     "doc": "CB-SDK verdict (corpus 1.6.1170, GetRenderPasses 0x1414adfb0)."
     },
     {
      "name": "treeAnim",

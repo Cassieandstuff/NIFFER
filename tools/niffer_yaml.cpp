@@ -11,15 +11,17 @@
 //                              table's order, byte-identical where the file
 //                              used first-use order, and decompiling the result
 //                              gives the same text again.
+//                              NIFFER_TOOL_THREADS workers, by default half the cores.
 //
 // Build: -DNIFFER_BUILD_YAML=ON (on by default when NIFFER is the top level).
 #include <niffer-yaml/NifferYaml.h>
+
+#include "ToolThreads.h"
 
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cstring>
-#include <execution>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -231,8 +233,7 @@ static int Roundtrip(const fs::path& root, yaml::Mode mode) {
                 root.string().c_str());
     const auto t0 = std::chrono::steady_clock::now();
     std::vector<Result> results(files.size());
-    std::transform(std::execution::par, files.begin(), files.end(), results.begin(),
-                   [&](const fs::path& p) { return RoundtripOne(p, mode); });
+    ParallelMap(files, results, [&](const fs::path& p) { return RoundtripOne(p, mode); });
     const double secs = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
 
     size_t same = 0, upTo = 0, differs = 0, refused = 0, skipped = 0, shown = 0;

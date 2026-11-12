@@ -22,6 +22,7 @@
 //
 // Build: -DNIFFER_BUILD_TOOLS=ON  →  niffer-tool.exe
 #include "Collision.h"
+#include "ToolThreads.h"
 #include "Stream.h"
 
 #include <niffer/Niffer.h>
@@ -67,31 +68,6 @@ static std::vector<fs::path> CollectByExt(const fs::path& root, const char* want
     return out;
 }
 static std::vector<fs::path> CollectNifs(const fs::path& root) { return CollectByExt(root, ".nif"); }
-
-// Worker threads for the corpus commands: NIFFER_TOOL_THREADS (1-256), else half
-// the machine, so a gate never takes every core.
-static unsigned ToolThreads() {
-    if (const char* e = std::getenv("NIFFER_TOOL_THREADS")) {
-        char* end = nullptr;
-        const long v = std::strtol(e, &end, 10);
-        if (end != e && *end == '\0' && v >= 1 && v <= 256) return static_cast<unsigned>(v);
-    }
-    return std::max(1u, std::thread::hardware_concurrency() / 2);
-}
-
-// out[i] = fn(in[i]) on ToolThreads() workers, each taking the next index.
-template <class In, class Out, class Fn>
-static void ParallelMap(const std::vector<In>& in, std::vector<Out>& out, Fn fn) {
-    std::atomic<size_t> next{ 0 };
-    auto work = [&] {
-        for (size_t i = next.fetch_add(1); i < in.size(); i = next.fetch_add(1)) out[i] = fn(in[i]);
-    };
-    const size_t n = std::min<size_t>(ToolThreads(), std::max<size_t>(1, in.size()));
-    std::vector<std::thread> pool;
-    for (size_t t = 1; t < n; ++t) pool.emplace_back(work);
-    work();
-    for (auto& t : pool) t.join();
-}
 
 // Parse only the header (no version whitelist) so histogram sees every file.
 static bool HeaderOnly(const std::vector<uint8_t>& bytes, Header& h) {

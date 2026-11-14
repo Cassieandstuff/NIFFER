@@ -69,7 +69,8 @@ were deleted in migration step 6). Design and migration history:
   edit `include/niffer/generated/`, `hpp/generated/`, `tests/generated/` or `schema.json` by
   hand. Regenerate with the `niffer-schemagen` target (Python 3 + PyYAML) and commit them in the
   same change as the YAML. CTest's `*-fresh` checks fail on stale output.
-- **Claims about data:** `to:`, `ref` vs `ptr`, `compute:`, and any field meaning describe the
+- **Claims about data:** `to:`, `ref` vs `ptr`, `compute:`, `refs: none` on a `bytes` field (language 0.5:
+  the payload holds no block index, so renumbering edits may pass over it), and any field meaning describe the
   data. Add them only when the gate confirms them on the vanilla corpus. `roundtrip --refs` lists the
   observed target classes of every ref field that has no `to:` yet.
 - **New layouts are measured first:** before modeling a payload, measure it over the corpus
@@ -108,6 +109,12 @@ were deleted in migration step 6). Design and migration history:
     motionType and layer relations bhkRigidBody's docs claim hold (maxLinearVelocity is 1000002
     in 1,086 of 1,086 keyframed bodies with no mass and in no other).
   - `niffer-tool tri-roundtrip <dir>`: 569 of 569 TRIs byte-identical.
+  - `niffer-tool tangents-validate <dir>`: 33.4M vertices. The tangent field follows +dP/dV (95%), the W-slot
+    bitangent +dP/dU (97%); W equals the stored frame's sign wherever that sign isn't ambiguous; decode then encode
+    changes 0 of 22,760 files.
+  - `niffer-tool edit-validate <dir>`: insert and remove at the start, middle and end change 0 files' bytes and move 0
+    refs; RemoveCollision (9,742 files, 47,400 blocks) and AttachConvexCollision then reload fail 0 times. Renumbering
+    edits refuse on files with unclaimed opaque `bytes` (1,773 of 22,760); appending always works.
 - With `-DNIFFER_BUILD_YAML=ON` (the default at top level), over the same corpus (also
   `NIFFER_TOOL_THREADS` workers):
   - `niffer-yaml roundtrip <dir>` (faithful): decompile → compile → save. 22,760 of 22,760

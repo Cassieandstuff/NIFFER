@@ -19,6 +19,11 @@
 //                          convention in collision::Options against the default.
 //   bodies-validate <dir>  ExtractBodies against the corpus: leaf counts equal to
 //                          ExtractCollision's, and the motion and layer evidence.
+//   tangents-validate <dir>
+//                          each shape's stored tangent frame against its UVs, and
+//                          DecodeShapeMesh's handedness against the stored frame.
+//   edit-validate <dir>    block insert/remove, RemoveCollision and
+//                          AttachConvexCollision on every file.
 //
 // Build: -DNIFFER_BUILD_TOOLS=ON  →  niffer-tool.exe
 #include "Collision.h"
@@ -856,6 +861,361 @@ static int CmdBodiesValidate(const fs::path& root) {
     return mismatchFiles == 0 ? 0 : 1;
 }
 
+// ── tangents-validate ─────────────────────────────────────────────────────────
+// The tangent frame each shape stores, against the frame its UVs give. Per
+// vertex: the stored normal N, tangent T and the bitangent B the three W slots
+// carry (positionW, normalW, tangentW), and from the triangles around it the
+// area-weighted UV gradients dP/dU and dP/dV. Counts which of ±dP/dU, ±dP/dV
+// each of T and B follows, how often B is unit and orthogonal to N and T, and
+// whether the stored handedness sign((N x T) . B) agrees with the UV
+// handedness sign((N x dP/dU) . dP/dV) — the evidence for DecodedMesh's
+// tangent W (docs/tangent-space.md).
+struct TangentResult {
+    bool   loaded = false;
+    size_t shapes = 0, vertices = 0;
+    size_t bUnit = 0, bOrthoN = 0, bOrthoT = 0;
+    size_t hPos = 0, hNeg = 0;
+    // [T or B][+U, -U, +V, -V, none]
+    std::array<std::array<size_t, 5>, 2> follows{};
+    size_t uvJudged = 0, uvAgree = 0, uvMirrored = 0, uvMirroredAgree = 0;
+    size_t wMatches = 0;   // DecodeShapeMesh's W equals the stored handedness
+    size_t ambiguous = 0;  // |(N x T) . B| < 0.05: the sign is noise
+    size_t encodeFailed = 0;
+    bool   encodeSame = true;   // EncodeTangentSpace of the decoded frame leaves the file's bytes
+    size_t computedW = 0, computedT = 0, computedB = 0;   // ComputeTangentSpace against the stored frame
+    std::string mirroredExample;
+};
+
+static TangentResult TangentsOne(const fs::path& p) {
+    TangentResult r;
+    const auto bytes = ReadFile(p);
+    auto nif = NifFile::Load(bytes);
+    if (!nif) return r;
+    r.loaded = true;
+    for (Block& b : nif->blocks) {
+        auto shape = view::BSTriShape::From(b);
+        if (!shape) continue;
+        const DecodedMesh m = DecodeShapeMesh(*nif, b);
+        const size_t nv = m.numVertices;
+        if (!nv || m.normals.size() != nv * 3 || m.tangents.size() != nv * 4 || m.uvs.size() != nv * 2 ||
+            m.bitangents.size() != nv * 3 || m.positions.size() != nv * 3)
+            continue;
+        ++r.shapes;
+        r.encodeFailed += !EncodeTangentSpace(*nif, b, m);
+        DecodedMesh computed = m;
+        ComputeTangentSpace(computed);
+        for (size_t v = 0; v < nv; ++v) {
+            r.computedW += computed.tangents[v * 4 + 3] == m.tangents[v * 4 + 3];
+            float ct = 0, cb = 0;
+            for (int k = 0; k < 3; ++k) {
+                ct += computed.tangents[v * 4 + k] * m.tangents[v * 4 + k];
+                cb += computed.bitangents[v * 3 + k] * m.bitangents[v * 3 + k];
+            }
+            r.computedT += ct > 0.9f;
+            r.computedB += cb > 0.9f;
+        }
+        std::vector<std::array<double, 6>> grad(nv, std::array<double, 6>{});
+        for (size_t t = 0; t + 2 < m.triangles.size(); t += 3) {
+            const uint32_t i[3] = { m.triangles[t], m.triangles[t + 1], m.triangles[t + 2] };
+            if (i[0] >= nv || i[1] >= nv || i[2] >= nv) continue;
+            double e1[3], e2[3];
+            for (int k = 0; k < 3; ++k) {
+                e1[k] = m.positions[i[1] * 3 + k] - m.positions[i[0] * 3 + k];
+                e2[k] = m.positions[i[2] * 3 + k] - m.positions[i[0] * 3 + k];
+            }
+            const double du1 = m.uvs[i[1] * 2] - m.uvs[i[0] * 2], dv1 = m.uvs[i[1] * 2 + 1] - m.uvs[i[0] * 2 + 1];
+            const double du2 = m.uvs[i[2] * 2] - m.uvs[i[0] * 2], dv2 = m.uvs[i[2] * 2 + 1] - m.uvs[i[0] * 2 + 1];
+            const double det = du1 * dv2 - du2 * dv1;
+            if (std::abs(det) < 1e-12) continue;
+            // Area-weighted: the unnormalized gradients times |det| (the UV area).
+            const double s = det > 0 ? 1.0 : -1.0;
+            double su[3], sv[3];
+            for (int k = 0; k < 3; ++k) {
+                su[k] = (e1[k] * dv2 - e2[k] * dv1) * s;
+                sv[k] = (e2[k] * du1 - e1[k] * du2) * s;
+            }
+            for (uint32_t v : i)
+                for (int k = 0; k < 3; ++k) { grad[v][k] += su[k]; grad[v][3 + k] += sv[k]; }
+        }
+        auto dot = [](const double* a, const double* c) { return a[0] * c[0] + a[1] * c[1] + a[2] * c[2]; };
+        auto unit = [&](double* a) {
+            const double l = std::sqrt(dot(a, a));
+            if (l < 1e-12) return false;
+            for (int k = 0; k < 3; ++k) a[k] /= l;
+            return true;
+        };
+        for (size_t v = 0; v < nv; ++v) {
+            ++r.vertices;
+            double N[3], T[3], B[3];
+            for (int k = 0; k < 3; ++k) {
+                N[k] = m.normals[v * 3 + k];
+                T[k] = m.tangents[v * 4 + k];
+                B[k] = m.bitangents[v * 3 + k];
+            }
+            const double bl = std::sqrt(dot(B, B));
+            r.bUnit += std::abs(bl - 1.0) < 0.05;
+            unit(N); unit(T);
+            const bool bOk = unit(B);
+            r.bOrthoN += bOk && std::abs(dot(B, N)) < 0.1;
+            r.bOrthoT += bOk && std::abs(dot(B, T)) < 0.1;
+            const double nxt[3] = { N[1] * T[2] - N[2] * T[1], N[2] * T[0] - N[0] * T[2], N[0] * T[1] - N[1] * T[0] };
+            const double h = dot(nxt, B);
+            (h >= 0 ? r.hPos : r.hNeg) += 1;
+            if (!(std::abs(h) >= 0.05)) ++r.ambiguous;   // also NaN
+            else r.wMatches += (m.tangents[v * 4 + 3] == (h >= 0 ? 1.f : -1.f));
+
+            double U[3] = { grad[v][0], grad[v][1], grad[v][2] }, V[3] = { grad[v][3], grad[v][4], grad[v][5] };
+            if (!unit(U) || !unit(V)) continue;
+            const double* frame[2] = { T, B };
+            for (int f = 0; f < 2; ++f) {
+                const double cu = dot(frame[f], U), cv = dot(frame[f], V);
+                int which = 4;
+                if (cu > 0.7) which = 0; else if (cu < -0.7) which = 1;
+                else if (cv > 0.7) which = 2; else if (cv < -0.7) which = 3;
+                ++r.follows[f][which];
+            }
+            const double nxu[3] = { N[1] * U[2] - N[2] * U[1], N[2] * U[0] - N[0] * U[2], N[0] * U[1] - N[1] * U[0] };
+            const double uvh = dot(nxu, V);
+            if (std::abs(uvh) < 0.3) continue;   // a sheared or degenerate UV frame says nothing
+            ++r.uvJudged;
+            // The NIF's T follows +dP/dV and B +dP/dU, so an unmirrored frame has W = -(UV handedness).
+            const bool agree = (uvh >= 0) != (h >= 0);
+            r.uvAgree += agree;
+            if (h < 0) {
+                ++r.uvMirrored;
+                r.uvMirroredAgree += agree;
+                if (r.mirroredExample.empty() && agree)
+                    r.mirroredExample = "block " + std::to_string(&b - nif->blocks.data()) + " vertex " + std::to_string(v);
+            }
+        }
+    }
+    r.encodeSame = nif->Save() == bytes;
+    return r;
+}
+
+static int CmdTangentsValidate(const fs::path& root) {
+    const auto files = CollectNifs(root);
+    std::printf("tangents-validate: %zu .nif files under %s (%u threads)\n", files.size(), root.string().c_str(),
+                ToolThreads());
+    std::vector<TangentResult> results(files.size());
+    ParallelMap(files, results, [](const fs::path& p) { return TangentsOne(p); });
+    TangentResult t;
+    size_t loaded = 0, mirroredFiles = 0, encodeChanged = 0;
+    for (size_t i = 0; i < results.size(); ++i) {
+        const TangentResult& r = results[i];
+        if (!r.loaded) continue;
+        ++loaded;
+        t.shapes += r.shapes; t.vertices += r.vertices;
+        t.bUnit += r.bUnit; t.bOrthoN += r.bOrthoN; t.bOrthoT += r.bOrthoT;
+        t.hPos += r.hPos; t.hNeg += r.hNeg; t.wMatches += r.wMatches; t.ambiguous += r.ambiguous;
+        t.encodeFailed += r.encodeFailed;
+        t.computedW += r.computedW; t.computedT += r.computedT; t.computedB += r.computedB;
+        if (!r.encodeSame && ++encodeChanged <= 5) std::printf("  ENCODE CHANGED %s\n", files[i].string().c_str());
+        for (int f = 0; f < 2; ++f)
+            for (int k = 0; k < 5; ++k) t.follows[f][k] += r.follows[f][k];
+        t.uvJudged += r.uvJudged; t.uvAgree += r.uvAgree;
+        t.uvMirrored += r.uvMirrored; t.uvMirroredAgree += r.uvMirroredAgree;
+        if (!r.mirroredExample.empty() && ++mirroredFiles <= 5)
+            std::printf("  mirrored UVs: %s (%s)\n", files[i].string().c_str(), r.mirroredExample.c_str());
+    }
+    std::printf("\n── tangents-validate summary ──\n");
+    std::printf("  files        %zu loaded; %zu shapes with uv, normal and tangent; %zu vertices\n", loaded, t.shapes,
+                t.vertices);
+    std::printf("  bitangent    unit (±0.05) %zu, orthogonal to N (|cos| < 0.1) %zu, to T %zu\n", t.bUnit, t.bOrthoN,
+                t.bOrthoT);
+    std::printf("  handedness   sign((N x T) . B): +1 %zu, -1 %zu; DecodedMesh W equal to it %zu\n", t.hPos, t.hNeg,
+                t.wMatches);
+    std::printf("               (%zu vertices with |(N x T) . B| < 0.05 or not finite not compared)\n", t.ambiguous);
+    std::printf("  encode       EncodeTangentSpace of the decoded frame: %zu shapes refused, %zu files' bytes changed\n",
+                t.encodeFailed, encodeChanged);
+    std::printf("  recompute    ComputeTangentSpace vs stored: W equal %zu, T within 25 deg %zu, B within 25 deg %zu\n",
+                t.computedW, t.computedT, t.computedB);
+    const char* names[5] = { "+dP/dU", "-dP/dU", "+dP/dV", "-dP/dV", "none (|cos| <= 0.7)" };
+    for (int f = 0; f < 2; ++f) {
+        std::printf("  %s follows ", f ? "B" : "T");
+        for (int k = 0; k < 5; ++k) std::printf(" %s %zu%s", names[k], t.follows[f][k], k < 4 ? "," : "\n");
+    }
+    std::printf("  vs UVs       %zu vertices judged; W = -sign((N x dP/dU) . dP/dV) in %zu; "
+                "%zu with W = -1 (mirrored) in %zu files, %zu of them matching their UVs\n",
+                t.uvJudged, t.uvAgree, t.uvMirrored, mirroredFiles, t.uvMirroredAgree);
+    return t.wMatches == t.vertices - t.ambiguous && t.encodeFailed == 0 && encodeChanged == 0 ? 0 : 1;
+}
+
+// ── edit-validate ─────────────────────────────────────────────────────────────
+// NifFile's block editing over the corpus. Per file: a new block inserted at the
+// start, the middle and the end and removed again saves the original bytes, and
+// while it is in, every other block's refs still reach the same classes; the
+// root's collision object removed with what it owns leaves every ref in range
+// and on a declared target; AttachConvexCollision on the root (replacing what is
+// there) reloads with every block modeled, the same bytes on re-save, and
+// ExtractBodies reading back the body written. Also the header facts removal
+// relies on: strings no stringref uses, unused block types, maxStringLength.
+struct EditResult {
+    bool loaded = false, raw = false;
+    bool insertRemoveOk = true, signatureOk = true, removeTreeOk = true, attachOk = true;
+    bool hadCollision = false;
+    size_t removedBlocks = 0;
+    bool unusedStrings = false, unusedTypes = false, maxStringExact = true;
+    std::string why;
+};
+
+// Each block's ref targets (class names, "-" for null), in order: what a renumbering must keep.
+static std::vector<std::vector<std::string>> RefSignature(const NifFile& nif, int32_t skip = -1) {
+    std::vector<std::vector<std::string>> out;
+    for (size_t i = 0; i < nif.blocks.size(); ++i) {
+        if (static_cast<int32_t>(i) == skip) continue;
+        auto& sig = out.emplace_back();
+        nif.blocks[i].ForEachRef([&](int32_t r, bool, std::span<const uint16_t>) {
+            const Block* t = nif.GetBlock(r);
+            sig.push_back(t ? std::string(t->TypeName()) : (r == -1 ? "-" : "out of range"));
+        });
+    }
+    return out;
+}
+
+// Every ref in range and on a declared target; "" when all hold.
+static std::string RefProblem(const NifFile& nif) {
+    std::string bad;
+    for (size_t i = 0; i < nif.blocks.size() && bad.empty(); ++i) {
+        if (!nif.blocks[i].Modeled()) { bad = "block " + std::to_string(i) + " is raw"; break; }
+        nif.blocks[i].ForEachRef([&](int32_t r, bool, std::span<const uint16_t> to) {
+            if (!bad.empty() || r == -1) return;
+            const Block* t = nif.GetBlock(r);
+            if (!t) { bad = "block " + std::to_string(i) + ": ref " + std::to_string(r) + " out of range"; return; }
+            bool ok = to.empty();
+            for (uint16_t c : to) ok = ok || t->IsA(c);
+            if (!ok) bad = "block " + std::to_string(i) + ": ref to " + std::string(t->TypeName()) + " isn't a declared target";
+        });
+        nif.blocks[i].ForEachStringRef([&](uint32_t s) {
+            if (bad.empty() && s != 0xFFFFFFFFu && s >= nif.header.strings.size())
+                bad = "block " + std::to_string(i) + ": string ref out of range";
+        });
+    }
+    for (int32_t r : nif.roots)
+        if (bad.empty() && !nif.GetBlock(r)) bad = "a root is out of range";
+    return bad;
+}
+
+static EditResult EditOne(const fs::path& p) {
+    EditResult r;
+    const auto bytes = ReadFile(p);
+    auto nif = NifFile::Load(bytes);
+    if (!nif) return r;
+    r.loaded = true;
+    if (nif->RawCount()) { r.raw = true; return r; }
+
+    // Header facts.
+    {
+        std::vector<bool> used(nif->header.strings.size(), false);
+        for (const Block& b : nif->blocks)
+            b.ForEachStringRef([&](uint32_t s) { if (s < used.size()) used[s] = true; });
+        for (bool u : used) r.unusedStrings = r.unusedStrings || !u;
+        std::vector<bool> usedType(nif->header.blockTypes.size(), false);
+        for (uint16_t t : nif->header.blockTypeIndex) if (t < usedType.size()) usedType[t] = true;
+        for (bool u : usedType) r.unusedTypes = r.unusedTypes || !u;
+        size_t longest = 0;
+        for (const std::string& s : nif->header.strings) longest = std::max(longest, s.size());
+        r.maxStringExact = nif->header.maxStringLength == longest;
+    }
+
+    // Insert and remove at the start, the middle and the end.
+    const auto original = RefSignature(*nif);
+    const int32_t n = static_cast<int32_t>(nif->blocks.size());
+    for (int32_t at : { 0, n / 2, n }) {
+        auto fresh = Block::Create(schema::Main(), "bhkConvexVerticesShape");
+        if (!fresh) { r.insertRemoveOk = false; r.why = "Create failed"; break; }
+        auto in = nif->InsertBlock(at, std::move(*fresh));
+        if (!in) { r.insertRemoveOk = false; r.why = "insert: " + in.error(); break; }
+        if (RefSignature(*nif, at) != original) { r.signatureOk = false; r.why = "insert at " + std::to_string(at) + " moved a ref"; }
+        auto out = nif->RemoveBlock(at);
+        if (!out) { r.insertRemoveOk = false; r.why = "remove: " + out.error(); break; }
+        if (nif->Save() != bytes) { r.insertRemoveOk = false; r.why = "insert+remove at " + std::to_string(at) + " changed the bytes"; break; }
+    }
+
+    // The root's collision, removed and then replaced.
+    const int32_t root = nif->roots.empty() ? -1 : nif->roots[0];
+    Block* rootBlock = nif->GetBlock(root);
+    if (!rootBlock || !view::NiNode::From(*rootBlock)) return r;
+    {
+        auto copy = NifFile::Load(bytes);
+        if (auto av = view::NiAVObject::From(copy->blocks[static_cast<size_t>(root)]); av && !av->CollisionObject().IsNull()) {
+            r.hadCollision = true;
+            auto removed = RemoveCollision(*copy, root);
+            if (!removed) { r.removeTreeOk = false; r.why = "RemoveCollision: " + removed.error(); }
+            else {
+                r.removedBlocks = *removed;
+                const std::string bad = RefProblem(*copy);
+                if (!bad.empty()) { r.removeTreeOk = false; r.why = "after RemoveCollision: " + bad; }
+                auto again = NifFile::Load(copy->Save());
+                if (!again || again->RawCount() || again->Save() != copy->Save()) { r.removeTreeOk = false; r.why = "after RemoveCollision: doesn't reload"; }
+            }
+        }
+    }
+    ConvexHullInput box;
+    for (int i = 0; i < 8; ++i) {
+        box.points.push_back(i & 1 ? 12.f : -12.f);
+        box.points.push_back(i & 2 ? 20.f : -20.f);
+        box.points.push_back(i & 4 ? 30.f : 2.f);
+    }
+    // The box's 12 faces (corners by bit: x 1, y 2, z 4), wound either way.
+    const uint32_t faces[] = { 0, 1, 3, 0, 3, 2, 4, 6, 7, 4, 7, 5, 0, 4, 5, 0, 5, 1,
+                               2, 3, 7, 2, 7, 6, 0, 2, 6, 0, 6, 4, 1, 5, 7, 1, 7, 3 };
+    box.triangles.assign(std::begin(faces), std::end(faces));
+    CollisionDesc desc;
+    desc.mass = 10;
+    auto attached = AttachConvexCollision(*nif, root, std::span<const ConvexHullInput>(&box, 1), desc);
+    if (!attached) { r.attachOk = false; r.why = "attach: " + attached.error(); return r; }
+    const auto saved = nif->Save();
+    auto back = NifFile::Load(saved);
+    if (!back || back->RawCount()) { r.attachOk = false; r.why = "attached file doesn't reload modeled"; return r; }
+    if (back->Save() != saved) { r.attachOk = false; r.why = "attached file doesn't re-save"; return r; }
+    if (const std::string bad = RefProblem(*back); !bad.empty()) { r.attachOk = false; r.why = "attached: " + bad; return r; }
+    bool found = false;
+    for (const Body& b : ExtractBodies(*back)) {
+        if (b.collisionObject != attached->collisionObject) continue;
+        found = b.targetNode == root && b.motion == BodyMotion::Dynamic && b.mass == 10.f && b.layer == 4 &&
+                b.shapes.size() == 1 && b.shapes[0].kind == BodyShape::Kind::ConvexVertices &&
+                b.shapes[0].vertices.size() == 24;
+    }
+    if (!found) { r.attachOk = false; r.why = "ExtractBodies doesn't read back the attached body"; }
+    return r;
+}
+
+static int CmdEditValidate(const fs::path& root) {
+    const auto files = CollectNifs(root);
+    std::printf("edit-validate: %zu .nif files under %s (%u threads)\n", files.size(), root.string().c_str(),
+                ToolThreads());
+    std::vector<EditResult> results(files.size());
+    ParallelMap(files, results, [](const fs::path& p) { return EditOne(p); });
+    size_t loaded = 0, raw = 0, insertBad = 0, sigBad = 0, removeBad = 0, attachBad = 0, withCollision = 0;
+    size_t unusedStrings = 0, unusedTypes = 0, maxInexact = 0, removedBlocks = 0, shown = 0;
+    for (size_t i = 0; i < results.size(); ++i) {
+        const EditResult& r = results[i];
+        if (!r.loaded) continue;
+        ++loaded;
+        raw += r.raw;
+        insertBad += !r.insertRemoveOk;
+        sigBad += !r.signatureOk;
+        removeBad += !r.removeTreeOk;
+        attachBad += !r.attachOk;
+        withCollision += r.hadCollision;
+        removedBlocks += r.removedBlocks;
+        unusedStrings += r.unusedStrings;
+        unusedTypes += r.unusedTypes;
+        maxInexact += !r.maxStringExact;
+        if (!r.why.empty() && ++shown <= 10) std::printf("  FAIL %s: %s\n", files[i].string().c_str(), r.why.c_str());
+    }
+    std::printf("\n── edit-validate summary ──\n");
+    std::printf("  files            %zu loaded, %zu skipped (raw blocks)\n", loaded, raw);
+    std::printf("  insert + remove  %zu files changed bytes, %zu moved a ref (3 positions each)\n", insertBad, sigBad);
+    std::printf("  RemoveCollision  %zu files with a root collision object, %zu blocks removed, %zu failed\n",
+                withCollision, removedBlocks, removeBad);
+    std::printf("  Attach           %zu failed\n", attachBad);
+    std::printf("  header facts     strings no stringref uses in %zu files; unused block types in %zu; "
+                "maxStringLength not the longest string in %zu\n", unusedStrings, unusedTypes, maxInexact);
+    return insertBad + sigBad + removeBad + attachBad == 0 ? 0 : 1;
+}
+
 static int CmdCollision(const fs::path& file) {
     auto nif = niffer::NifFile::LoadFile(file.string());
     if (!nif) { std::printf("load failed\n"); return 1; }
@@ -903,6 +1263,8 @@ int main(int argc, char** argv) {
     fs::path arg = argv[2];
     if (cmd == "collision") return CmdCollision(arg);
     if (cmd == "bodies-validate") return CmdBodiesValidate(arg);
+    if (cmd == "tangents-validate") return CmdTangentsValidate(arg);
+    if (cmd == "edit-validate") return CmdEditValidate(arg);
     if (cmd == "histogram") return CmdHistogram(arg);
     if (cmd == "tri-roundtrip") return CmdTriRoundtrip(arg);
     if (cmd == "dump") return CmdDump(arg, argc >= 4 ? std::atoi(argv[3]) : -1);

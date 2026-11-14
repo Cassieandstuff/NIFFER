@@ -98,6 +98,12 @@ float F32Of(const Value& v) { return std::bit_cast<float>(static_cast<uint32_t>(
 float HalfOf(const Value& v) { return Half{ static_cast<uint16_t>(v.bits) }.ToFloat(); }
 uint8_t U8Of(const Value& v) { return static_cast<uint8_t>(v.bits); }
 
+// sign((N x T) . B): +1 for a right-handed frame, -1 for a mirrored one.
+float Handedness(const float* n, const float* t, const float* b) {
+    const float c[3] = { n[1]*t[2] - n[2]*t[1], n[2]*t[0] - n[0]*t[2], n[0]*t[1] - n[1]*t[0] };
+    return c[0]*b[0] + c[1]*b[1] + c[2]*b[2] < 0.f ? -1.0f : 1.0f;
+}
+
 // Fills `m` from the BSVertex array at `array` in `b`: `nv` vertices laid out per
 // `desc`. Allocates exactly what DecodeVertexBlock does for the same desc.
 void SchemaVertices(const Block& b, const RelPath& array, uint64_t desc, uint16_t nv, DecodedMesh& m) {
@@ -108,6 +114,7 @@ void SchemaVertices(const Block& b, const RelPath& array, uint64_t desc, uint16_
     m.positions.resize(static_cast<size_t>(nv) * 3);
     if (L.hasNormal)  m.normals.resize(static_cast<size_t>(nv) * 3);
     if (L.hasTangent) m.tangents.resize(static_cast<size_t>(nv) * 4);
+    if (L.hasTangent && L.hasNormal) m.bitangents.resize(static_cast<size_t>(nv) * 3);
     if (L.hasUV)      m.uvs.resize(static_cast<size_t>(nv) * 2);
     if (L.hasColor)   m.colors.resize(static_cast<size_t>(nv) * 4);
     if (L.hasSkin) {
@@ -128,7 +135,17 @@ void SchemaVertices(const Block& b, const RelPath& array, uint64_t desc, uint16_
             for (int k = 0; k < 3; ++k) m.normals[i*3+k] = SNorm(U8Of(n.items[k]));
         if (const Value& t = e.items[V::kTangent]; t.present && L.hasTangent) {
             for (int k = 0; k < 3; ++k) m.tangents[i*4+k] = SNorm(U8Of(t.items[k]));
-            m.tangents[i*4+3] = 1.0f;
+            if (L.hasNormal) {
+                // The bitangent rides in the three W slots (docs/tangent-space.md); a
+                // BSDynamicTriShape's x is in its dynamic vertex's w (DecodeShapeMesh).
+                const Value& pw = e.items[V::kPositionW];
+                const float b[3] = { pw.present ? F32Of(pw) : 0.f, SNorm(U8Of(e.items[V::kNormalW])),
+                                     SNorm(U8Of(e.items[V::kTangentW])) };
+                for (int k = 0; k < 3; ++k) m.bitangents[i*3+k] = b[k];
+                m.tangents[i*4+3] = Handedness(&m.normals[i*3], &m.tangents[i*4], b);
+            } else {
+                m.tangents[i*4+3] = 1.0f;
+            }
         }
         if (const Value& c = e.items[V::kColor]; c.present && L.hasColor)
             for (int k = 0; k < 4; ++k) m.colors[i*4+k] = U8Of(c.items[k]);
@@ -182,6 +199,159 @@ DecodedMesh DecodeMesh(const view::NiSkinPartition& p) {
     return m;
 }
 
+// ── Tangent space ─────────────────────────────────────────────────────────────
+namespace {
+
+// [-1, 1] -> the byte SNorm decodes back to the same value.
+uint8_t SNormByte(float f) {
+    const float x = std::round((std::clamp(f, -1.0f, 1.0f) + 1.0f) * 127.5f);
+    return static_cast<uint8_t>(std::clamp(x, 0.0f, 255.0f));
+}
+
+void Normalize(float* v) {
+    const float l = std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    if (l > 1e-20f) for (int k = 0; k < 3; ++k) v[k] /= l;
+}
+
+// `v` made orthogonal to unit `n` and unit length; false when nothing is left.
+bool Orthonormal(float* v, const float* n) {
+    const float d = v[0]*n[0] + v[1]*n[1] + v[2]*n[2];
+    for (int k = 0; k < 3; ++k) v[k] -= d * n[k];
+    const float l = std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    if (l < 1e-12f) return false;
+    for (int k = 0; k < 3; ++k) v[k] /= l;
+    return true;
+}
+
+// The bitangent to write for vertex i: the mesh's, or W (N x T).
+void BitangentOf(const DecodedMesh& m, size_t i, float* bt) {
+    const float* t = &m.tangents[i*4];
+    if (m.bitangents.size() == size_t(m.numVertices) * 3) {
+        for (int k = 0; k < 3; ++k) bt[k] = m.bitangents[i*3+k];
+        return;
+    }
+    const float* n = &m.normals[i*3];
+    const float c[3] = { n[1]*t[2] - n[2]*t[1], n[2]*t[0] - n[0]*t[2], n[0]*t[1] - n[1]*t[0] };
+    for (int k = 0; k < 3; ++k) bt[k] = c[k] * (t[3] < 0.f ? -1.f : 1.f);
+}
+
+// Writes the bitangents' x into a BSDynamicTriShape's dynamic vertices (Vec4 w).
+bool EncodeDynamicW(Block& b, const DecodedMesh& m) {
+    const RelPath array = RelPath{}.Child(view::BSDynamicTriShape::kDynamicData);
+    Value arr;
+    if (!b.Visit(array, [&](const schema::TypeDef&, const Value& v) { arr = v; })) return false;
+    if (arr.items.size() < m.numVertices) return false;
+    bool changed = false;
+    for (size_t i = 0; i < m.numVertices; ++i) {
+        float bt[3];
+        BitangentOf(m, i, bt);
+        Value& w = arr.items[i].items[3];
+        const uint64_t bits = std::bit_cast<uint32_t>(bt[0]);
+        if (w.bits != bits) { w.bits = bits; changed = true; }
+    }
+    return !changed || b.StoreValue(array, std::move(arr));
+}
+
+// Writes the frame into the BSVertex array at `array` in `b` (nv vertices).
+bool EncodeVertices(Block& b, const RelPath& array, const DecodedMesh& m) {
+    const size_t nv = m.numVertices;
+    bool ok = true, changed = false;
+    Value arr;
+    if (!b.Visit(array, [&](const schema::TypeDef&, const Value& v) { arr = v; })) return false;
+    if (arr.items.size() < nv) return false;
+    using V = view::BSVertex;
+    for (size_t i = 0; i < nv && ok; ++i) {
+        Value& e = arr.items[i];
+        if (!e.items[V::kTangent].present || !e.items[V::kNormal].present) {
+            ok = false;
+            break;
+        }
+        const float* t = &m.tangents[i*4];
+        float bt[3];
+        BitangentOf(m, i, bt);
+        auto put = [&](Value& v, uint64_t bits) {
+            if (v.bits != bits) { v.bits = bits; changed = true; }
+        };
+        for (int k = 0; k < 3; ++k) put(e.items[V::kTangent].items[k], SNormByte(t[k]));
+        if (e.items[V::kPositionW].present) put(e.items[V::kPositionW], std::bit_cast<uint32_t>(bt[0]));
+        put(e.items[V::kNormalW], SNormByte(bt[1]));
+        put(e.items[V::kTangentW], SNormByte(bt[2]));
+    }
+    if (!ok) return false;
+    return !changed || b.StoreValue(array, std::move(arr));
+}
+
+}  // namespace
+
+void ComputeTangentSpace(DecodedMesh& m) {
+    const size_t nv = m.numVertices;
+    if (m.positions.size() != nv * 3 || m.normals.size() != nv * 3 || m.uvs.size() != nv * 2) return;
+    std::vector<double> su(nv * 3, 0.0), sv(nv * 3, 0.0);
+    for (size_t t = 0; t + 2 < m.triangles.size(); t += 3) {
+        const size_t i[3] = { m.triangles[t], m.triangles[t + 1], m.triangles[t + 2] };
+        if (i[0] >= nv || i[1] >= nv || i[2] >= nv) continue;
+        double e1[3], e2[3];
+        for (int k = 0; k < 3; ++k) {
+            e1[k] = double(m.positions[i[1]*3+k]) - m.positions[i[0]*3+k];
+            e2[k] = double(m.positions[i[2]*3+k]) - m.positions[i[0]*3+k];
+        }
+        const double du1 = double(m.uvs[i[1]*2]) - m.uvs[i[0]*2], dv1 = double(m.uvs[i[1]*2+1]) - m.uvs[i[0]*2+1];
+        const double du2 = double(m.uvs[i[2]*2]) - m.uvs[i[0]*2], dv2 = double(m.uvs[i[2]*2+1]) - m.uvs[i[0]*2+1];
+        const double det = du1 * dv2 - du2 * dv1;
+        if (std::abs(det) < 1e-20) continue;
+        // dP/dU and dP/dV times |det|: each triangle weighs by its UV area.
+        const double s = det > 0 ? 1.0 : -1.0;
+        for (size_t v : i)
+            for (int k = 0; k < 3; ++k) {
+                su[v*3+k] += (e1[k] * dv2 - e2[k] * dv1) * s;
+                sv[v*3+k] += (e2[k] * du1 - e1[k] * du2) * s;
+            }
+    }
+    m.tangents.assign(nv * 4, 0.f);
+    m.bitangents.assign(nv * 3, 0.f);
+    for (size_t v = 0; v < nv; ++v) {
+        float n[3] = { m.normals[v*3], m.normals[v*3+1], m.normals[v*3+2] };
+        Normalize(n);
+        // The NIF's tangent follows +dP/dV, its bitangent +dP/dU.
+        float t[3] = { float(sv[v*3]), float(sv[v*3+1]), float(sv[v*3+2]) };
+        float b[3] = { float(su[v*3]), float(su[v*3+1]), float(su[v*3+2]) };
+        const bool tOk = Orthonormal(t, n), bOk = Orthonormal(b, n);
+        if (!tOk && !bOk) {   // no UV gradient: any frame square to the normal
+            const float a[3] = { std::abs(n[0]) < 0.9f ? 1.f : 0.f, std::abs(n[0]) < 0.9f ? 0.f : 1.f, 0.f };
+            for (int k = 0; k < 3; ++k) t[k] = a[k];
+            Orthonormal(t, n);
+        }
+        if (!tOk || !bOk) {   // one missing: complete the frame from the other
+            const float* have = tOk || !bOk ? t : b;
+            float* fill = tOk || !bOk ? b : t;
+            const float c[3] = { n[1]*have[2] - n[2]*have[1], n[2]*have[0] - n[0]*have[2], n[0]*have[1] - n[1]*have[0] };
+            const float sign = have == t ? 1.f : -1.f;   // B = N x T, T = B x N
+            for (int k = 0; k < 3; ++k) fill[k] = c[k] * sign;
+        }
+        for (int k = 0; k < 3; ++k) { m.tangents[v*4+k] = t[k]; m.bitangents[v*3+k] = b[k]; }
+        m.tangents[v*4+3] = Handedness(n, t, b);
+    }
+}
+
+bool EncodeTangentSpace(NifFile& nif, Block& shapeBlock, const DecodedMesh& m) {
+    auto shape = view::BSTriShape::From(shapeBlock);
+    if (!shape) return false;
+    const size_t nv = m.numVertices;
+    if (!nv || m.tangents.size() != nv * 4 || m.normals.size() != nv * 3) return false;
+    if (!m.bitangents.empty() && m.bitangents.size() != nv * 3) return false;
+    const bool dynamic = view::BSDynamicTriShape::From(shapeBlock).has_value();
+    // Where DecodeShapeMesh reads attributes from: the shape's own vertices, or
+    // (skinned with none, or a BSDynamicTriShape) its skin partition's.
+    if (!dynamic && shape->NumVertices() == nv && shapeBlock.Count(RelPath{}.Child(view::BSTriShape::kVertices)) >= nv)
+        return EncodeVertices(shapeBlock, RelPath{}.Child(view::BSTriShape::kVertices), m);
+    auto skin = nif.Get(shape->Skin());
+    if (!skin) return false;
+    auto part = nif.Get(skin->SkinPartition());
+    if (!part) return false;
+    if (dynamic && !EncodeDynamicW(shapeBlock, m)) return false;
+    return EncodeVertices(part->block(), RelPath{}.Child(view::NiSkinPartition::kVertexData), m);
+}
+
 DecodedMesh DecodeShapeMesh(NifFile& nif, Block& shapeBlock) {
     auto shape = view::BSTriShape::From(shapeBlock);
     if (!shape) return {};
@@ -195,10 +365,15 @@ DecodedMesh DecodeShapeMesh(NifFile& nif, Block& shapeBlock) {
         DecodedMesh m = part ? DecodeMesh(*part) : DecodedMesh{};
         const size_t nv = m.numVertices;
         m.positions.assign(nv * 3, 0.f);
+        const bool frame = m.bitangents.size() == nv * 3 && m.tangents.size() == nv * 4 && m.normals.size() == nv * 3;
         shapeBlock.ForEachElement(RelPath{}.Child(view::BSDynamicTriShape::kDynamicData),
                                   [&](size_t i, const schema::TypeDef&, const Value& v) {
             if (i >= nv) return;
             for (int k = 0; k < 3; ++k) m.positions[i*3+k] = F32Of(v.items[k]);
+            if (frame) {   // the bitangent's x
+                m.bitangents[i*3] = F32Of(v.items[3]);
+                m.tangents[i*4+3] = Handedness(&m.normals[i*3], &m.tangents[i*4], &m.bitangents[i*3]);
+            }
         });
         return m;
     }

@@ -29,6 +29,7 @@
 #include <cstdint>
 #include <expected>
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -122,7 +123,12 @@ struct DecodedMesh {
     uint32_t numVertices = 0;
     std::vector<float>    positions;   // 3 * numVertices
     std::vector<float>    normals;     // 3 * numVertices (empty if absent)
+    // The tangent frame by the format's names (docs/tangent-space.md): the
+    // tangent field (it follows +dP/dV) with W = sign((N x T) . B), -1 where the
+    // UVs are mirrored; the bitangent the W slots carry (it follows +dP/dU),
+    // present when the vertices have normals and tangents.
     std::vector<float>    tangents;    // 4 * numVertices
+    std::vector<float>    bitangents;  // 3 * numVertices
     std::vector<float>    uvs;         // 2 * numVertices
     std::vector<uint8_t>  colors;      // 4 * numVertices (RGBA bytes)
     std::vector<float>    boneWeights; // 4 * numVertices
@@ -231,6 +237,45 @@ struct Body {
     int                    shapesSkipped = 0;
 };
 // ExtractBodies(NifFile&) is declared at the end of Schema.h.
+
+// ── Authoring collision ───────────────────────────────────────────────────────
+// What AttachConvexCollision (declared at the end of Schema.h) writes: one rigid
+// body on a node, its shape one bhkConvexVerticesShape per hull (several under a
+// bhkListShape). Hulls are closed convex meshes in the node's own space, in
+// Skyrim units (CoACD's output, say); they are scaled to Havok units on the way.
+struct ConvexHullInput {
+    std::vector<float>    points;     // 3 per point
+    std::vector<uint32_t> triangles;  // 3 per face, either winding; planes come from them
+};
+
+// The body's settings. Defaults are the vanilla values for each motion
+// (clutter/barrel01.nif fixed, clutter/common/broom.nif dynamic; the corpus
+// counts are in bhkRigidBody's schema docs).
+struct CollisionDesc {
+    BodyMotion motion = BodyMotion::Unknown;  // Unknown: Dynamic when mass > 0, else Fixed
+    float      mass   = 0;                    // kg; > 0 for a dynamic body
+    int        layer  = -1;                   // COLL index; -1: 1 (L_STATIC) fixed, 4 (L_CLUTTER) dynamic, 2 keyframed
+    uint32_t   material = 500811281;          // the most common convex-shape material in vanilla clutter
+    float      radius   = 0.05f;              // convex shell, Havok units (the most common value)
+    float friction = 0.5f, restitution = 0.4f;
+    float linearDamping = 0.099609375f, angularDamping = 0.049804688f;   // 0.1 and 0.05 as vanilla stores them
+    float allowedPenetrationDepth = 0.1f;
+    uint16_t collisionObjectFlags = 0x81;     // as in barrel01 and broom
+    // Dynamic bodies: centre of mass and inertia come from the hulls (uniform
+    // density, Havok units) unless given here (inertia row-major, body space).
+    std::optional<std::array<float, 3>> centerOfMass;
+    std::optional<std::array<float, 9>> inertia;
+};
+
+// The blocks written (indices), and the mass properties used.
+struct AttachedCollision {
+    int32_t              collisionObject = -1, body = -1, shape = -1;  // shape: the list, or the one hull
+    std::vector<int32_t> hulls;                                        // one bhkConvexVerticesShape each
+    size_t               removed = 0;                                  // blocks of a replaced collision object
+    float                volume = 0;                                   // Havok units^3
+    std::array<float, 3> centerOfMass{};
+    std::array<float, 9> inertia{};
+};
 
 // FaceGen TRI (FRTRI003) — facial morph / performance-capture shape keys ────
 // A second first-party format under Niffer (not a NIF). Byte-exact round-trip:

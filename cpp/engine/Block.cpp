@@ -589,6 +589,30 @@ void WalkLeaves(const SchemaSet& s, const TypeDef& t, const Value& v, Fn& fn) {
     }
 }
 
+// WalkLeaves over a mutable tree.
+template <class Fn>
+void WalkLeavesMut(const SchemaSet& s, const TypeDef& t, Value& v, Fn& fn) {
+    if (!v.present) return;
+    switch (t.kind) {
+    case Kind::Struct:
+        for (uint16_t i = 0; i < t.refCount && i < v.items.size(); ++i)
+            WalkLeavesMut(s, s.types[s.fields[t.ref + i].type], v.items[i], fn);
+        return;
+    case Kind::Array:   // packed arrays hold no refs or strings (schemagen enforces it)
+        for (Value& item : v.items) WalkLeavesMut(s, s.types[t.ref], item, fn);
+        return;
+    case Kind::Union:
+        if (v.bits < t.refCount && !v.items.empty()) {
+            const CaseDef& cd = s.cases[t.ref + v.bits];
+            if (cd.type != schema::kNoField) WalkLeavesMut(s, s.types[cd.type], v.items[0], fn);
+        }
+        return;
+    default:
+        fn(t, v);
+        return;
+    }
+}
+
 }  // namespace
 
 // ── Block ─────────────────────────────────────────────────────────────────────
@@ -699,6 +723,23 @@ bool Differs(const SchemaSet& s, const TypeDef& t, const Value& given, const Val
 }
 
 }  // namespace
+
+std::optional<Block> Block::Create(const SchemaSet& set, std::string_view typeName, LoadMode mode) {
+    const schema::BlockDef* def = set.Find(typeName);
+    if (!def || def->abstract) return std::nullopt;
+    const TypeDef& layout = set.types[def->type];
+    Value root = ZeroValue(set, layout);
+    auto nulls = [](const TypeDef& t, Value& v) {
+        if (t.kind == Kind::Ref || t.kind == Kind::Ptr || t.kind == Kind::StringRef) v.bits = 0xFFFFFFFFu;
+    };
+    WalkLeavesMut(set, layout, root, nulls);
+    std::vector<uint8_t> bytes;
+    Encoder enc(set, bytes);
+    enc.Encode(layout, root, nullptr);
+    Block b = Load(set, typeName, bytes, mode);
+    if (!b.Modeled()) return std::nullopt;
+    return b;
+}
 
 std::optional<Block> Block::Build(const SchemaSet& set, std::string_view typeName, const Value& root,
                                   LoadMode mode, std::string* error) {
@@ -1305,6 +1346,54 @@ void Block::ForEachStringRef(const std::function<void(uint32_t)>& fn) const {
         if (t.kind == Kind::StringRef) fn(static_cast<uint32_t>(v.bits));
     };
     WalkLeaves(*set_, set_->types[def_->type], value_, leaf);
+}
+
+bool Block::MapRefs(const std::function<int32_t(int32_t)>& fn) {
+    if (!def_) return false;
+    bool changed = false;
+    auto leaf = [&](const TypeDef& t, Value& v) {
+        if (t.kind != Kind::Ref && t.kind != Kind::Ptr) return;
+        const auto old = static_cast<int32_t>(static_cast<uint32_t>(v.bits));
+        const int32_t now = fn(old);
+        if (now == old) return;
+        v.bits = static_cast<uint32_t>(now);
+        changed = true;
+    };
+    WalkLeavesMut(*set_, set_->types[def_->type], value_, leaf);
+    dirty_ = dirty_ || changed;
+    return changed;
+}
+
+bool Block::MapStringRefs(const std::function<uint32_t(uint32_t)>& fn) {
+    if (!def_) return false;
+    bool changed = false;
+    auto leaf = [&](const TypeDef& t, Value& v) {
+        if (t.kind != Kind::StringRef) return;
+        const auto old = static_cast<uint32_t>(v.bits);
+        const uint32_t now = fn(old);
+        if (now == old) return;
+        v.bits = now;
+        changed = true;
+    };
+    WalkLeavesMut(*set_, set_->types[def_->type], value_, leaf);
+    dirty_ = dirty_ || changed;
+    return changed;
+}
+
+bool Block::EraseElement(const RelPath& p, size_t i) {
+    std::optional<Value> arr;
+    bool variable = false;
+    Visit(p, [&](const TypeDef& t, const Value& v) {
+        if (t.kind != Kind::Array) return;
+        variable = t.len != LenKind::Fixed;
+        arr = v;
+    });
+    if (!arr || !variable || i >= arr->items.size()) return false;
+    arr->items.erase(arr->items.begin() + static_cast<std::ptrdiff_t>(i));
+    arr->packed = false;
+    arr->bits = 0;
+    arr->bytes.clear();
+    return StoreValue(p, std::move(*arr));
 }
 
 }  // namespace niffer

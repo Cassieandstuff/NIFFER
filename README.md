@@ -18,6 +18,13 @@ Skyrim Content Tools' Scene Editor.
   (vertices from the shape, its skin partition, or a FaceGen head's dynamic data),
   `DecodeMorphDeltas` / `ApplyMorphs` for TRI, `ExtractCollision` for bhk collision as one
   soup, `ExtractBodies` for it per rigid body (placement, layer, motion, mass, leaf shapes).
+  `DecodedMesh` carries the stored tangent frame with its handedness (W = ±1, bitangents), and
+  `ComputeTangentSpace` / `EncodeTangentSpace` recompute and write it
+  ([docs/tangent-space.md](docs/tangent-space.md)).
+- **Editing the block list:** `NifFile::InsertBlock` / `RemoveBlocks` / `RemoveTree` renumber
+  every ref, ptr and root and keep the header's type and string tables in step;
+  `AttachConvexCollision` gives a node a rigid body made of convex hulls. Removing what was
+  inserted gives back the original bytes.
 
 No dependencies beyond the standard library. The optional `niffer::yaml` target (NIF ↔ YAML
 text) uses rapidyaml, vendored.
@@ -83,6 +90,8 @@ niffer-tool decode        <file.nif>
 niffer-tool collision     <file.nif>
 niffer-tool collision-validate [--sweep] <dir>  # ExtractCollision against bounds and render geometry
 niffer-tool bodies-validate <dir>               # ExtractBodies against ExtractCollision, motion and layer evidence
+niffer-tool tangents-validate <dir>             # the stored tangent frame against the UVs; decode/encode exactness
+niffer-tool edit-validate <dir>                 # insert/remove, RemoveCollision and AttachConvexCollision on every file
 ```
 
 A change to any block layout must keep `roundtrip` and `tri-roundtrip` green over the full

@@ -9,6 +9,19 @@ None.
 
 ## Fixed
 
+### DecodeMesh: tangent W always 1, the bitangent dropped — FIXED
+- **Symptom:** `DecodedMesh::tangents` had W = 1.0 for every vertex, so a mirrored-UV vertex
+  (35% of vanilla vertices) got a bitangent pointing the wrong way, and the bitangent the vertex
+  stores was never read. BK's material workspace (texture sets, M4) needs the handedness.
+- **Ruled out:** the byte round-trip can't see it: decode helpers are off the round-trip path.
+- **Root cause:** the decoder ignored the three W slots (`positionW`, `normalW`, `tangentW`),
+  which carry the bitangent; a BSDynamicTriShape keeps its x in the dynamic vertex's w instead,
+  since its partition stores no position. Evidence: docs/tangent-space.md.
+- **Where:** `cpp/Decode.cpp` `SchemaVertices` (was line 131: `m.tangents[i*4+3] = 1.0f`) and
+  `DecodeShapeMesh`'s BSDynamicTriShape branch.
+- **Status:** fixed: `DecodedMesh::bitangents` holds the stored bitangent and W is
+  sign((N x T) . B); `niffer-tool tangents-validate` checks it over the corpus.
+
 ### Typed path: BSLightingShaderProperty's leading fields are mislabeled — FIXED
 - **Symptom:** the typed struct calls the first u32 `name` (a string ref) and the next three
   `headerA/B/C` ("observed -1/0/-1"). As a string index, `name` is out of range in 4,310 SSE

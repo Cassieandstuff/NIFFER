@@ -303,6 +303,12 @@ public:
     // real-data gate checks `compute:` claims with it.
     static std::string ComputedMismatch(const schema::SchemaSet& set, std::string_view typeName,
                                         const Value& root);
+    // A new block of class `typeName` with every field zero (arrays empty,
+    // conditions and unions as zero selectors decide), refs and ptrs null and
+    // stringrefs empty. nullopt when the class has no concrete descriptor. Set
+    // its fields through the views, then NifFile::InsertBlock it.
+    static std::optional<Block> Create(const schema::SchemaSet& set, std::string_view typeName,
+                                       LoadMode mode = LoadMode::Packed);
 
     std::string_view          TypeName() const { return typeName_; }
     bool                      Modeled() const { return def_ != nullptr; }
@@ -369,6 +375,16 @@ public:
                                              std::span<const uint16_t> to)>& fn) const;
     // Every stringref value in layout order.
     void ForEachStringRef(const std::function<void(uint32_t index)>& fn) const;
+    // Replaces every ref/ptr value r with fn(r), in layout order (null refs
+    // included: fn(-1)). Marks the block dirty only when a value changed, so an
+    // identity map keeps it verbatim. Returns whether anything changed; false
+    // for a raw block, whose refs can't be found.
+    bool MapRefs(const std::function<int32_t(int32_t index)>& fn);
+    // The same for stringref values (0xFFFFFFFF = empty is passed too).
+    bool MapStringRefs(const std::function<uint32_t(uint32_t index)>& fn);
+    // Removes element `i` of the variable-length array at `p` (its length field
+    // follows). False when `p` isn't such an array or `i` is past its end.
+    bool EraseElement(const RelPath& p, size_t i);
 
     // T <-> Value given the TypeDef the value lives in.
     template <class T> static T     FromValue(const Value& v, const schema::TypeDef& t, const schema::SchemaSet& s);
@@ -427,6 +443,42 @@ public:
         Block* b = GetBlock(ref.index);
         return b ? V::From(*b) : std::nullopt;
     }
+
+    // ── Editing the block list ──────────────────────────────────────────────
+    // Refs are file-native indices, so inserting or removing a block renumbers
+    // every later block: each ref, ptr and footer root is fixed up, and the
+    // header's block-type table follows. A block whose value doesn't change
+    // stays verbatim, so an unedited file still saves byte-for-byte, and
+    // removing what was inserted gives back the original bytes.
+    //
+    // Fix-ups need every block's refs, so editing refuses (with a reason) while
+    // the file holds a raw block that would need renumbering; appending
+    // renumbers nothing and is always allowed.
+
+    // Inserts `block` (which must be modeled) at `index` (0..blocks.size()):
+    // every ref, ptr and root at or past `index` moves up one. Its class joins
+    // header.blockTypes (at the end) if it isn't there. The inserted block's own
+    // refs are taken as already in the new numbering. Returns `index`.
+    std::expected<int32_t, std::string> InsertBlock(int32_t index, Block block);
+    std::expected<int32_t, std::string> AppendBlock(Block block) {
+        return InsertBlock(static_cast<int32_t>(blocks.size()), std::move(block));
+    }
+    // Removes the blocks at `indices` (any order, duplicates ignored). Every ref
+    // or ptr to a removed block becomes null (-1), in a list as well (list
+    // lengths never change; Block::EraseElement drops an entry); roots that
+    // were removed leave the footer. A block type, or a string, that only the
+    // removed blocks used leaves its table (later stringrefs renumbered); types
+    // and strings unused before stay. Returns the number removed.
+    std::expected<size_t, std::string> RemoveBlocks(std::span<const int32_t> indices);
+    std::expected<size_t, std::string> RemoveBlock(int32_t index) { return RemoveBlocks({ &index, 1 }); }
+    // `index` plus every block it owns: reached from it through refs (not
+    // ptrs), and owned by nothing outside that set. Those are removed together
+    // (RemoveBlocks). Returns the removed indices in ascending order.
+    std::vector<int32_t> OwnedTree(int32_t index) const;
+    std::expected<size_t, std::string> RemoveTree(int32_t index);
+    // The index of `s` in the header string table, appended if absent
+    // (maxStringLength grows to cover it).
+    NiStringRef AddString(std::string_view s);
 };
 
 // ── Value conversions ────────────────────────────────────────────────────────
@@ -576,5 +628,38 @@ CollisionGeometry ExtractCollision(NifFile& nif);
 // One entry per rigid body reached from a collision object (phantoms excluded),
 // in block order; see Body in Niffer.h.
 std::vector<Body> ExtractBodies(NifFile& nif);
+
+// ── Tangent space (docs/tangent-space.md) ────────────────────────────────────
+// DecodedMesh's tangent frame is the NIF's, by its field names: `tangents` xyz is
+// the vertex's tangent field (it follows +dP/dV), `bitangents` the vector the
+// three W slots carry (it follows +dP/dU), and the tangent's W is the
+// handedness sign((N x T) . B): -1 where the UVs are mirrored relative to the
+// usual frame. A renderer that wants T along +U and B = W' (N x T) along +V
+// takes T' = bitangent and W' = -W.
+//
+// Recomputes the tangent frame of `mesh` from its positions, normals, UVs and
+// triangles, in that convention (area-weighted UV gradients, each made
+// orthogonal to the normal). Needs normals and UVs; fills `tangents` and
+// `bitangents`.
+void ComputeTangentSpace(DecodedMesh& mesh);
+// Writes `mesh`'s tangents and bitangents (or, without bitangents, W (N x T))
+// into the vertices DecodeShapeMesh(nif, shape) reads them from: the shape's
+// own, or its skin partition's. Values that come back the same leave the block
+// verbatim. False when the counts don't match or there is no tangent to write.
+bool EncodeTangentSpace(NifFile& nif, Block& shape, const DecodedMesh& mesh);
+
+// ── Authoring collision (types in Niffer.h) ──────────────────────────────────
+// Gives NiNode `node` a rigid body made of `hulls`: bhkConvexVerticesShape per
+// hull (under a bhkListShape when there are several), bhkRigidBody and
+// bhkCollisionObject, appended in that order (dependencies first, as vanilla
+// files order them), with the node's collisionObject pointed at it. A collision
+// object the node already has is removed first, with everything only it owns.
+std::expected<AttachedCollision, std::string> AttachConvexCollision(NifFile& nif, int32_t node,
+                                                                    std::span<const ConvexHullInput> hulls,
+                                                                    const CollisionDesc& desc = {});
+// Removes `node`'s collision object and every block only it owns; its
+// collisionObject becomes null. Returns the number of blocks removed (0 when it
+// had none).
+std::expected<size_t, std::string> RemoveCollision(NifFile& nif, int32_t node);
 
 }  // namespace niffer

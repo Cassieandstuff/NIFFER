@@ -262,7 +262,8 @@ struct CollisionDesc {
     float allowedPenetrationDepth = 0.1f;
     uint16_t collisionObjectFlags = 0x81;     // as in barrel01 and broom
     // Dynamic bodies: centre of mass and inertia come from the hulls (uniform
-    // density, Havok units) unless given here (inertia row-major, body space).
+    // density, Havok units) unless given here (inertia row-major, body space;
+    // a given centre alone moves the computed inertia to it).
     std::optional<std::array<float, 3>> centerOfMass;
     std::optional<std::array<float, 9>> inertia;
 };

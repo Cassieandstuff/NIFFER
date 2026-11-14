@@ -32,7 +32,7 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit("schemagen: PyYAML is required (pip install pyyaml)")
 
-LANGUAGE_VERSION = "0.4"
+LANGUAGE_VERSION = "0.5"
 
 # spelling -> (C++ Kind, C++ value type, byte size)
 SCALARS = {
@@ -66,7 +66,7 @@ BLOCK_KEYS = {"block", "inherits", "abstract", "fields", "verified", "doc"}
 STRUCT_KEYS = {"struct", "size", "fields", "doc"}
 MANIFEST_KEYS = {"manifest", "schemaVersion"}
 FIELD_KEYS = {"name", "type", "fields", "union", "array", "to", "size", "if", "packed", "compute", "enum", "flags",
-              "doc"}
+              "refs", "doc"}
 # An `enum` descriptor (spec §4.5): named values of an integer field, or named bits of a flags word.
 ENUM_KEYS = {"enum", "flags", "source", "values", "doc"}
 ENUM_VALUE_KEYS = {"name", "value", "bit", "doc"}
@@ -202,6 +202,7 @@ class Field:
     declared_by: str | None = None      # block that declares it (block layouts)
     names: str | None = None            # enum: / flags: an enum descriptor's name (spec §4.5)
     names_flags: bool = False           # …a flags enum
+    ref_free: bool = False              # refs: none — opaque bytes that hold no block or string index (spec §8)
 
 
 @dataclass
@@ -546,6 +547,12 @@ class Schema:
                         fail(fwhere, "a packed array's elements can't contain "
                                      + ", ".join(sorted(k.lower() for k in bad)))
                     f.packed = True
+            if "refs" in fd:
+                if fd["refs"] != "none":
+                    fail(fwhere, "'refs' takes only 'none'")
+                if ftype.kind != "Bytes":
+                    fail(fwhere, "'refs: none' applies only to bytes")
+                f.ref_free = True
             base_t = ftype.elem if ftype.kind == "Array" else ftype
             if "to" in fd and base_t.kind not in ("Ref", "Ptr"):
                 fail(fwhere, "'to' applies only to ref/ptr")
@@ -932,7 +939,7 @@ class Tables:
                 comp = f.compute
             names = self.enum_index[f.names] if f.names else None
             self.fields.append((f.name, ft, len_up, len_field, op, cup, cidx, cval, sup, sidx, smask,
-                                f.packed, comp, names))
+                                f.packed, comp, names, f.ref_free))
         return idx
 
 
@@ -965,19 +972,22 @@ def emit_tables(schema: Schema, tables: Tables, ns: str, src: str) -> str:
     out.append("};")
     out.append("")
     out.append("inline constexpr FieldDef kFields[] = {")
-    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask, packed, comp, names) in enumerate(tables.fields):
-        tail = ""
+    for i, (name, ft, lup, lf, op, cup, cf, cval, sup, sf, smask, packed, comp, names, ref_free) in enumerate(tables.fields):
+        # FieldDef's members after `packed`, written up to the last one that isn't its default.
+        rest = ["Compute::None", "0", "0", "0", "kNoField", "0ull", "0", "1", "kNoField", "false"]
         if comp and comp[0] == "Size":
-            tail = f", Compute::Size, {comp[1]}, {comp[2]}"
-            if names is not None:
-                tail += f", 0, kNoField, 0ull, 0, 1, {names}"
+            rest[0:3] = ["Compute::Size", str(comp[1]), str(comp[2])]
         elif comp:
             _, up, idx, mask, shift, times, _ = comp
-            tail = f", Compute::Bits, 0, 0, {up}, {idx}, {mask}ull, {shift}, {times}"
-            if names is not None:
-                tail += f", {names}"
-        elif names is not None:
-            tail = f", Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, {names}"
+            rest[0] = "Compute::Bits"
+            rest[3:8] = [str(up), str(idx), f"{mask}ull", str(shift), str(times)]
+        if names is not None:
+            rest[8] = str(names)
+        if ref_free:
+            rest[9] = "true"
+        defaults = ["Compute::None", "0", "0", "0", "kNoField", "0ull", "0", "1", "kNoField", "false"]
+        last = max((k for k in range(len(rest)) if rest[k] != defaults[k]), default=-1)
+        tail = "".join(f", {v}" for v in rest[:last + 1])
         out.append(f"    {{ {c_str(name)}, {ft}, {lup}, {field_or_none(lf)}, CondOp::{op}, {cup}, "
                    f"{field_or_none(cf)}, {c_int64(cval)}, {sup}, {field_or_none(sf)}, {smask}ull, "
                    f"{'true' if packed else 'false'}{tail} }},  // {i}")
@@ -1319,6 +1329,8 @@ def field_json(f: Field) -> dict:
                         **({"shift": shift} if shift else {}), **({"times": times} if times != 1 else {})}
     if f.names:
         d["flags" if f.names_flags else "enum"] = f.names
+    if f.ref_free:
+        d["refs"] = "none"
     if f.declared_by:
         d["declaredBy"] = f.declared_by
     if f.doc:

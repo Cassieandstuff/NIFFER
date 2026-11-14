@@ -1,6 +1,6 @@
 {
  "schemaVersion": "0.5.0",
- "languageVersion": "0.4",
+ "languageVersion": "0.5",
  "structs": [
   {
    "name": "AvTransform",
@@ -18989,8 +18989,9 @@
       "kind": "bytes",
       "sizeField": "dataSize"
      },
+     "refs": "none",
      "declaredBy": "bhkMoppBvTreeShape",
-     "doc": "The tree's byte code, not decoded."
+     "doc": "The tree's byte code, not decoded. It runs on the integer grid origin and scale map the child's bounds onto, and its leaves address the child shape's own triangles, so it holds no NIF block or string index (refs: none)."
     }
    ],
    "verified": [

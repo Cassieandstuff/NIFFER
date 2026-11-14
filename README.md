@@ -24,7 +24,8 @@ Skyrim Content Tools' Scene Editor.
 - **Editing the block list:** `NifFile::InsertBlock` / `RemoveBlocks` / `RemoveTree` renumber
   every ref, ptr and root and keep the header's type and string tables in step;
   `AttachConvexCollision` gives a node a rigid body made of convex hulls. Removing what was
-  inserted gives back the original bytes.
+  inserted gives back the original bytes. Renumbering refuses while opaque bytes could hide an
+  index (7.8% of vanilla files today); appending always works.
 
 No dependencies beyond the standard library. The optional `niffer::yaml` target (NIF ↔ YAML
 text) uses rapidyaml, vendored.

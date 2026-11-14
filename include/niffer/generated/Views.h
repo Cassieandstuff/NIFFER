@@ -4910,7 +4910,7 @@ public:
     static constexpr uint16_t kUnknown40 = 8;
     uint8_t Unknown40() const { return b_->GetAt<uint8_t>(p_.Child(8)).value_or(uint8_t{}); }
     bool SetUnknown40(const uint8_t& v) const { return b_->SetAt<uint8_t>(p_.Child(8), v); }
-    // moppData — The tree's byte code, not decoded.
+    // moppData — The tree's byte code, not decoded. It runs on the integer grid origin and scale map the child's bounds onto, and its leaves address the child shape's own triangles, so it holds no NIF block or string index (refs: none).
     static constexpr uint16_t kMoppData = 9;
     std::vector<uint8_t> MoppData() const { return b_->GetAt<std::vector<uint8_t>>(p_.Child(9)).value_or(std::vector<uint8_t>{}); }
     bool SetMoppData(const std::vector<uint8_t>& v) const { return b_->SetAt<std::vector<uint8_t>>(p_.Child(9), v); }

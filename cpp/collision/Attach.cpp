@@ -179,7 +179,15 @@ std::expected<AttachedCollision, std::string> AttachConvexCollision(NifFile& nif
             for (int k = 0; k < 3; ++k)
                 out.inertia[r * 3 + k] = static_cast<float>((r == k ? tr : 0.0) - c[r * 3 + k]);
         for (int k = 0; k < 3; ++k) out.centerOfMass[k] = static_cast<float>(com[k]);
-        if (desc.centerOfMass) out.centerOfMass = *desc.centerOfMass;
+        if (desc.centerOfMass) {
+            // Inertia about the given centre instead: parallel axes, d = given - computed.
+            const V3 d{ (*desc.centerOfMass)[0] - com[0], (*desc.centerOfMass)[1] - com[1], (*desc.centerOfMass)[2] - com[2] };
+            const double dd = Dot(d, d);
+            for (int r = 0; r < 3; ++r)
+                for (int k = 0; k < 3; ++k)
+                    out.inertia[r * 3 + k] += static_cast<float>(desc.mass * ((r == k ? dd : 0.0) - d[r] * d[k]));
+            out.centerOfMass = *desc.centerOfMass;
+        }
         if (desc.inertia) out.inertia = *desc.inertia;
     }
 
@@ -291,6 +299,8 @@ std::expected<AttachedCollision, std::string> AttachConvexCollision(NifFile& nif
     }
     if (!error.empty()) return std::unexpected(error);
 
+    // Appending can't fail now: every new block is modeled; only a full type table could refuse.
+    if (nif.header.blockTypes.size() + 3 >= 0xFFFF) return std::unexpected("the block-type table is full");
     if (!old.empty()) {
         auto removed = nif.RemoveBlocks(old);
         if (!removed) return std::unexpected(removed.error());

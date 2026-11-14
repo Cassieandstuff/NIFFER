@@ -1514,7 +1514,7 @@ inline constexpr FieldDef kFields[] = {
     { "origin", 0, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1141
     { "scale", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1142
     { "unknown40", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1143
-    { "moppData", 196, 0, 5, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1144
+    { "moppData", 196, 0, 5, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::None, 0, 0, 0, kNoField, 0ull, 0, 1, kNoField, true },  // 1144
     { "unknown0", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1145
     { "unknown4", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1146
     { "unknown8", 7, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 1147
@@ -1925,6 +1925,6 @@ inline constexpr BlockDef kBlocks[] = {
     { "bhkTransformShape", 150, 357, 1, false },  // 154
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.5.0", "0.4", kEnums, kEnumValues };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.5.0", "0.5", kEnums, kEnumValues };
 
 }  // namespace niffer::schema::tables

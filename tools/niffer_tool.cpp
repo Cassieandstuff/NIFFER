@@ -1056,6 +1056,8 @@ struct EditResult {
     bool hadCollision = false;
     size_t removedBlocks = 0;
     bool unusedStrings = false, unusedTypes = false, maxStringExact = true;
+    std::string opaque;          // "Class.field" of the first unclaimed opaque bytes: renumbering refuses
+    bool refusedOk = true;       // …and it did refuse, leaving the file as it was
     std::string why;
 };
 
@@ -1116,6 +1118,30 @@ static EditResult EditOne(const fs::path& p) {
         size_t longest = 0;
         for (const std::string& s : nif->header.strings) longest = std::max(longest, s.size());
         r.maxStringExact = nif->header.maxStringLength == longest;
+    }
+
+    // Opaque bytes that could hide an index: renumbering must refuse, appending must not.
+    for (const Block& b : nif->blocks) {
+        std::string at = b.OpaqueRefs();
+        if (at.empty()) continue;
+        std::string field;   // the path with element indices dropped
+        for (size_t i = 0; i < at.size();) {
+            const size_t e = std::min(at.find('/', i), at.size());
+            const std::string seg = at.substr(i, e - i);
+            if (seg.find_first_not_of("0123456789") != std::string::npos) field += (field.empty() ? "" : "/") + seg;
+            i = e + 1;
+        }
+        r.opaque = std::string(b.TypeName()) + "." + field;
+        break;
+    }
+    if (!r.opaque.empty()) {
+        auto in = nif->InsertBlock(0, *Block::Create(schema::Main(), "BSXFlags"));
+        auto out = nif->RemoveBlock(0);
+        r.refusedOk = !in && !out && nif->Save() == bytes;
+        auto app = nif->AppendBlock(*Block::Create(schema::Main(), "BSXFlags"));
+        r.refusedOk = r.refusedOk && app.has_value();
+        if (!r.refusedOk) r.why = "an edit over opaque bytes (" + r.opaque + ") didn't refuse, or appending did";
+        return r;
     }
 
     // Insert and remove at the start, the middle and the end.
@@ -1188,7 +1214,8 @@ static int CmdEditValidate(const fs::path& root) {
     std::vector<EditResult> results(files.size());
     ParallelMap(files, results, [](const fs::path& p) { return EditOne(p); });
     size_t loaded = 0, raw = 0, insertBad = 0, sigBad = 0, removeBad = 0, attachBad = 0, withCollision = 0;
-    size_t unusedStrings = 0, unusedTypes = 0, maxInexact = 0, removedBlocks = 0, shown = 0;
+    size_t unusedStrings = 0, unusedTypes = 0, maxInexact = 0, removedBlocks = 0, shown = 0, opaqueFiles = 0, refuseBad = 0;
+    std::map<std::string, size_t> opaqueBy;
     for (size_t i = 0; i < results.size(); ++i) {
         const EditResult& r = results[i];
         if (!r.loaded) continue;
@@ -1203,17 +1230,21 @@ static int CmdEditValidate(const fs::path& root) {
         unusedStrings += r.unusedStrings;
         unusedTypes += r.unusedTypes;
         maxInexact += !r.maxStringExact;
+        if (!r.opaque.empty()) { ++opaqueFiles; ++opaqueBy[r.opaque]; }
+        refuseBad += !r.refusedOk;
         if (!r.why.empty() && ++shown <= 10) std::printf("  FAIL %s: %s\n", files[i].string().c_str(), r.why.c_str());
     }
     std::printf("\n── edit-validate summary ──\n");
-    std::printf("  files            %zu loaded, %zu skipped (raw blocks)\n", loaded, raw);
+    std::printf("  files            %zu loaded, %zu skipped (raw blocks); %zu with opaque bytes that could hide "
+                "an index (renumbering refused, %zu didn't)\n", loaded, raw, opaqueFiles, refuseBad);
+    for (const auto& [k, n] : opaqueBy) std::printf("    %-60s %zu files\n", k.c_str(), n);
     std::printf("  insert + remove  %zu files changed bytes, %zu moved a ref (3 positions each)\n", insertBad, sigBad);
     std::printf("  RemoveCollision  %zu files with a root collision object, %zu blocks removed, %zu failed\n",
                 withCollision, removedBlocks, removeBad);
     std::printf("  Attach           %zu failed\n", attachBad);
     std::printf("  header facts     strings no stringref uses in %zu files; unused block types in %zu; "
                 "maxStringLength not the longest string in %zu\n", unusedStrings, unusedTypes, maxInexact);
-    return insertBad + sigBad + removeBad + attachBad == 0 ? 0 : 1;
+    return insertBad + sigBad + removeBad + attachBad + refuseBad == 0 ? 0 : 1;
 }
 
 static int CmdCollision(const fs::path& file) {
@@ -1246,7 +1277,9 @@ int main(int argc, char** argv) {
                     "  niffer-tool decode <file.nif>\n"
                     "  niffer-tool collision <file.nif>\n"
                     "  niffer-tool collision-validate [--sweep] <dir>\n"
-                    "  niffer-tool bodies-validate <dir>\n");
+                    "  niffer-tool bodies-validate <dir>\n"
+                    "  niffer-tool tangents-validate <dir>\n"
+                    "  niffer-tool edit-validate <dir>\n");
         return 2;
     }
     if (std::string(argv[1]) == "decode") return CmdDecode(argv[2]);

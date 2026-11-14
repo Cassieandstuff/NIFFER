@@ -80,6 +80,21 @@ rejects("reserved construct by name", """\
       - { name: k, type: u32 }
       - { name: v, union: { by: { lookup: { table: t, key: k } }, cases: [ { when: 1, name: a, type: u8 } ] } }
 """, "lookup selectors")
+rejects("refs on a non-bytes field", """\
+    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: u32, refs: none } ]
+""", "'refs: none' applies only to bytes")
+rejects("refs other than none", """\
+    block: A
+    inherits: NiObject
+    fields: [ { name: x, type: bytes, refs: some } ]
+""", "'refs' takes only 'none'")
+accepts("refs: none on bytes", """\
+    block: A
+    inherits: NiObject
+    fields: [ { name: n, type: u32 }, { name: x, type: bytes, size: n, refs: none } ]
+""")
 rejects("packed on a non-array", """\
     block: A
     inherits: NiObject

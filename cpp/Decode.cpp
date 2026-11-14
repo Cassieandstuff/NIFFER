@@ -348,8 +348,12 @@ bool EncodeTangentSpace(NifFile& nif, Block& shapeBlock, const DecodedMesh& m) {
     if (!skin) return false;
     auto part = nif.Get(skin->SkinPartition());
     if (!part) return false;
-    if (dynamic && !EncodeDynamicW(shapeBlock, m)) return false;
-    return EncodeVertices(part->block(), RelPath{}.Child(view::NiSkinPartition::kVertexData), m);
+    // Both arrays checked before either is written.
+    const RelPath vertexData = RelPath{}.Child(view::NiSkinPartition::kVertexData);
+    if (part->block().Count(vertexData) < nv) return false;
+    if (dynamic && shapeBlock.Count(RelPath{}.Child(view::BSDynamicTriShape::kDynamicData)) < nv) return false;
+    if (!EncodeVertices(part->block(), vertexData, m)) return false;
+    return !dynamic || EncodeDynamicW(shapeBlock, m);
 }
 
 DecodedMesh DecodeShapeMesh(NifFile& nif, Block& shapeBlock) {

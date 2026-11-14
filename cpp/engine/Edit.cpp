@@ -5,18 +5,22 @@
 
 #include <algorithm>
 #include <limits>
-#include <set>
 
 namespace niffer {
 
 namespace {
 
-// A raw block (other than `except`) whose refs we would have to renumber but can't see.
-std::string RawBlocker(const NifFile& nif, int32_t except = -1) {
-    for (size_t i = 0; i < nif.blocks.size(); ++i)
-        if (static_cast<int32_t>(i) != except && !nif.blocks[i].Modeled())
-            return "block " + std::to_string(i) + " (" + std::string(nif.blocks[i].TypeName()) +
-                   ") is raw, so its refs can't be renumbered";
+// A block (other than one being removed) whose refs a renumbering can't see: raw,
+// or holding opaque bytes that could hide an index. "" when there is none.
+std::string Blocker(const NifFile& nif, const std::vector<bool>* gone = nullptr) {
+    for (size_t i = 0; i < nif.blocks.size(); ++i) {
+        if (gone && (*gone)[i]) continue;
+        const Block& b = nif.blocks[i];
+        const std::string where = "block " + std::to_string(i) + " (" + std::string(b.TypeName()) + ")";
+        if (!b.Modeled()) return where + " is raw, so its refs can't be renumbered";
+        if (std::string at = b.OpaqueRefs(); !at.empty())
+            return where + " has opaque bytes at " + at + " that could hold a ref or string index";
+    }
     return {};
 }
 
@@ -35,15 +39,15 @@ std::expected<int32_t, std::string> NifFile::InsertBlock(int32_t index, Block bl
     if (header.blockTypeIndex.size() != blocks.size())
         return std::unexpected("the header's block-type index doesn't match the block list");
     if (index < n)
-        if (std::string blocker = RawBlocker(*this); !blocker.empty()) return std::unexpected(blocker);
-    if (header.blockTypes.size() >= std::numeric_limits<uint16_t>::max())
-        return std::unexpected("the block-type table is full");
-
+        if (std::string blocker = Blocker(*this); !blocker.empty()) return std::unexpected(blocker);
     // Its class in the block-type table.
     const std::string_view type = block.TypeName();
-    uint16_t ti = 0;
+    size_t ti = 0;
     while (ti < header.blockTypes.size() && header.blockTypes[ti] != type) ++ti;
-    if (ti == header.blockTypes.size()) header.blockTypes.emplace_back(type);
+    if (ti == header.blockTypes.size()) {
+        if (ti >= std::numeric_limits<uint16_t>::max()) return std::unexpected("the block-type table is full");
+        header.blockTypes.emplace_back(type);
+    }
 
     if (index < n) {
         auto shift = [index](int32_t r) { return r >= index ? r + 1 : r; };
@@ -51,7 +55,7 @@ std::expected<int32_t, std::string> NifFile::InsertBlock(int32_t index, Block bl
         for (int32_t& r : roots) r = shift(r);
     }
     blocks.insert(blocks.begin() + index, std::move(block));
-    header.blockTypeIndex.insert(header.blockTypeIndex.begin() + index, ti);
+    header.blockTypeIndex.insert(header.blockTypeIndex.begin() + index, static_cast<uint16_t>(ti));
     return index;
 }
 
@@ -67,10 +71,7 @@ std::expected<size_t, std::string> NifFile::RemoveBlocks(std::span<const int32_t
     if (count == 0) return 0;
     if (header.blockTypeIndex.size() != blocks.size())
         return std::unexpected("the header's block-type index doesn't match the block list");
-    for (size_t i = 0; i < blocks.size(); ++i)
-        if (!blocks[i].Modeled())
-            return std::unexpected("block " + std::to_string(i) + " (" + std::string(blocks[i].TypeName()) +
-                                   ") is raw, so its refs can't be renumbered");
+    if (std::string blocker = Blocker(*this, &gone); !blocker.empty()) return std::unexpected(blocker);
 
     // Old index -> new index, -1 for a removed block.
     std::vector<int32_t> remap(blocks.size(), -1);

@@ -117,6 +117,7 @@ struct FieldDef {
     uint8_t     srcShift  = 0;
     uint32_t    srcTimes  = 1;         //   …and multiplied by this
     uint16_t    names     = kNoField;  // `enum:` / `flags:`: an EnumDef (SchemaSet::enums) naming its values or bits
+    bool        refFree   = false;     // Bytes: `refs: none`, holds no block or string index (spec §8)
 };
 
 struct CaseDef {
@@ -385,6 +386,11 @@ public:
     // Removes element `i` of the variable-length array at `p` (its length field
     // follows). False when `p` isn't such an array or `i` is past its end.
     bool EraseElement(const RelPath& p, size_t i);
+    // The first present, non-empty opaque `bytes` value that could hold a block
+    // or string index MapRefs / MapStringRefs can't see: one whose field doesn't
+    // claim `refs: none` (spec §8), or one in a union case. Its path
+    // ("extraData/0/tail"), or "" when there is none. Renumbering refuses on it.
+    std::string OpaqueRefs() const;
 
     // T <-> Value given the TypeDef the value lives in.
     template <class T> static T     FromValue(const Value& v, const schema::TypeDef& t, const schema::SchemaSet& s);
@@ -452,8 +458,9 @@ public:
     // removing what was inserted gives back the original bytes.
     //
     // Fix-ups need every block's refs, so editing refuses (with a reason) while
-    // the file holds a raw block that would need renumbering; appending
-    // renumbers nothing and is always allowed.
+    // the file holds a block whose refs it can't see: a raw block, or opaque
+    // bytes not claimed `refs: none` (Block::OpaqueRefs). Appending renumbers
+    // nothing and is always allowed.
 
     // Inserts `block` (which must be modeled) at `index` (0..blocks.size()):
     // every ref, ptr and root at or past `index` moves up one. Its class joins
@@ -468,7 +475,9 @@ public:
     // lengths never change; Block::EraseElement drops an entry); roots that
     // were removed leave the footer. A block type, or a string, that only the
     // removed blocks used leaves its table (later stringrefs renumbered); types
-    // and strings unused before stay. Returns the number removed.
+    // and strings no block used before the removal stay. (So a string that sat
+    // unused until an inserted block took it through AddString leaves with that
+    // block; no vanilla file has an unused string.) Returns the number removed.
     std::expected<size_t, std::string> RemoveBlocks(std::span<const int32_t> indices);
     std::expected<size_t, std::string> RemoveBlock(int32_t index) { return RemoveBlocks({ &index, 1 }); }
     // `index` plus every block it owns: reached from it through refs (not
@@ -653,7 +662,10 @@ bool EncodeTangentSpace(NifFile& nif, Block& shape, const DecodedMesh& mesh);
 // hull (under a bhkListShape when there are several), bhkRigidBody and
 // bhkCollisionObject, appended in that order (dependencies first, as vanilla
 // files order them), with the node's collisionObject pointed at it. A collision
-// object the node already has is removed first, with everything only it owns.
+// object the node already has is removed first, with everything only it owns;
+// that removal renumbers blocks, so it refuses where RemoveBlocks would (opaque
+// bytes that could hide an index), while a node without one only appends. On
+// any refusal the file is left as it was.
 std::expected<AttachedCollision, std::string> AttachConvexCollision(NifFile& nif, int32_t node,
                                                                     std::span<const ConvexHullInput> hulls,
                                                                     const CollisionDesc& desc = {});

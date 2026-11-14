@@ -94,9 +94,11 @@ raw.
   std::vector<uint8_t> out = nif.Save();       // only the dirty block is re-encoded
   ```
 
-- **References:** `ForEachRef` visits every visible `ref`/`ptr`. A future step adds block
-  insertion and deletion. Like ESPER's FormID remap, it will refuse when a raw block or opaque
-  bytes could hide references.
+- **References:** `ForEachRef` visits every visible `ref`/`ptr`. `NifFile::InsertBlock` /
+  `RemoveBlocks` renumber them (`Block::MapRefs`, `MapStringRefs`). Like ESPER's FormID remap,
+  they refuse when a raw block or opaque bytes could hide references: `bytes` without the
+  `refs: none` claim (language 0.5). Appending renumbers nothing and is always allowed.
+  `niffer-tool edit-validate` runs them over the corpus.
 
 ## Gates
 

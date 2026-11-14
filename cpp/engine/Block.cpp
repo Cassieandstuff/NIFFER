@@ -1380,6 +1380,44 @@ bool Block::MapStringRefs(const std::function<uint32_t(uint32_t)>& fn) {
     return changed;
 }
 
+namespace {
+// The path below `at` of the first opaque value that could hide refs; "" when none.
+std::string Opaque(const SchemaSet& s, const TypeDef& t, const Value& v, bool claimed, const std::string& at) {
+    if (!v.present) return {};
+    switch (t.kind) {
+    case Kind::Bytes:
+        return (!claimed && !v.bytes.empty()) ? (at.empty() ? std::string("/") : at) : std::string{};
+    case Kind::Struct:
+        for (uint16_t i = 0; i < t.refCount && i < v.items.size(); ++i) {
+            const FieldDef& f = s.fields[t.ref + i];
+            std::string found = Opaque(s, s.types[f.type], v.items[i], f.refFree, at + "/" + f.name);
+            if (!found.empty()) return found;
+        }
+        return {};
+    case Kind::Array:   // packed arrays hold no bytes (schemagen enforces it)
+        for (size_t i = 0; i < v.items.size(); ++i) {
+            std::string found = Opaque(s, s.types[t.ref], v.items[i], claimed, at + "/" + std::to_string(i));
+            if (!found.empty()) return found;
+        }
+        return {};
+    case Kind::Union:
+        if (v.bits < t.refCount && !v.items.empty()) {
+            const CaseDef& cd = s.cases[t.ref + v.bits];
+            if (cd.type != schema::kNoField) return Opaque(s, s.types[cd.type], v.items[0], false, at + "/" + cd.name);
+        }
+        return {};
+    default:
+        return {};
+    }
+}
+}  // namespace
+
+std::string Block::OpaqueRefs() const {
+    if (!def_) return {};
+    std::string found = Opaque(*set_, set_->types[def_->type], value_, false, {});
+    return found.empty() ? found : found.substr(1);
+}
+
 bool Block::EraseElement(const RelPath& p, size_t i) {
     std::optional<Value> arr;
     bool variable = false;

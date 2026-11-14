@@ -469,6 +469,32 @@ void run_edit_tests() {
         }
     }
 
+    // ── N6: opaque bytes that could hide an index refuse renumbering ─────────
+    {
+        // BSMultiBoundAABB keeps its data as unclaimed opaque bytes; MOPP byte code claims `refs: none`.
+        Bytes aabb;
+        aabb.f32(0).f32(0).f32(0).f32(1).f32(1).f32(1);
+        Bytes mopp;
+        mopp.i32(-1).u32(0).u32(0).u32(0).f32(1).u32(2).f32(0).f32(0).f32(0).f32(1).u8(1).u8(0x28).u8(0);
+        auto nif = Build({ { "BSFadeNode", Node(0, -1, {}) }, { "bhkMoppBvTreeShape", mopp.b }, { "BSMultiBoundAABB", aabb.b } },
+                         { "Root" });
+        CHECK(nif.has_value());
+        if (nif) {
+            CHECK_EQ(nif->RawCount(), 0u);
+            CHECK(nif->blocks[1].OpaqueRefs().empty());
+            CHECK_EQ(nif->blocks[2].OpaqueRefs(), std::string("data"));
+            const std::vector<uint8_t> before = nif->Save();
+            auto in = nif->InsertBlock(0, *Block::Create(schema::Main(), "BSXFlags"));
+            CHECK(!in.has_value() && in.error().find("opaque bytes at data") != std::string::npos);
+            CHECK(!nif->RemoveBlock(1).has_value());
+            CHECK(nif->Save() == before);
+            // Removing the block that holds them is fine, and so is appending.
+            CHECK(nif->RemoveBlock(2).has_value());
+            CHECK(nif->AppendBlock(*Block::Create(schema::Main(), "BSXFlags")).has_value());
+            CHECK(nif->InsertBlock(0, *Block::Create(schema::Main(), "BSXFlags")).has_value());   // MOPP alone doesn't refuse
+        }
+    }
+
     // ── N6: a collision tree stored before its node ──────────────────────────
     {
         const BlockList blocks = {

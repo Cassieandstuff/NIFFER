@@ -122,6 +122,7 @@ fields:
 | `size` | `bytes` (§3.1) and `T[]` byte windows (§3.2) |
 | `if` | a condition (§4.2) |
 | `packed` | arrays only: a storage hint (§4.4) |
+| `refs` | `bytes` only, and only `none`: a claim that the bytes hold no block or string index (§8) |
 | `compute` | integer fields only: how the field's value follows from other fields (§6.2) |
 | `doc` | free text: what the field means and how it was verified. Ignored by engines. |
 
@@ -318,6 +319,12 @@ the original bytes. It is NIFFER's real-data gate.
   roots never revisits a block on the current path; that is, the `ref` graph is acyclic. The gate
   checks this.
 - `stringref` values index the header's string table. They are not block references.
+- **`refs: none`** on a `bytes` field claims that its content holds no block or string-table
+  index (MOPP byte code, say, which addresses only its own shape). Inserting or removing a block
+  renumbers every `ref`, `ptr` and `stringref` it can see; opaque bytes are the one place an index
+  could hide. So an engine refuses to renumber while a block holds present, non-empty `bytes`
+  without this claim (or in a union case). Like `to:`, it is a claim about the data: give the
+  reason in the field's `doc`.
 
 ## 9. Outputs
 
@@ -326,7 +333,7 @@ consumers never run the generator.
 
 | Output | Content |
 |---|---|
-| `schema.json` | The resolved schema for data consumers: `schemaVersion`, `languageVersion`, `structs[]` and `blocks[]`. Each block has `name`, `parent`, `abstract`, and its full `layout` (inherited fields first; each field names the block that declares it in `declaredBy`), plus `verified` and `doc` when present. Every field has `name` and a resolved `type` (`kind`, and `fields`, `element`, `count`, `countPrefix`, `countField`, `size`, `sizeField`, `to`, `by` and `cases` as applicable), plus `if` when conditional and `compute` (`{"size": [...]}` or `{"field", "mask", "shift", "times"}`, defaults omitted) when computed. Named structs appear expanded at each use. |
+| `schema.json` | The resolved schema for data consumers: `schemaVersion`, `languageVersion`, `structs[]` and `blocks[]`. Each block has `name`, `parent`, `abstract`, and its full `layout` (inherited fields first; each field names the block that declares it in `declaredBy`), plus `verified` and `doc` when present. Every field has `name` and a resolved `type` (`kind`, and `fields`, `element`, `count`, `countPrefix`, `countField`, `size`, `sizeField`, `to`, `by` and `cases` as applicable), plus `if` when conditional, `compute` (`{"size": [...]}` or `{"field", "mask", "shift", "times"}`, defaults omitted) when computed, and `"refs": "none"` when claimed. Named structs appear expanded at each use. |
 | `hpp/generated/Tables.h` | the engine's constexpr tables (`niffer::schema::SchemaSet`). Private to the library. |
 | `include/niffer/generated/Fields.h` | typed handles: `niffer::fields::<Block>::<field>[::<field>]`; struct fields expose `::self` |
 | `include/niffer/generated/Views.h` | typed views (`niffer::view::<Name>`): accessors only, over the generic engine. Block views inherit as the blocks do. A union field gets `<Field>Case()` (the selected case's index, or −1) and one accessor per case, `<Field><Case>()`, which is empty unless that case is selected. |
@@ -355,3 +362,4 @@ language version rejects them by name.
 | 0.2 | adds `half`, `union:` (selector field with optional mask, `when` values, `default`, empty cases), byte-window arrays (`T[]` + `size:`), `packed: true`, references to conditional fields, and named structs that read enclosing fields (resolved per use site) |
 | 0.3 | adds `compute:` (computed fields: a summed byte size, or a shifted, masked and scaled field), recomputed on every edit and checked by the gate |
 | 0.4 | adds `enum` descriptors and the `enum:` / `flags:` field keys (§4.5): names for an integer field's values or a flags word's bits, with their source |
+| 0.5 | adds `refs: none` on `bytes` fields (§8): opaque bytes that hold no block or string index, so block insertion and removal may renumber around them |

@@ -112,7 +112,7 @@ inline constexpr FieldDef kFields[] = {
     { "desc", 16, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 50
     { "total", 15, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Size, 0, 2 },  // 51
     { "unit", 1, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Bits, 0, 0, 0, 0, 15ull, 0, 4 },  // 52
-    { "high", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Bits, 0, 0, 0, 0, 255ull, 8, 1 },  // 53
+    { "high", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false, Compute::Bits, 0, 0, 0, 0, 255ull, 8 },  // 53
     { "n", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 54
     { "items", 4, 0, 4, CondOp::Ne, 0, 1, 0ll, 0, kNoField, 0ull, false },  // 55
     { "blobSize", 3, 0, kNoField, CondOp::None, 0, kNoField, 0ll, 0, kNoField, 0ull, false },  // 56
@@ -157,6 +157,6 @@ inline constexpr BlockDef kBlocks[] = {
     { "TShared", 0, 45, 0, false },  // 8
 };
 
-inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.0.1", "0.4", std::span<const EnumDef>{}, std::span<const EnumValueDef>{} };
+inline constexpr SchemaSet kSchema{ kTypes, kFields, kCases, kWhens, kLinks, kSums, kBlocks, "0.0.1", "0.5", std::span<const EnumDef>{}, std::span<const EnumValueDef>{} };
 
 }  // namespace niffer_test::tables
